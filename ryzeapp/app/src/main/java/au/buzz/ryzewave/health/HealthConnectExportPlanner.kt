@@ -36,8 +36,9 @@ data class ExportCounts(
  * The changed rows are used for change detection only. Every aggregate record — the [androidx.health.connect.client.records.HeartRateRecord]
  * per hour, the [androidx.health.connect.client.records.DistanceRecord] per day and the
  * [androidx.health.connect.client.records.SleepSessionRecord] per night — is rebuilt from a *complete* re-read of
- * its hour / day / night, because a record written under the same client id replaces the one in Health Connect:
- * building it from the changed subset alone would silently drop the samples that had not changed.
+ * its hour / day / night, because a record written under the same client id (with a higher
+ * `clientRecordVersion`, see `HealthConnectMapping.metadata`) replaces the one in Health Connect: building it
+ * from the changed subset alone would silently drop the samples that had not changed.
  */
 class HealthConnectExportPlanner(
     private val repo: HealthRepository,

@@ -46,6 +46,12 @@ data class TrackPoint(
     val speedMps: Float,
     val altitudeM: Double?,
     val accepted: Boolean,           // false = rejected by the distance filter but kept for re-processing
+    /**
+     * The tracker's distance (m) after this fix, so the stored track reproduces the workout's distance exactly
+     * — including a pause, where the first fix after resuming re-anchors without adding the walk in between.
+     * Null on rows written before it existed; the charts then fall back to summing the accepted hops.
+     */
+    val cumulativeM: Double? = null,
 )
 
 data class UserProfile(

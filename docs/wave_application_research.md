@@ -98,7 +98,7 @@ some GloryFit watches ("some sort of key that unlocks pairing" in its issue trac
   opcode bytes [vendor SDK]. Families we use: `A1/A2/A3/A9` (device and profile),
   `B2/B1` (steps), `F7/E5/D6` (heart rate), `34` (SpO2), `31/32` (sleep), `FD` (workouts), `38` (classic radio),
   `AB` (vibrate / find watch). Families we identified but left for later: `C5/C6` notifications (UTF-16 text in
-  chunks with an app-type byte), `CA/CB` weather, `51` alarms, `46` canned replies, `37` contacts and SOS, `26/27`
+  16-byte chunks with an app-type byte and a total length; format verified on the wrist 2026-09-05 [captured]), `CA/CB` weather, `51` alarms, `46` canned replies, `37` contacts and SOS, `26/27`
   watch-face upload, `28` ECG, `C7/C8/3E/55` blood pressure, `24` temperature, `44` mood/stress, `29` menstrual
   cycle, `60/68` Alipay / WeChat Pay. Several of those correspond to sensors this watch does not have; the SDK is
   shared across many products and the feature bitmap says which parts apply.

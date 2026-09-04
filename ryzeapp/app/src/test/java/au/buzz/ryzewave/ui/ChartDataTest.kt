@@ -75,6 +75,25 @@ class ChartDataTest {
         assertEquals(98.7, cum[1].value, 2.0)   // 0.001 deg lon at -27 lat ~ 98.7 m
     }
 
+    /** Rows written by the tracker carry its running total; a pause (100 m → re-anchor 500 m away) adds nothing. */
+    @Test
+    fun cumulativeDistanceUsesTheStoredRunningTotalWhenEveryAcceptedPointHasOne() {
+        val pts = listOf(
+            tp(0, -27.0, 153.0).copy(cumulativeM = 0.0),
+            tp(1000, -27.0, 153.001).copy(cumulativeM = 98.7),
+            tp(2000, -27.0, 153.002, accepted = false).copy(cumulativeM = 98.7),
+            tp(60_000, -27.0, 153.005).copy(cumulativeM = 98.7),    // first fix after a pause: re-anchored, no hop
+            tp(61_000, -27.0, 153.006).copy(cumulativeM = 150.0),
+        )
+        val cum = ChartData.cumulativeDistance(pts)
+        assertEquals(listOf(0L, 1000L, 60_000L, 61_000L), cum.map { it.time })
+        assertEquals(listOf(0.0, 98.7, 98.7, 150.0), cum.map { it.value })
+        // a legacy row without the column anywhere in the accepted set: back to the haversine sum
+        val legacy = pts.mapIndexed { i, p -> if (i == 3) p.copy(cumulativeM = null) else p }
+        val sum = ChartData.cumulativeDistance(legacy)
+        assertTrue("legacy sum ${sum.last().value} should include the pause hop", sum.last().value > 500.0)
+    }
+
     @Test
     fun kmMarkersInterpolateCrossings() {
         val cum = listOf(Pt(0, 0.0), Pt(100_000, 800.0), Pt(200_000, 1_200.0), Pt(300_000, 2_100.0))

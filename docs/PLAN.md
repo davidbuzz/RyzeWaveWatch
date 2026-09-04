@@ -57,7 +57,32 @@ over-smoothing corners and dropping fixes (deflates). If the workout figure is w
 Which of (a) or (b) is the one that's wrong decides the first milestone. Both can be validated against the phone's
 own GPS or a known route without any watch involvement.
 
-## Top 10 next (2026-09-05, in priority order)
+## 4. Milestones (status 2026-09-05 00:20)
+- [x] 1 and 2 done in the first build: Kotlin GATT layer + codec (187 unit tests replaying the captures), dashboard, history charts; connects and syncs on launch on the Moto g05.
+- [~] 3 workout: implemented (GPS tracker, controller, foreground service, GPX) but not yet exercised on the phone.
+- [~] Health Connect export: implemented, permissions flow untested on the phone.
+- [ ] 4 comfort features.
+Review of the first build produced 36 findings (2 high: Health Connect export cursor semantics, BLE "Ready" published on a lost link); the fix pass applied 33 (build 00:36 on the phone, connected + synced). Health Connect export verified (172 records). Build 2 (00:41) fixed and independently verified the profile-edit revert, SpO2 chip overflow, export-button layout and midnight rollover (200 unit tests). Workout verified on the phone at 00:52 (start, live HR, stop; GPS poor indoors). A polish pass (workout → Health Connect exercise session, debug packet log, chart nits) is running with an independent verifier. Remaining real-world test: an outdoor walk for distance/pace and stride calibration.
+
+## 4a. Original milestone list
+
+1. **Kotlin GATT layer** ported from `BleService.java` with the packet codec; instrumented tests replay the hex
+   captures in `captures/` against the decoder.
+2. **Daily dashboard**: connect, sync, show steps/HR/SpO2/sleep; auto-sampling settings.
+3. **Workout**: GPS track, distance model, live HR, push to watch, summary; export GPX.
+4. **Comfort**: notifications, find-watch, weather, alarms.
+5. Optional: upstream protocol notes to Gadgetbridge.
+
+## 5. Open protocol questions (low priority)
+- Static HR spot test (`D6 01`) never reports to the phone; the app's timer may just be longer than 75 s.
+- Sleep stage code meanings (1-4) — compare against Ryze Fit's sleep screen once.
+- `FD 01` bytes after the HR (all zero so far) — probably steps/calories/distance for GPS-less sports.
+- Classic SDP UUIDs `0x5536`/`0x2222` on the watch (vendor-specific, unused).
+
+
+## Top 10 things to do next (2026-09-05, in priority order)
+
+Items 3 and 5–10 do not depend on the outdoor test; only 1, the final confirmation of 2, and 4 need Buzz outside.
 
 1. **The outdoor acceptance test.** Walk and then run a known route of at least 1 km with the watch on and the phone in
    a pocket. Compare the app's distance and pace with the known length, look at the raw track, and check that the
@@ -85,25 +110,3 @@ own GPS or a known route without any watch involvement.
     Stride and Watch settings sections, the "avg" label overdraw; a proper launcher icon and a signed release build;
     push the repo to a private GitHub and add a workflow that runs the Python and Kotlin unit tests; and upstream the
     protocol corrections (year byte, `D6 02` live HR, feature bitmap) to Gadgetbridge.
-
-## 4. Milestones (status 2026-09-05 00:20)
-- [x] 1 and 2 done in the first build: Kotlin GATT layer + codec (187 unit tests replaying the captures), dashboard, history charts; connects and syncs on launch on the Moto g05.
-- [~] 3 workout: implemented (GPS tracker, controller, foreground service, GPX) but not yet exercised on the phone.
-- [~] Health Connect export: implemented, permissions flow untested on the phone.
-- [ ] 4 comfort features.
-Review of the first build produced 36 findings (2 high: Health Connect export cursor semantics, BLE "Ready" published on a lost link); the fix pass applied 33 (build 00:36 on the phone, connected + synced). Health Connect export verified (172 records). Build 2 (00:41) fixed and independently verified the profile-edit revert, SpO2 chip overflow, export-button layout and midnight rollover (200 unit tests). Workout verified on the phone at 00:52 (start, live HR, stop; GPS poor indoors). A polish pass (workout → Health Connect exercise session, debug packet log, chart nits) is running with an independent verifier. Remaining real-world test: an outdoor walk for distance/pace and stride calibration.
-
-## 4a. Original milestone list
-
-1. **Kotlin GATT layer** ported from `BleService.java` with the packet codec; instrumented tests replay the hex
-   captures in `captures/` against the decoder.
-2. **Daily dashboard**: connect, sync, show steps/HR/SpO2/sleep; auto-sampling settings.
-3. **Workout**: GPS track, distance model, live HR, push to watch, summary; export GPX.
-4. **Comfort**: notifications, find-watch, weather, alarms.
-5. Optional: upstream protocol notes to Gadgetbridge.
-
-## 5. Open protocol questions (low priority)
-- Static HR spot test (`D6 01`) never reports to the phone; the app's timer may just be longer than 75 s.
-- Sleep stage code meanings (1-4) — compare against Ryze Fit's sleep screen once.
-- `FD 01` bytes after the HR (all zero so far) — probably steps/calories/distance for GPS-less sports.
-- Classic SDP UUIDs `0x5536`/`0x2222` on the watch (vendor-specific, unused).

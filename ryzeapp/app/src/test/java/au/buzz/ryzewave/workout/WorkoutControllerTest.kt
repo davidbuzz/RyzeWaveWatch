@@ -3,6 +3,7 @@ package au.buzz.ryzewave.workout
 import au.buzz.ryzewave.core.HrSample
 import au.buzz.ryzewave.core.SampleSource
 import au.buzz.ryzewave.core.UserProfile
+import au.buzz.ryzewave.ui.ChartData
 import java.util.concurrent.CopyOnWriteArrayList
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -110,6 +111,14 @@ class WorkoutControllerTest {
         now += 5_000L
         ctl.onLocation(now, LAT + 500.0 / DEG_LAT_M, LON, 5f, 1.5f, null)   // re-anchors after the pause
         assertEquals(100.0, ctl.state.value.distanceMeters, 0.5)
+        awaitUntil("re-anchor point persisted") { repo.points().size == 4 }
+        // the stored track carries the tracker's running total, so the detail screen's "GPS track" agrees
+        // with the workout distance instead of adding the 400 m straight line walked during the pause
+        val stored = repo.points().sortedBy { it.time }
+        assertEquals(listOf(0.0, 100.0, 100.0, 100.0), stored.map { it.cumulativeM!! }.map { Math.round(it * 10) / 10.0 })
+        val cum = ChartData.cumulativeDistance(stored)
+        assertEquals(3, cum.size)                                            // the accepted fixes only
+        assertEquals(100.0, cum.last().value, 0.5)
 
         val final = ctl.stop()
         assertNotNull(final)

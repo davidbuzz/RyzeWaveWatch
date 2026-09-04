@@ -284,6 +284,7 @@ class WatchWorkoutBridge(context: Context, private val graph: Graph) : WorkoutBr
                     workoutId = workoutId, time = now, lat = loc.latitude, lon = loc.longitude,
                     accuracyM = acc, speedMps = speed,
                     altitudeM = if (loc.hasAltitude()) loc.altitude else null, accepted = ok,
+                    cumulativeM = distance,
                 )
             )
         }

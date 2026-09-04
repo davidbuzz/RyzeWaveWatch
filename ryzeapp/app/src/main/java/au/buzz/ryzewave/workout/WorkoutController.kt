@@ -261,11 +261,11 @@ class WorkoutController(
         val speed: Double
         synchronized(lock) {
             accepted = tracker.addFix(time, lat, lon, accuracyM, speedMps)
+            distance = tracker.distanceMeters
             pendingPoints += TrackPoint(
                 workoutId = workoutId, time = time, lat = lat, lon = lon, accuracyM = accuracyM,
-                speedMps = speedMps, altitudeM = altitudeM, accepted = accepted,
+                speedMps = speedMps, altitudeM = altitudeM, accepted = accepted, cumulativeM = distance,
             )
-            distance = tracker.distanceMeters
             pace = tracker.paceSecPerKm
             speed = tracker.speedMps
         }

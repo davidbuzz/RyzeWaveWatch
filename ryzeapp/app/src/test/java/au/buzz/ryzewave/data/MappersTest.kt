@@ -8,6 +8,7 @@ import au.buzz.ryzewave.core.StepsHour
 import au.buzz.ryzewave.core.TrackPoint
 import au.buzz.ryzewave.core.Workout
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Test
 
 class MappersTest {
@@ -57,5 +58,9 @@ class MappersTest {
         assertEquals(tp, tp.toEntity().toModel())
         val noAlt = tp.copy(altitudeM = null, accepted = false)
         assertEquals(noAlt, noAlt.toEntity().toModel())
+        val withTotal = tp.copy(cumulativeM = 123.4)
+        assertEquals(withTotal, withTotal.toEntity().toModel())
+        assertEquals(123.4, withTotal.toEntity().cumulativeM!!, 0.0)
+        assertNull(tp.toEntity().cumulativeM)
     }
 }

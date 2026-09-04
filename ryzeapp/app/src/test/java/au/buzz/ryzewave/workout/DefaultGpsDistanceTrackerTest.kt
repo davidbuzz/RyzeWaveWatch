@@ -61,11 +61,41 @@ class DefaultGpsDistanceTrackerTest {
     }
 
     @Test
-    fun smallMoveIsAcceptedWhenMoving() {
+    fun smallMoveIsAcceptedWhenMovingAndCreditedAtTheReceiverSpeed() {
         t.addFix(0L, lat0, lon0, 8f, 1.2f)
         assertTrue(t.addFix(1000L, latPlus(1.5), lon0, 8f, 1.2f))
-        assertEquals(1.5, t.distanceMeters, 0.05)
+        assertEquals(1.2, t.distanceMeters, 0.05)      // rule 4: Doppler 1.2 m/s × 1 s, not the 1.5 m position hop
         assertEquals(1.2, t.speedMps, 1e-6)
+        assertEquals(2, t.acceptedCount)
+    }
+
+    @Test
+    fun dopplerCreditIsCappedByThePositionHopPlusTheAccuracy() {
+        // the receiver claims 10 m/s but the position barely moves: credit at most hop + accuracy, not 10 m
+        t.addFix(0L, lat0, lon0, 4f, 10f)
+        assertTrue(t.addFix(1000L, latPlus(1.0), lon0, 4f, 10f))
+        assertEquals(5.0, t.distanceMeters, 0.05)
+    }
+
+    @Test
+    fun positionHopIsUsedWhenFixesAreMoreThanFiveSecondsApart() {
+        // 6 s between fixes: the speed may have changed in between, the hop is the better estimate
+        t.addFix(0L, lat0, lon0, 5f, 2f)
+        assertTrue(t.addFix(6000L, latPlus(15.0), lon0, 5f, 2f))
+        assertEquals(15.0, t.distanceMeters, 0.05)
+    }
+
+    @Test
+    fun oneHertzJitterAtRunningSpeedIsNotIntegrated() {
+        // 3 m/s due north, every fix 2 m off the line alternately left and right (a 4 m lateral zigzag)
+        var d = 0.0
+        for (i in 0..100) {
+            val side = if (i % 2 == 0) 2.0 else -2.0
+            t.addFix(i * 1000L, latPlus(3.0 * i), lonPlus(side), 6f, 3.0f)
+            d = t.distanceMeters
+        }
+        assertEquals(300.0, d, 0.5)          // the raw hops would sum to 100 × 5 m = 500 m
+        assertEquals(101, t.acceptedCount)
     }
 
     @Test
@@ -115,10 +145,11 @@ class DefaultGpsDistanceTrackerTest {
     @Test
     fun anchorAccuracyCountsTowardsTheJitterRadius() {
         t.addFix(0L, lat0, lon0, 20f, 0f)                    // poor but accepted anchor
-        assertFalse(t.addFix(1000L, latPlus(12.0), lon0, 4f, 0f))   // 12 m < max(4, 20, 3): still inside the anchor's error
+        assertFalse(t.addFix(1000L, latPlus(12.0), lon0, 4f, 0f))   // 12 m < 1.5 × max(4, 20): still inside the anchor's error
+        assertFalse(t.addFix(2000L, latPlus(25.0), lon0, 4f, 0f))   // 25 m < 30 m: two 20 m-accuracy positions can differ by that
         assertEquals(0.0, t.distanceMeters, 0.0)
-        assertTrue(t.addFix(10_000L, latPlus(25.0), lon0, 4f, 0f))  // 25 m > 20 m, 2.5 m/s over 10 s: real movement
-        assertEquals(25.0, t.distanceMeters, 0.1)
+        assertTrue(t.addFix(10_000L, latPlus(35.0), lon0, 4f, 0f))  // 35 m > 30 m, 3.5 m/s over 10 s: real movement
+        assertEquals(35.0, t.distanceMeters, 0.1)
     }
 
     @Test
@@ -179,13 +210,13 @@ class DefaultGpsDistanceTrackerTest {
     @Test
     fun markGapKeepsDistanceButDropsTheAnchor() {
         t.addFix(0L, lat0, lon0, 5f, 1f)
-        t.addFix(1000L, latPlus(10.0), lon0, 5f, 1f)
+        t.addFix(10_000L, latPlus(10.0), lon0, 5f, 1f)
         t.markGap()
         assertEquals(10.0, t.distanceMeters, 0.05)
         assertEquals(0.0, t.paceSecPerKm, 0.0)
         assertTrue(t.addFix(60_000L, latPlus(500.0), lon0, 5f, 1f))   // re-anchors: the walk in between is not counted
         assertEquals(10.0, t.distanceMeters, 0.05)
-        assertTrue(t.addFix(61_000L, latPlus(505.0), lon0, 5f, 1f))
+        assertTrue(t.addFix(70_000L, latPlus(505.0), lon0, 5f, 1f))
         assertEquals(15.0, t.distanceMeters, 0.05)
     }
 

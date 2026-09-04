@@ -30,8 +30,12 @@ import kotlin.math.min
  * Pure mapping from the app's models (docs/APP.md "Health Connect mapping") to Health Connect records.
  * No Android classes here so the mapping is unit-testable on the JVM; [HealthConnectExporter] does the I/O.
  *
- * Every record carries `Metadata(clientRecordId = …, clientRecordVersion = 1)`; the ids are stable functions
- * of the data's own timestamps so a re-export updates the record instead of duplicating it:
+ * Every record carries `Metadata(clientRecordId = …, clientRecordVersion = now)`; the ids are stable functions
+ * of the data's own timestamps so a re-export updates the record instead of duplicating it. The version is the
+ * planner's phone-clock `now` (epoch millis), which grows with every export: Health Connect only applies an
+ * upsert under an existing client id when the new `clientRecordVersion` is *higher* than the stored one
+ * (a re-write at an equal version is silently ignored), so a constant version would have frozen the current
+ * hour's steps / today's distance at the values of the first export of that hour / day.
  *
  * | record | client id |
  * |---|---|
@@ -50,8 +54,6 @@ object HealthConnectMapping {
 
     /** `HealthRepository.setLastSyncTime` kind used for the export cursor. */
     const val CURSOR_KIND = "hc-export"
-
-    const val CLIENT_RECORD_VERSION = 1L
 
     const val HOUR_MS = 60L * 60L * 1000L
     const val MINUTE_MS = 60L * 1000L
@@ -78,10 +80,19 @@ object HealthConnectMapping {
     fun sleepId(morning: LocalDate): String = "sleep-$morning"
     fun workoutId(workoutId: Long): String = "workout-$workoutId"
 
-    fun metadata(clientRecordId: String, device: Device = WATCH, recordingMethod: Int = Metadata.RECORDING_METHOD_AUTOMATICALLY_RECORDED): Metadata =
+    /**
+     * [version] must be strictly greater than the version of the record Health Connect already holds under
+     * [clientRecordId] for the write to take effect; the record builders pass their `now`.
+     */
+    fun metadata(
+        clientRecordId: String,
+        version: Long,
+        device: Device = WATCH,
+        recordingMethod: Int = Metadata.RECORDING_METHOD_AUTOMATICALLY_RECORDED,
+    ): Metadata =
         Metadata(
             clientRecordId = clientRecordId,
-            clientRecordVersion = CLIENT_RECORD_VERSION,
+            clientRecordVersion = version,
             device = device,
             recordingMethod = recordingMethod,
         )
@@ -175,7 +186,7 @@ object HealthConnectMapping {
                     endTime = Instant.ofEpochMilli(end),
                     endZoneOffset = offsetAt(end, zone),
                     count = h.total.toLong().coerceAtMost(MAX_STEPS_PER_RECORD),
-                    metadata = metadata(stepsId(start)),
+                    metadata = metadata(stepsId(start), now),
                 )
             }
             .toList()
@@ -200,7 +211,7 @@ object HealthConnectMapping {
                     endTime = Instant.ofEpochMilli(end),
                     endZoneOffset = offsetAt(end, zone),
                     samples = group.map { HeartRateRecord.Sample(Instant.ofEpochMilli(it.time), it.bpm.toLong()) },
-                    metadata = metadata(heartRateId(hourStart)),
+                    metadata = metadata(heartRateId(hourStart), now),
                 )
             }
 
@@ -215,7 +226,7 @@ object HealthConnectMapping {
                     time = Instant.ofEpochMilli(s.time),
                     zoneOffset = offsetAt(s.time, zone),
                     percentage = Percentage(s.percent.toDouble()),
-                    metadata = metadata(spo2Id(s.time)),
+                    metadata = metadata(spo2Id(s.time), now),
                 )
             }
             .toList()
@@ -251,7 +262,7 @@ object HealthConnectMapping {
                     endTime = Instant.ofEpochMilli(end),
                     endZoneOffset = offsetAt(end, zone),
                     distance = Length.meters(meters.coerceAtMost(MAX_DISTANCE_M)),
-                    metadata = metadata(dayDistanceId(dayStart)),
+                    metadata = metadata(dayDistanceId(dayStart), now),
                 )
             }
 
@@ -275,7 +286,7 @@ object HealthConnectMapping {
                     endTime = Instant.ofEpochMilli(end),
                     endZoneOffset = offsetAt(end, zone),
                     distance = Length.meters(w.distanceMeters.coerceAtMost(MAX_DISTANCE_M)),
-                    metadata = metadata(workoutDistanceId(w.id), PHONE, Metadata.RECORDING_METHOD_ACTIVELY_RECORDED),
+                    metadata = metadata(workoutDistanceId(w.id), now, PHONE, Metadata.RECORDING_METHOD_ACTIVELY_RECORDED),
                 )
             }
 
@@ -291,7 +302,7 @@ object HealthConnectMapping {
                 exerciseType = exerciseType(w),
                 title = exerciseTitle(w),
                 notes = exerciseNotes(w),
-                metadata = metadata(workoutId(w.id), WATCH, Metadata.RECORDING_METHOD_ACTIVELY_RECORDED),
+                metadata = metadata(workoutId(w.id), now, WATCH, Metadata.RECORDING_METHOD_ACTIVELY_RECORDED),
             )
         }
 
@@ -337,7 +348,7 @@ object HealthConnectMapping {
                 stages = night.stages.map { s ->
                     SleepSessionRecord.Stage(Instant.ofEpochMilli(s.start), Instant.ofEpochMilli(s.end), s.stageType)
                 },
-                metadata = metadata(sleepId(night.morning)),
+                metadata = metadata(sleepId(night.morning), now),
             )
         }
 

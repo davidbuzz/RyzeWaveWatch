@@ -12,6 +12,7 @@ import au.buzz.ryzewave.core.StrideModel
 import au.buzz.ryzewave.core.StrideSettings
 import au.buzz.ryzewave.core.UserProfile
 import au.buzz.ryzewave.core.Workout
+import au.buzz.ryzewave.workout.DefaultStrideModel
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -62,11 +63,50 @@ class HealthConnectMappingTest {
 
     @Test
     fun metadataCarriesClientIdAndVersion() {
-        val m = HealthConnectMapping.metadata("hr-1")
+        val m = HealthConnectMapping.metadata("hr-1", 1234L)
         assertEquals("hr-1", m.clientRecordId)
-        assertEquals(1L, m.clientRecordVersion)
+        assertEquals(1234L, m.clientRecordVersion)
         assertEquals(Metadata.RECORDING_METHOD_AUTOMATICALLY_RECORDED, m.recordingMethod)
         assertEquals(HealthConnectMapping.WATCH, m.device)
+    }
+
+    /**
+     * Health Connect ignores an upsert under an existing client id unless its clientRecordVersion is higher
+     * than the stored one, so a re-export of a growing hour / day must carry a higher version: the export's
+     * `now`. Two exports 20 minutes apart of the same (growing) hour and day give the same ids with a larger
+     * version and the larger count / distance.
+     */
+    @Test
+    fun reExportOfAGrowingHourAndDayCarriesAHigherVersion() {
+        val profile = UserProfile(heightCm = 180, weightKg = 80, age = 40, male = true)
+        val strideSettings = StrideSettings()
+        val stride = DefaultStrideModel()
+        val first = at(2026, 9, 4, 7, 5)
+        val second = at(2026, 9, 4, 7, 25)
+        val early = listOf(StepsHour(at(2026, 9, 4, 7), 40, 40, 0))
+        val later = listOf(StepsHour(at(2026, 9, 4, 7), 1900, 1700, 200))
+
+        val s1 = HealthConnectMapping.stepsRecords(early, first, zone).single()
+        val s2 = HealthConnectMapping.stepsRecords(later, second, zone).single()
+        assertEquals(s1.metadata.clientRecordId, s2.metadata.clientRecordId)
+        assertEquals(first, s1.metadata.clientRecordVersion)
+        assertEquals(second, s2.metadata.clientRecordVersion)
+        assertTrue(s2.metadata.clientRecordVersion > s1.metadata.clientRecordVersion)
+        assertEquals(40L, s1.count)
+        assertEquals(1900L, s2.count)
+        assertEquals(second, s2.endTime.toEpochMilli())
+
+        val d1 = HealthConnectMapping.dailyDistanceRecords(early, profile, strideSettings, stride, first, zone).single()
+        val d2 = HealthConnectMapping.dailyDistanceRecords(later, profile, strideSettings, stride, second, zone).single()
+        assertEquals(d1.metadata.clientRecordId, d2.metadata.clientRecordId)
+        assertTrue(d2.metadata.clientRecordVersion > d1.metadata.clientRecordVersion)
+        assertTrue(d2.distance.inMeters > d1.distance.inMeters)
+
+        val hr1 = HealthConnectMapping.heartRateRecords(listOf(HrSample(at(2026, 9, 4, 7, 2), 70)), first, zone).single()
+        val hr2 = HealthConnectMapping.heartRateRecords(listOf(HrSample(at(2026, 9, 4, 7, 2), 70), HrSample(at(2026, 9, 4, 7, 20), 90)), second, zone).single()
+        assertEquals(hr1.metadata.clientRecordId, hr2.metadata.clientRecordId)
+        assertTrue(hr2.metadata.clientRecordVersion > hr1.metadata.clientRecordVersion)
+        assertEquals(2, hr2.samples.size)
     }
 
     // ---- calendar helpers
@@ -109,7 +149,7 @@ class HealthConnectMappingTest {
         assertEquals(at(2026, 9, 4, 8), eight.startTime.toEpochMilli())
         assertEquals(at(2026, 9, 4, 9), eight.endTime.toEpochMilli())
         assertEquals("steps-${at(2026, 9, 4, 8)}", eight.metadata.clientRecordId)
-        assertEquals(1L, eight.metadata.clientRecordVersion)
+        assertEquals(now, eight.metadata.clientRecordVersion)
         val ten = records[1]
         assertEquals(120L, ten.count)
         assertEquals(now, ten.endTime.toEpochMilli())

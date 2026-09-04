@@ -155,7 +155,8 @@ class FakeRepo : HealthRepository {
     override fun dailySummary(dayStart: Long): Flow<DailySummary> =
         flowOf(DailySummary(dayStart, 0, 0, 0, 0.0, null, null, null, null, null))
 
-    override fun stepsForDay(dayStart: Long): Flow<List<StepsHour>> = flowOf(emptyList())
+    override fun stepsForDay(dayStart: Long): Flow<List<StepsHour>> =
+        flowOf(steps.values.filter { it.hourStart >= dayStart && it.hourStart < dayStart + 25L * 3_600_000L }.sortedBy { it.hourStart })
     override fun hrBetween(from: Long, to: Long): Flow<List<HrSample>> = flowOf(emptyList())
     override fun spo2Between(from: Long, to: Long): Flow<List<Spo2Sample>> = flowOf(emptyList())
     override fun sleepForNight(dayStart: Long): Flow<List<SleepStage>> = flowOf(emptyList())

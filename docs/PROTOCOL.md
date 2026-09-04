@@ -153,7 +153,7 @@ Full method→opcode map from the SDK: `captures/sdk_opcode_map.txt`. Highlights
 | `BE 01/02` | quick-switch list / status | SDK | |
 | `C1 04` | call ended | GB | |
 | `C4 01/03`; `C4 02` ← | camera open/close; watch says shutter | GB | |
-| `C5 <idx> [type total] <utf16be chunk>` … `C5 FD` | notification text | GB | type codes §6 |
+| `C5 00 <type> <total_bytes> <utf16be 16 B>` , `C5 <idx> <utf16be 16 B>` … , `C5 FD` → `C5 FD <type> <total>` | notification text (watch acks each chunk with `C5 <idx>`) | V | verified 2026-09-05 07:39-07:40 from the bridge: 80-byte generic (type 4, 5 chunks) and 240-byte SMS (type 3, 15 chunks) both fully acked; total is one byte, so max 255 bytes = 127 UTF-16 chars; type codes §6 |
 | `C6 …` | notification (alt/newer, chunked) | SDK | |
 | `C7 …`, `C8 FA` | blood pressure config / fetch | SDK | |
 | `CA`, `CB …` | weather | SDK | |

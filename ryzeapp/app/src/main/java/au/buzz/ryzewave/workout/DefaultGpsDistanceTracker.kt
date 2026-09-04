@@ -4,6 +4,7 @@ import au.buzz.ryzewave.core.GpsDistanceTracker
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.max
+import kotlin.math.min
 import kotlin.math.sin
 import kotlin.math.sqrt
 
@@ -12,13 +13,24 @@ import kotlin.math.sqrt
  *  1. fixes with accuracy worse than [maxAccuracyM] (20 m) are dropped;
  *  2. when the reported speed is below [stationarySpeedMps] (1.0 m/s — hand-held receivers under trees or in
  *     streets happily report 0.5–0.9 m/s while standing still), movement smaller than
- *     max(accuracy, anchor accuracy, [minMoveM]) from the last *accepted* fix is treated as jitter and ignored —
- *     the anchor stays put, so slow real movement still accumulates once it leaves the accuracy radius;
+ *     max([jitterRadiusFactor] × max(accuracy, anchor accuracy), [minMoveM]) from the last *accepted* fix is
+ *     treated as jitter and ignored — the anchor stays put, so slow real movement still accumulates once it
+ *     leaves the radius. The factor (1.5) is there because the *difference* of two positions each scattered
+ *     within `accuracy` spreads about 1.4 × accuracy: hops shorter than that are more noise than movement, and
+ *     summing them over-counts (the shorter the hop, the worse: the excess per hop is about
+ *     noise² / hop length);
  *  3. a fix is also rejected as a spike when the distance it implies is not plausible for the time elapsed:
  *     the implied speed exceeds [maxSpeedMps] (12 m/s, faster than any runner), or the jump is larger than
  *     max(reported speed, [plausibleSpeedMps]) × dt + both accuracy radii — a multipath jump 25 m off the path
  *     between two 1-second fixes fails both, while a real 25 m of slow walking over 10 s passes;
- *  4. distance is the haversine sum between accepted fixes;
+ *  4. distance is the sum over accepted fixes of the movement since the previous accepted fix. When the
+ *     receiver reports a Doppler speed of at least [stationarySpeedMps] and the fixes are at most
+ *     [dopplerMaxDtS] (5 s) apart, that movement is `speed × dt` (capped at the position hop plus the accuracy
+ *     radius, so a bogus speed cannot run away from the position): Doppler speed is far less noisy than the
+ *     difference of two 1 Hz positions, whose per-fix scatter would otherwise be integrated straight into the
+ *     distance (with 6 m accuracy and 2 m of independent noise per fix, +48 % over a 20-minute run). Otherwise
+ *     — no receiver speed, or a gap between fixes — the movement is the haversine hop, so a GPS outage is
+ *     bridged by the straight line and a speed-less receiver still accumulates in hops (rule 2);
  *  5. pace comes from a rolling window that spans at least the last [paceWindowMs] (30 s) or the last
  *     [paceWindowM] (100 m), whichever is reached first, never from two consecutive fixes;
  *  6. speed is the receiver's Doppler speed of the last accepted fix, or distance/time since the previous
@@ -34,6 +46,8 @@ class DefaultGpsDistanceTracker(
     private val paceWindowM: Double = 100.0,
     private val maxSpeedMps: Double = 12.0,
     private val plausibleSpeedMps: Double = 2.5,
+    private val jitterRadiusFactor: Float = 1.5f,
+    private val dopplerMaxDtS: Double = 5.0,
 ) : GpsDistanceTracker {
 
     private class Sample(val time: Long, val cumulativeM: Double)
@@ -91,7 +105,7 @@ class DefaultGpsDistanceTracker(
         }
         val d = haversineMeters(anchorLat, anchorLon, lat, lon)
         val reported = max(0f, speedMps).toDouble()
-        val threshold = max(max(accuracyM, anchorAccuracyM), minMoveM).toDouble()
+        val threshold = max(jitterRadiusFactor * max(accuracyM, anchorAccuracyM), minMoveM).toDouble()
         if (reported < stationarySpeedMps && d < threshold) {
             rejectedJitterCount++
             this.speedMps = 0.0
@@ -112,7 +126,10 @@ class DefaultGpsDistanceTracker(
             rejectedSpikeCount++
             return false
         }
-        distanceMeters += d
+        val moved = if (reported >= stationarySpeedMps && dtS > 0.0 && dtS <= dopplerMaxDtS) {
+            min(reported * dtS, d + max(accuracyM, anchorAccuracyM))
+        } else d
+        distanceMeters += moved
         this.speedMps = when {
             reported > 0.0 -> reported
             dtS > 0.0 -> d / dtS

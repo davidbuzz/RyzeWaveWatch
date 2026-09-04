@@ -8,6 +8,7 @@ import au.buzz.ryzewave.core.SamplingSettings
 import au.buzz.ryzewave.core.SettingsStore
 import au.buzz.ryzewave.core.SleepStage
 import au.buzz.ryzewave.core.Spo2Sample
+import au.buzz.ryzewave.core.StepsHour
 import au.buzz.ryzewave.core.SyncResult
 import au.buzz.ryzewave.core.UserProfile
 import au.buzz.ryzewave.core.WatchApi
@@ -23,6 +24,7 @@ import au.buzz.ryzewave.protocol.toHrSample
 import au.buzz.ryzewave.protocol.toSleepStage
 import au.buzz.ryzewave.protocol.toSpo2Sample
 import au.buzz.ryzewave.protocol.toStepsHour
+import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -512,7 +514,11 @@ class WatchApiImpl(
             is Packet.HrSummary -> _events.tryEmit(p.toEvent(zone))
             is Packet.Spo2Test -> onSpo2Packet(p, now)
             is Packet.Steps -> if (p.realtime) {
-                attempt("persist realtime steps") { repo.upsertSteps(listOf(p.record.toStepsHour(zone))) }
+                val hour = p.record.toStepsHour(zone)
+                attempt("persist realtime steps") {
+                    if (realtimeStepsSupersedeStored(hour)) repo.upsertSteps(listOf(hour))
+                    else log("ignored realtime steps ${hour.total} below the stored total for hour ${hour.hourStart}", null)
+                }
                 _events.tryEmit(p.toEvent(zone))
             } else if (!raw.consumed) {
                 attempt("persist foreign steps record") { repo.upsertSteps(listOf(p.record.toStepsHour(zone))) }
@@ -538,6 +544,19 @@ class WatchApiImpl(
             is Packet.Unknown -> if (!raw.consumed) _events.tryEmit(WatchEvent.Raw(raw.channel.notifyName, p.raw))
             else -> Unit
         }
+    }
+
+    /**
+     * A realtime `B1` push is only applied when it does not lower the hour's stored total. The watch sends a
+     * `B1` with total 0 for the hour that has just *finished* right after the hour boundary
+     * (captures/bridge_passive_20260904_195347.txt lines 1722/1725: 20:55 `B1` hour 20 = 279 steps, 21:00:01
+     * `B1` hour 20 = 0); applying it would drop the day's steps and distance until the next `B2 FA` sync
+     * restored the hour. The history (`B2`) records from [syncAll] stay authoritative: they bypass this check.
+     */
+    private suspend fun realtimeStepsSupersedeStored(hour: StepsHour): Boolean {
+        val dayStart = Instant.ofEpochMilli(hour.hourStart).atZone(zone).toLocalDate().atStartOfDay(zone).toInstant().toEpochMilli()
+        val stored = repo.stepsForDay(dayStart).first().firstOrNull { it.hourStart == hour.hourStart } ?: return true
+        return hour.total >= stored.total
     }
 
     private suspend fun onSpo2Packet(p: Packet.Spo2Test, now: Long) {

@@ -563,6 +563,44 @@ class WatchApiImplTest {
         assertEquals("ab00000001020701", link.txHex().last())
     }
 
+    /**
+     * captures/bridge_passive_20260904_195347.txt: at 20:55:35 the watch pushes `B1` hour 20 = 279 steps
+     * (line 1722), at 21:00:01 `B1` hour 20 = 0 (line 1725; the same for hour 19 at 20:00:01, line 133). The
+     * zero must not replace the stored 279 (it did: the day's steps and distance dropped until the next B2 FA
+     * sync); a later higher B1 for the hour and the next hour's own B1 are still applied.
+     */
+    @Test
+    fun realtimeStepsPushWithAZeroTotalDoesNotOverwriteTheStoredHour() = runBlocking {
+        link.connect(MAC)
+        val events = ArrayList<WatchEvent>()
+        val job = scope.launch { api.events.collect { events += it } }
+        val h20 = LocalDateTime.of(2026, 9, 4, 20, 0).atZone(zone).toInstant().toEpochMilli()
+        val h21 = LocalDateTime.of(2026, 9, 4, 21, 0).atZone(zone).toInstant().toEpochMilli()
+
+        link.rx("b107ea090414011700000000000937020117")     // 20:55:35 hour 20 total 279 walk 279
+        assertTrue(eventually { repo.steps[h20]?.total == 279 })
+        assertEquals(279, repo.steps[h20]!!.walk)
+
+        link.rx("b107ea090414000000000000000000000000")     // 21:00:01 hour 20 total 0
+        assertTrue(eventually { events.count { it is WatchEvent.RealtimeSteps } == 2 })
+        assertEquals(279, repo.steps[h20]!!.total)
+        assertEquals(1, repo.steps.size)
+        assertTrue(logLines.any { it.startsWith("ignored realtime steps 0") })
+
+        link.rx("b107ea090414010f00000000000937020117")     // a lower non-zero total (271) is ignored too
+        assertTrue(eventually { events.count { it is WatchEvent.RealtimeSteps } == 3 })
+        assertEquals(279, repo.steps[h20]!!.total)
+
+        link.rx("b107ea090414012c00000000000937020117")     // 300: the hour grew, applied
+        assertTrue(eventually { repo.steps[h20]?.total == 300 })
+
+        link.rx("b107ea090415000500000000000909000005")     // hour 21 total 5: a new hour, applied
+        assertTrue(eventually { repo.steps[h21]?.total == 5 })
+        assertEquals(300, repo.steps[h20]!!.total)
+        assertEquals(2, repo.steps.size)
+        job.cancel()
+    }
+
     companion object {
         const val MAC = "78:02:B7:37:91:E5"
 

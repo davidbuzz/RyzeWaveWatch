@@ -92,3 +92,47 @@ History default day / 7-30 day range so "Today" rolls over at midnight. `gradle.
   workout (Health Connect de-duplicates by clientRecordId, so no duplicates appear — tighten the cursor later);
   the in-chart "avg NN" text can be overdrawn by data-point circles near the right edge; `StrideSection` and
   `WatchSection` still use the `remember(flowValue)` pattern that bit the profile section.
+
+## Notifications to the watch (spec for the next feature, 2026-09-05)
+Verified format (bridge, 07:39): `C5 00 <type> <total_bytes> <16 bytes UTF-16BE>`, then `C5 <idx> <16 bytes>` per chunk, then
+`C5 FD`; the watch acks each chunk with `C5 <idx>` and the end with `C5 FD <type> <total>`. Text = "<app or sender>: <text>".
+Type byte per PROTOCOL.md §6 (0 call, 3 SMS, 4 generic app, 5 Facebook, 7 WhatsApp, 19 email, 24 Telegram …).
+App side: a `NotificationListenerService` (user grants notification access in Settings), per-app on/off list stored in
+DataStore, de-duplication by notification key, rate limiting (one packet burst at a time through the BLE queue, drop
+if the link is down), truncation at 127 UTF-16 characters (the total-length field is one byte; a 120-char SMS-type message in 15 chunks was fully acknowledged, ack `C5 FD 03 F0`), no emojis (the watch font lacks them; strip or transliterate).
+Settings > Notifications: master switch, "open notification access", per-app toggles for installed apps. Do not send
+type 0 (call) from the listener — calls are handled by the classic-Bluetooth HFP link.
+
+## Steps / distance audit (2026-09-05 morning) — verdict before fixes
+Question: can this app reproduce the vendor's "0.0 / 0.01 km after a 20-minute run" or wrong steps after a workout?
+Method: three code-path analysts, synthetic 20-minute-run tests through the real tracker/controller/encoder, an
+adversarial skeptic. Sources cited by file and line in the workflow journal; the synthetic tests live in
+`ryzeapp/app/src/test/java/au/buzz/ryzewave/workout/SyntheticRun*.kt` and `data/StepsHourUpsertSummaryTest.kt`.
+
+Daily steps and distance in the app itself: **sound**. Hourly B2 records are upserted by hour, summed per local day,
+multiplied by the stride; nothing in the workout path subtracts, resets or replaces steps.
+
+Confirmed defects (being fixed):
+1. **Health Connect only:** every record carried `clientRecordVersion = 1`, and Health Connect only applies an upsert
+   with a higher version, so the in-progress hour's StepsRecord and today's DistanceRecord froze at whatever the first
+   export of that hour/day carried — a "0.01 km all day" symptom visible in Health Connect, never on the dashboard.
+2. The watch pushes a realtime `B1` record with total 0 at hh:00:01 for the hour just finished; it overwrote the real
+   count until the next `B2 FA` sync repaired it (transient).
+3. GPS tracker: the jitter filter is bypassed whenever the phone reports speed ≥ 1 m/s, so every 1 Hz hop including
+   noise is summed: +48 % on a synthetic run with independent 2 m noise, +0.6 % with strongly correlated noise. Real
+   magnitude depends on the phone; the design must not depend on it.
+4. Cosmetic: the workout detail recomputed distance from all accepted points, differing from the controller's figure
+   after a pause.
+Residual risks named by the skeptic: the hard 20 m accuracy gate drops every fix on a bad-signal run (the exact
+vendor symptom — to be relaxed), no run steps have ever been observed so the running stride is untested, and the daily
+figure is steps × stride only (a GPS workout's distance is not added to it — by design, same as the vendor app).
+
+### Audit fixes applied (build 4, 2026-09-05 07:53) — 221 unit tests, installed, connected, DB migrated (v2)
+1. Health Connect records now carry a monotonic `clientRecordVersion` (the export clock), so re-exports update.
+2. A realtime `B1` push never lowers a stored hour; `B2` history stays authoritative (captured 279→0 sequence replayed in a test).
+3. Tracker: jitter radius = 1.5 × max(accuracy, anchor accuracy); with a reported speed ≥ 1 m/s and fixes ≤ 5 s
+   apart the credited movement is min(speed × dt, hop + accuracy). Synthetic 20-minute run (3600 m truth):
+   good GPS + Doppler +47.95 % → **−0.08 %**; no Doppler +5.19 % → **+1.53 %**; 30 s gap +47 % → **+0.04 %**;
+   60/120/300 s gaps ≤ +0.08 %; 3 m noise +89 % → −0.08 %. Controller pushes 3.60 km @ 5:33 to the watch.
+4. Track points store the tracker's running total (`cumulativeM`) so the detail page matches the summary after a pause.
+Still open after this round: the **20 m accuracy gate** (poor-signal runs still produce 0 m) — next fix.

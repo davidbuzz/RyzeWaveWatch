@@ -12,6 +12,8 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.Update
 import androidx.room.Upsert
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
 import au.buzz.ryzewave.core.HrSample
 import au.buzz.ryzewave.core.SampleSource
 import au.buzz.ryzewave.core.SleepStage
@@ -111,6 +113,8 @@ data class TrackPointEntity(
     val speedMps: Float,
     val altitudeM: Double?,
     val accepted: Boolean,
+    /** Added in schema version 2 (see [Db.MIGRATION_1_2]); null on rows from version 1. */
+    val cumulativeM: Double?,
 )
 
 @Entity(tableName = "sync_cursor")
@@ -151,10 +155,10 @@ fun Workout.toEntity(updatedAt: Long): WorkoutEntity =
     WorkoutEntity(id, start, end, sportType, distanceMeters, durationSeconds, avgHr, maxHr, calories, updatedAt)
 
 fun TrackPointEntity.toModel(): TrackPoint =
-    TrackPoint(workoutId, time, lat, lon, accuracyM, speedMps, altitudeM, accepted)
+    TrackPoint(workoutId, time, lat, lon, accuracyM, speedMps, altitudeM, accepted, cumulativeM)
 
 fun TrackPoint.toEntity(): TrackPointEntity =
-    TrackPointEntity(workoutId, time, lat, lon, accuracyM, speedMps, altitudeM, accepted)
+    TrackPointEntity(workoutId, time, lat, lon, accuracyM, speedMps, altitudeM, accepted, cumulativeM)
 
 // ---------------------------------------------------------------- DAOs
 // `between` ranges are half-open: fromTime <= t < toTime. `rangeOnce` is inclusive on both ends (it fetches the
@@ -316,7 +320,7 @@ interface SyncCursorDao {
         TrackPointEntity::class,
         SyncCursorEntity::class,
     ],
-    version = 1,
+    version = 2,
     exportSchema = false,
 )
 abstract class Db : RoomDatabase() {
@@ -331,6 +335,13 @@ abstract class Db : RoomDatabase() {
     companion object {
         const val NAME = "ryzewave.db"
 
+        /** v1 → v2: `track_point.cumulativeM` (nullable REAL); existing rows keep null. */
+        val MIGRATION_1_2: Migration = object : Migration(1, 2) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE track_point ADD COLUMN cumulativeM REAL")
+            }
+        }
+
         @Volatile
         private var instance: Db? = null
 
@@ -338,6 +349,7 @@ abstract class Db : RoomDatabase() {
         fun get(context: Context): Db =
             instance ?: synchronized(this) {
                 instance ?: Room.databaseBuilder(context.applicationContext, Db::class.java, NAME)
+                    .addMigrations(MIGRATION_1_2)
                     .fallbackToDestructiveMigration()
                     .build()
                     .also { instance = it }

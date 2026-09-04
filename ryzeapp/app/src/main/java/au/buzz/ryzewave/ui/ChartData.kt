@@ -96,9 +96,21 @@ object ChartData {
         return 2 * r * asin(sqrt(a.coerceIn(0.0, 1.0)))
     }
 
-    /** Cumulative distance along the accepted fixes: time -> metres so far. */
+    /**
+     * Cumulative distance along the accepted fixes: time -> metres so far. Uses the tracker's own running total
+     * stored on each point ([TrackPoint.cumulativeM]) when every accepted point carries one, so the series is
+     * the workout's distance exactly (no hop across a pause, Doppler-credited movement); rows from before that
+     * column existed fall back to the haversine sum of the accepted hops.
+     */
     fun cumulativeDistance(points: List<TrackPoint>): List<Pt> {
         val acc = points.filter { it.accepted }.sortedBy { it.time }
+        if (acc.isNotEmpty() && acc.all { it.cumulativeM != null }) {
+            var last = 0.0
+            return acc.map { p ->
+                last = maxOf(last, p.cumulativeM!!)     // never backwards, whatever the rows hold
+                Pt(p.time, last)
+            }
+        }
         val out = ArrayList<Pt>(acc.size)
         var d = 0.0
         var prev: TrackPoint? = null
