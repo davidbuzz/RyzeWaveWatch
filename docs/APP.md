@@ -135,4 +135,16 @@ figure is steps × stride only (a GPS workout's distance is not added to it — 
    good GPS + Doppler +47.95 % → **−0.08 %**; no Doppler +5.19 % → **+1.53 %**; 30 s gap +47 % → **+0.04 %**;
    60/120/300 s gaps ≤ +0.08 %; 3 m noise +89 % → −0.08 %. Controller pushes 3.60 km @ 5:33 to the watch.
 4. Track points store the tracker's running total (`cumulativeM`) so the detail page matches the summary after a pause.
-Still open after this round: the **20 m accuracy gate** (poor-signal runs still produce 0 m) — next fix.
+Still open after this round: the **20 m accuracy gate** (poor-signal runs still produce 0 m) — fixed in build 5, below.
+
+### GPS accuracy gate relaxed (build 5, 2026-09-05 07:59) — 225 unit tests, installed, connected, no crash
+`DefaultGpsDistanceTracker.maxAccuracyM` 20 m → **60 m**; jitter radius still 1.5 × max(accuracy, anchor accuracy),
+Doppler credit still min(speed × dt, hop + accuracy). Synthetic 20-minute run (3600 m truth), before → after:
+25 m + Doppler 0.0 m (all 1200 rejected) → **3597.0 m (−0.08 %)**; 35 m + Doppler 0.0 m → **3597.0 m (−0.08 %)**;
+25 m no Doppler 0.0 m → **3595.0 m (−0.14 %, 92 hops of ≥ 37.5 m)**, 35 m no Doppler → 3561.5 m (−1.07 %, 65 hops);
+80 m → still 0.0 m (all rejected, by design). With coarser noise (sigma 5 / 10 m instead of 2 m) the Doppler runs
+stay at −0.08 % (spike rule drops 238 / 550 fixes, the Doppler credit bridges them); no-Doppler 25 m gives
++1.2 % / +14.4 %, 35 m −0.1 % / +3.8 %. Through the controller the 25 m run pushes 3.60 km @ 5:33 to the watch.
+Workout screen GPS label bands: good ≤ 10 m, fair ≤ 20 m, **usable ≤ 60 m** (measures, coarse without Doppler),
+poor > 60 m (fixes dropped). Tests: `SyntheticRunGpsTrackerTest` variants B/B2/B3/B4, `SyntheticRunWorkoutControllerTest`
+25 m and 80 m, `DefaultGpsDistanceTrackerTest.rejectsPoorAccuracy` (gate at exactly 60 m).

@@ -48,7 +48,7 @@ track): distance is summed between consecutive fixes after a smoothing pass, wit
 gating in the decompiled code. Classic failure modes: counting GPS jitter while standing still (inflates), or
 over-smoothing corners and dropping fixes (deflates). If the workout figure is what's wrong, our version should:
 1. take fused-location fixes at 1 Hz with `accuracy`, `speed`, `bearing`;
-2. drop fixes with accuracy worse than ~20 m, and ignore movement below the accuracy radius when speed ≈ 0;
+2. drop fixes with accuracy worse than 60 m (was ~20 m, which gave 0 km on a poor-signal run), and ignore movement below 1.5 × the accuracy radius when speed ≈ 0;
 3. accumulate haversine distance between accepted fixes (or use `Location.distanceTo`);
 4. derive pace from a rolling window (e.g. last 200 m / last 30 s), not from consecutive fixes;
 5. push distance/pace/calories to the watch once a second with `FD 44` (we already do this from the bridge);

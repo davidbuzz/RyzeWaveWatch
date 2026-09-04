@@ -54,14 +54,26 @@ data class WorkoutUiState(
 ) {
     val active: Boolean get() = phase == WorkoutPhase.RUNNING || phase == WorkoutPhase.PAUSED
 
-    /** Coarse GPS quality label from the last fix's accuracy. */
+    /**
+     * Coarse GPS quality label from the last fix's accuracy, aligned with the tracker's bands: "good" and "fair"
+     * fixes give an accurate distance, "usable" (≤ 60 m, the tracker's hard cut) still measures but coarsely
+     * without a Doppler speed, "poor" fixes are dropped and the distance stalls.
+     */
     val gpsQuality: String
         get() = when {
             gpsAccuracyM == null -> "no fix"
-            gpsAccuracyM <= 10f -> "good"
-            gpsAccuracyM <= 20f -> "fair"
+            gpsAccuracyM <= GPS_GOOD_M -> "good"
+            gpsAccuracyM <= GPS_FAIR_M -> "fair"
+            gpsAccuracyM <= GPS_USABLE_M -> "usable"
             else -> "poor"
         }
+
+    companion object {
+        const val GPS_GOOD_M = 10f
+        const val GPS_FAIR_M = 20f
+        /** Same as the tracker's maxAccuracyM (DefaultGpsDistanceTracker): beyond this the fix is dropped. */
+        const val GPS_USABLE_M = 60f
+    }
 }
 
 /**
@@ -99,7 +111,7 @@ object WorkoutBridgeHolder {
 
 /**
  * Fallback session driver: drives `WatchApi.start/update/pause/resume/stopWorkout`, collects live HR from
- * `WatchApi.liveHr`, takes fused-location fixes at 1 Hz with the docs/PLAN.md section 3b filter (accuracy <= 20 m,
+ * `WatchApi.liveHr`, takes fused-location fixes at 1 Hz with the docs/PLAN.md section 3b filter (accuracy <= 60 m,
  * ignore sub-accuracy movement when nearly stationary, haversine between accepted fixes, rolling-window pace),
  * pushes metrics to the watch face every second and stores `Workout` + `TrackPoint`s through the repository.
  * It runs in-process (no foreground location service), so it only tracks while the app process is alive.
@@ -363,7 +375,7 @@ class WatchWorkoutBridge(context: Context, private val graph: Graph) : WorkoutBr
 
     companion object {
         private const val TAG = "WorkoutBridge"
-        const val MAX_ACCURACY_M = 20f
+        const val MAX_ACCURACY_M = WorkoutUiState.GPS_USABLE_M
         const val STATIONARY_MPS = 0.5f
     }
 }

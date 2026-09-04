@@ -10,7 +10,11 @@ import kotlin.math.sqrt
 
 /**
  * GPS distance with jitter rejection, per docs/PLAN.md §3b:
- *  1. fixes with accuracy worse than [maxAccuracyM] (20 m) are dropped;
+ *  1. fixes with accuracy worse than [maxAccuracyM] (60 m) are dropped. The cut used to be 20 m, which reproduced
+ *     the vendor bug on a poor-signal run (every fix rejected, 0.0 km after 20 minutes); 60 m lets a 25–35 m
+ *     accuracy run under trees still measure: with Doppler it comes within 1 %, without Doppler it accumulates in
+ *     coarse ≥ 1.5 × accuracy hops (rule 2) and comes within a few percent short. Fixes beyond 60 m are worse
+ *     than a stride estimate and are still dropped;
  *  2. when the reported speed is below [stationarySpeedMps] (1.0 m/s — hand-held receivers under trees or in
  *     streets happily report 0.5–0.9 m/s while standing still), movement smaller than
  *     max([jitterRadiusFactor] × max(accuracy, anchor accuracy), [minMoveM]) from the last *accepted* fix is
@@ -39,7 +43,7 @@ import kotlin.math.sqrt
  * Not thread-safe: the caller serialises [addFix] (the controller does).
  */
 class DefaultGpsDistanceTracker(
-    private val maxAccuracyM: Float = 20f,
+    private val maxAccuracyM: Float = 60f,
     private val minMoveM: Float = 3f,
     private val stationarySpeedMps: Float = 1.0f,
     private val paceWindowMs: Long = 30_000L,

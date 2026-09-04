@@ -240,7 +240,8 @@ controller and packet encoder, and a skeptic. Findings and fixes, all with tests
 - The GPS tracker over-counted when the phone reported a speed (jitter summed at 1 Hz, +48 % on a synthetic run with
   independent 2 m noise) and under-counted to zero when accuracy stayed above its hard 20 m cut. The first is fixed
   (Doppler-integrated credit capped by the position hop: −0.08 % on the same run, ≤ 0.1 % across 30–300 s gaps,
-  +1.5 % without Doppler); the accuracy cut is being relaxed to 60 m with proportional jitter radius.
+  +1.5 % without Doppler); the accuracy cut was then raised to 60 m with a jitter radius of 1.5 × accuracy: a synthetic 25 m or 35 m run with
+  Doppler now measures −0.08 %, 25 m without Doppler −0.14 % (coarse hops), and 80 m fixes are still rejected.
 - Lesson: an indoor "start/stop works" test says nothing about distance; synthetic tracks through the real code do,
   and the outdoor run remains the acceptance test.
 

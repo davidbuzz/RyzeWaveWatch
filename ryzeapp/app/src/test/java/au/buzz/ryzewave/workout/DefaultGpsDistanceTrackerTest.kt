@@ -24,13 +24,15 @@ class DefaultGpsDistanceTrackerTest {
 
     @Test
     fun rejectsPoorAccuracy() {
-        assertFalse(t.addFix(0L, lat0, lon0, 25f, 1f))
+        assertFalse(t.addFix(0L, lat0, lon0, 61f, 1f))
         assertFalse(t.addFix(1000L, lat0, lon0, Float.NaN, 1f))
+        assertFalse(t.addFix(1500L, lat0, lon0, 9_999f, 1f))       // WorkoutService.NO_ACCURACY_M
         assertEquals(0.0, t.distanceMeters, 0.0)
-        assertEquals(2, t.rejectedAccuracyCount)
+        assertEquals(3, t.rejectedAccuracyCount)
         assertEquals(0, t.acceptedCount)
-        // exactly 20 m is still fine
-        assertTrue(t.addFix(2000L, lat0, lon0, 20f, 1f))
+        // exactly 60 m is still fine (25 m used to be dropped by the old 20 m gate, the vendor's 0.0 km symptom)
+        assertTrue(t.addFix(2000L, lat0, lon0, 60f, 1f))
+        assertEquals(1, t.acceptedCount)
     }
 
     @Test
@@ -112,7 +114,7 @@ class DefaultGpsDistanceTrackerTest {
         t.addFix(0L, lat0, lon0, 5f, 3.5f)
         t.addFix(30_000L, latPlus(100.0), lon0, 5f, 3.5f)
         t.addFix(60_000L, latPlus(100.0), lonPlus(100.0), 5f, 3.5f)
-        assertFalse(t.addFix(61_000L, latPlus(100.0), lonPlus(100.0), 30f, 3.5f))   // poor fix does not count
+        assertFalse(t.addFix(61_000L, latPlus(100.0), lonPlus(100.0), 61f, 3.5f))   // fix beyond the 60 m gate does not count
         assertEquals(200.0, t.distanceMeters, 0.5)
         assertEquals(3, t.acceptedCount)
     }

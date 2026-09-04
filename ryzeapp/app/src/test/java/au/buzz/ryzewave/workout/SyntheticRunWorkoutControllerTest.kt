@@ -169,9 +169,13 @@ class SyntheticRunWorkoutControllerTest {
         assertEquals(1170, repo.points().size)
     }
 
-    /** The 25 m accuracy run through the controller: what the watch face and the row show (reported, not forced). */
+    /**
+     * The 25 m accuracy run through the controller: with the 60 m gate every fix is accepted, the Doppler credit
+     * keeps the distance within 5 % and the watch face gets a non-zero total (this used to be the vendor's
+     * "0.0 km after 20 minutes" symptom, asserted here as 0 before the gate was relaxed).
+     */
     @Test
-    fun accuracy25mThroughTheController_reported() = runBlocking<Unit> {
+    fun accuracy25mThroughTheControllerMeasuresWithin5Percent() = runBlocking<Unit> {
         val tracker = DefaultGpsDistanceTracker()
         val ctl = controller(tracker)
         now = SyntheticRun.T0
@@ -183,11 +187,32 @@ class SyntheticRunWorkoutControllerTest {
         val final = ctl.stop()!!
         val last = encode(watch.updates.last())
         println("SYNTHETIC_CTL_25M last push=$last row=$final state.trackPoints=${ctl.state.value.trackPointCount} accepted=${ctl.state.value.acceptedPointCount}")
-        assertEquals(0, last.hundredthsTotal)
-        assertEquals(0, last.paceSecPerKm)
-        assertEquals(0.0, final.distanceMeters, 0.0)
+        assertEquals(0, tracker.rejectedAccuracyCount)
+        assertTrue("25 m run row distance %.1f m not within 5 %% of 3600".format(final.distanceMeters), abs(final.distanceMeters - 3600.0) / 3600.0 <= 0.05)
+        assertTrue("watch total ${last.hundredthsTotal} hundredths not within 5 %% of 3.60 km", abs(last.hundredthsTotal - 360) <= 18)
+        assertTrue("watch pace ${last.paceSecPerKm} s/km not near 333", abs(last.paceSecPerKm - 333) <= 25)
         assertEquals(1200, final.durationSeconds)
-        assertEquals(1200, repo.points().size)          // the raw fixes are still stored, flagged accepted=false
+        assertEquals(1200, repo.points().size)
+        assertEquals(1200, repo.points().count { it.accepted })
+    }
+
+    /** An 80 m accuracy run is still rejected outright: the watch face stays at 0 rather than showing noise. */
+    @Test
+    fun accuracy80mThroughTheControllerRecordsNothing_reported() = runBlocking<Unit> {
+        val tracker = DefaultGpsDistanceTracker()
+        val ctl = controller(tracker)
+        now = SyntheticRun.T0
+        ctl.start(1)
+        feed(ctl, SyntheticRun.fixes(accuracyM = 80f, dopplerSpeedMps = 3.0f), tickEvery = 50)
+        now = SyntheticRun.T0 + 1200_000L
+        val before = watch.updates.size
+        awaitUntil("final tick") { watch.updates.size > before }
+        val final = ctl.stop()!!
+        val last = encode(watch.updates.last())
+        println("SYNTHETIC_CTL_80M last push=$last row=$final accepted=${ctl.state.value.acceptedPointCount}")
+        assertEquals(1200, tracker.rejectedAccuracyCount)
+        assertEquals(0, last.hundredthsTotal)
+        assertEquals(0.0, final.distanceMeters, 0.0)
         assertEquals(0, repo.points().count { it.accepted })
     }
 }
