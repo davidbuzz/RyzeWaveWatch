@@ -84,6 +84,8 @@ Review of the first build produced 36 findings (2 high: Health Connect export cu
 
 Items 3 and 5–10 do not depend on the outdoor test; only 1, the final confirmation of 2, and 4 need Buzz outside.
 
+Status: Audit done 2026-09-05 07:53 (item 2 largely done: four defects fixed, synthetic runs within 2 %); the 20 m accuracy gate relaxation and item 8 (notifications) are being built and verified now.
+
 1. **The outdoor acceptance test.** Walk and then run a known route of at least 1 km with the watch on and the phone in
    a pocket. Compare the app's distance and pace with the known length, look at the raw track, and check that the
    day's steps keep rising through the workout. This is the exact scenario the vendor app failed (0.0 km after a

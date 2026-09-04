@@ -229,6 +229,21 @@ stride, a faster one the running stride), and the GPS tracker rejects fixes wors
 sums haversine distance between accepted fixes, derives pace from a rolling window, and keeps the raw track so a
 distance can be recomputed with a better filter later. The outdoor walk that validates this is the remaining test.
 
+### The distance audit (2026-09-05 morning)
+Because the vendor app's specific failure was "0.0 or 0.01 km after a 20-minute run", the app was audited with the
+question "can ours do that?" — three code-path analysts, synthetic 20-minute runs through the real tracker,
+controller and packet encoder, and a skeptic. Findings and fixes, all with tests kept as regressions:
+- The daily steps path was sound; the only way to lose steps was a zero-total realtime push at the top of each hour
+  overwriting the finished hour until the next sync (now guarded: realtime pushes never lower a stored hour).
+- Health Connect exports were silently ignored after the first one of each hour/day because every record carried the
+  same version number — a "0.01 km all day" symptom, but only inside Health Connect (now versioned by the export clock).
+- The GPS tracker over-counted when the phone reported a speed (jitter summed at 1 Hz, +48 % on a synthetic run with
+  independent 2 m noise) and under-counted to zero when accuracy stayed above its hard 20 m cut. The first is fixed
+  (Doppler-integrated credit capped by the position hop: −0.08 % on the same run, ≤ 0.1 % across 30–300 s gaps,
+  +1.5 % without Doppler); the accuracy cut is being relaxed to 60 m with proportional jitter radius.
+- Lesson: an indoor "start/stop works" test says nothing about distance; synthetic tracks through the real code do,
+  and the outdoor run remains the acceptance test.
+
 ## 12. Capturing traffic: three methods, one surprise
 
 1. **The vendor app's own log** [vendor SDK, captured]. Its Bluetooth library logs every packet it sends and
