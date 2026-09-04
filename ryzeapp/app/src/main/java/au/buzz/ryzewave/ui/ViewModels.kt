@@ -263,6 +263,7 @@ class WorkoutViewModel(
     val workouts: StateFlow<List<Workout>> = graph.repo.workouts().stateIn(viewModelScope, started(), emptyList())
 
     private val _sportType = MutableStateFlow(UiDefaults.DEFAULT_SPORT_TYPE)
+    /** Sport id for the next workout; persisted in settings (`workout_sport_type`) so it survives restarts. */
     val sportType: StateFlow<Int> = _sportType.asStateFlow()
 
     private val _hrTrace = MutableStateFlow<List<Pt>>(emptyList())
@@ -270,6 +271,7 @@ class WorkoutViewModel(
     val hrTrace: StateFlow<List<Pt>> = _hrTrace.asStateFlow()
 
     init {
+        viewModelScope.launch { graph.settings.workoutSportType.collect { _sportType.value = it } }
         viewModelScope.launch {
             graph.watch.liveHr.collect { s ->
                 if (bridge.state.value.active && s.bpm > 0) {
@@ -284,6 +286,7 @@ class WorkoutViewModel(
 
     fun setSportType(type: Int) {
         _sportType.value = type
+        viewModelScope.launch { graph.settings.setWorkoutSportType(type) }
     }
 
     fun start() {

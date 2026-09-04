@@ -318,10 +318,14 @@ class ProtocolDocReplayTest {
 
     @Test
     fun workoutRealtimeHr() {
-        // FD 01 <hr> 00×11 (14 B), ~1/s
+        // FD <type> <hr> 00×11 (14 B), ~1/s; byte 1 is the sport id (1 = Outdoor Running here)
         val rt = Protocol.decSportRt(hx("fd015d0000000000000000000000"))
-        assertEquals(SportRtData(93, "fd015d0000000000000000000000"), rt)
-        assertEquals(Packet.SportRt(82, "fd01520000000000000000000000"), Packet.parseHex("FD01520000000000000000000000"))
+        assertEquals(SportRtData(1, 93, 0, 0, 0, 0, 0.0, "fd015d0000000000000000000000"), rt)
+        assertEquals(Packet.SportRt(1, 82, 0, 0, 0, 0, 0.0, "fd01520000000000000000000000"), Packet.parseHex("FD01520000000000000000000000"))
+        // Outdoor Walking (FD 11 23 01), verified 2026-09-05 08:23: the push is FD 23 5C … = HR 92
+        assertEquals(Packet.SportRt(0x23, 92, 0, 0, 0, 0, 0.0, "fd235c0000000000000000000000"), Packet.parseHex("fd235c0000000000000000000000"))
+        assertTrue(Protocol.isSportRt(hx("fd235c0000000000000000000000")))
+        assertFalse(Protocol.isSportRt(hx("fd112301")))
     }
 
     @Test

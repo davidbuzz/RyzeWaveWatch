@@ -49,16 +49,58 @@ class HealthConnectMappingTest {
         assertEquals(SleepSessionRecord.STAGE_TYPE_UNKNOWN, HealthConnectMapping.sleepStageType(9))
     }
 
+    /** Every workout recorded before the sport picker used type 1 while walking, so type 1 alone is split by speed. */
     @Test
-    fun exerciseTypeFollowsAverageSpeed() {
+    fun typeOneIsSplitByAverageSpeed() {
         val walk = Workout(id = 1, start = 0, end = 1800_000, sportType = 1, distanceMeters = 2000.0, durationSeconds = 1800, avgHr = null, maxHr = null, calories = 0)
         val run = walk.copy(id = 2, distanceMeters = 5000.0)
         val unknown = walk.copy(id = 3, durationSeconds = 0, distanceMeters = 0.0)
         assertEquals(ExerciseSessionRecord.EXERCISE_TYPE_WALKING, HealthConnectMapping.exerciseType(walk))
         assertEquals(ExerciseSessionRecord.EXERCISE_TYPE_RUNNING, HealthConnectMapping.exerciseType(run))
         assertEquals(ExerciseSessionRecord.EXERCISE_TYPE_WALKING, HealthConnectMapping.exerciseType(unknown))
-        assertEquals("Ryze Wave run", HealthConnectMapping.exerciseTitle(run))
-        assertEquals("Ryze Wave walk", HealthConnectMapping.exerciseTitle(walk))
+        assertEquals("Outdoor Running", HealthConnectMapping.exerciseTitle(run))
+        assertEquals("Outdoor Walking", HealthConnectMapping.exerciseTitle(walk))
+        assertEquals(0x23, HealthConnectMapping.effectiveSportType(walk))
+        assertEquals(1, HealthConnectMapping.effectiveSportType(run))
+        // the speed heuristic is a tie-breaker for type 1 only: a slow Trail Run stays running, a fast Outdoor Walk stays walking
+        assertEquals(ExerciseSessionRecord.EXERCISE_TYPE_RUNNING, HealthConnectMapping.exerciseType(walk.copy(sportType = 0x24)))
+        assertEquals(ExerciseSessionRecord.EXERCISE_TYPE_WALKING, HealthConnectMapping.exerciseType(run.copy(sportType = 0x23)))
+        assertEquals("Outdoor Walking", HealthConnectMapping.exerciseTitle(run.copy(sportType = 0x23)))
+    }
+
+    @Test
+    fun exerciseTypeFollowsTheSportId() {
+        val expected = mapOf(
+            0x01 to ExerciseSessionRecord.EXERCISE_TYPE_RUNNING,
+            0x24 to ExerciseSessionRecord.EXERCISE_TYPE_RUNNING,
+            0x73 to ExerciseSessionRecord.EXERCISE_TYPE_RUNNING,
+            0x1B to ExerciseSessionRecord.EXERCISE_TYPE_RUNNING_TREADMILL,
+            0x15 to ExerciseSessionRecord.EXERCISE_TYPE_RUNNING_TREADMILL,
+            0x09 to ExerciseSessionRecord.EXERCISE_TYPE_WALKING,
+            0x23 to ExerciseSessionRecord.EXERCISE_TYPE_WALKING,
+            0x02 to ExerciseSessionRecord.EXERCISE_TYPE_BIKING,
+            0x12 to ExerciseSessionRecord.EXERCISE_TYPE_BIKING_STATIONARY,
+            0x08 to ExerciseSessionRecord.EXERCISE_TYPE_HIKING,
+            0x04 to ExerciseSessionRecord.EXERCISE_TYPE_SWIMMING_POOL,
+            0x13 to ExerciseSessionRecord.EXERCISE_TYPE_YOGA,
+            0x1C to ExerciseSessionRecord.EXERCISE_TYPE_STRENGTH_TRAINING,
+            0x61 to ExerciseSessionRecord.EXERCISE_TYPE_HIGH_INTENSITY_INTERVAL_TRAINING,
+            0x1F to ExerciseSessionRecord.EXERCISE_TYPE_ELLIPTICAL,
+            0x29 to ExerciseSessionRecord.EXERCISE_TYPE_ROWING_MACHINE,
+            0x05 to ExerciseSessionRecord.EXERCISE_TYPE_OTHER_WORKOUT,   // Badminton
+            0x19 to ExerciseSessionRecord.EXERCISE_TYPE_OTHER_WORKOUT,   // Free Training
+            0x7F to ExerciseSessionRecord.EXERCISE_TYPE_OTHER_WORKOUT,   // not in the watch's list
+        )
+        for ((id, type) in expected) assertEquals("sport 0x%02X".format(id), type, HealthConnectMapping.exerciseTypeFor(id))
+        // through a stored workout: a fast type-2 ride is biking (the speed rule never applies), and the title is the sport name
+        val ride = Workout(id = 9, start = 0, end = 3600_000, sportType = 2, distanceMeters = 30_000.0, durationSeconds = 3600, avgHr = 130, maxHr = 160, calories = 700)
+        assertEquals(ExerciseSessionRecord.EXERCISE_TYPE_BIKING, HealthConnectMapping.exerciseType(ride))
+        assertEquals("Cycling", HealthConnectMapping.exerciseTitle(ride))
+        assertTrue(HealthConnectMapping.exerciseNotes(ride).endsWith("700 kcal, Cycling (sport type 2)"))
+        val swim = ride.copy(sportType = 4, distanceMeters = 0.0)
+        assertEquals(ExerciseSessionRecord.EXERCISE_TYPE_SWIMMING_POOL, HealthConnectMapping.exerciseType(swim))
+        assertEquals("Swimming", HealthConnectMapping.exerciseTitle(swim))
+        assertEquals("Sport 127", HealthConnectMapping.exerciseTitle(ride.copy(sportType = 0x7F)))
     }
 
     @Test
@@ -263,9 +305,11 @@ class HealthConnectMappingTest {
         assertEquals(ExerciseSessionRecord.EXERCISE_TYPE_WALKING, sessions[1].exerciseType)
         assertEquals(start, sessions[0].startTime.toEpochMilli())
         assertEquals(start + 1800_000, sessions[0].endTime.toEpochMilli())
-        assertEquals("Ryze Wave run", sessions[0].title)
+        assertEquals("Outdoor Running", sessions[0].title)
+        assertEquals("Outdoor Walking", sessions[1].title)
         assertTrue(sessions[0].notes!!.contains("4.50 km"))
         assertTrue(sessions[0].notes!!.contains("avg HR 140"))
+        assertTrue(sessions[0].notes!!.endsWith("320 kcal, Outdoor Running (sport type 1)"))
     }
 
     // ---- sleep

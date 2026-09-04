@@ -1,0 +1,16 @@
+package: au.buzz.ryzewave   waited: 25s
+pid: 28999
+top activity: topResumedActivity=ActivityRecord{c681ca2 u0 au.buzz.ryzewave/.MainActivity t97}
+crashes:
+app log lines:
+09-05 08:44:13.227 I/ActivityManager( 1870): Background started FGS: Allowed [callingPackage: au.buzz.ryzewave; callingUid: 10378; uidState: TOP ; uidBFSL: [BFS
+09-05 08:44:13.292 I/WatchService(28999): service created
+09-05 08:44:13.311 I/WatchService(28999): Bluetooth is off; waiting
+09-05 08:44:17.750 I/WearInit(29239): [WatchStartupListener]:Av7.0.3-eap08 Initializing WatchApi
+09-05 08:44:17.763 I/WearInit(29239): [WatchApi]:A refreshPairedWatches
+09-05 08:44:17.781 I/WearInit(29239): [WatchApi]:A No watch configs found
+09-05 08:44:18.009 I/WearInit(29273): [WatchStartupListener]:Pv7.0.3-eap08 Initializing WatchApi
+09-05 08:44:18.011 I/WearInit(29273): [WatchApi]:P refreshPairedWatches
+09-05 08:44:18.020 I/WearInit(29273): [WatchApi]:P No watch configs found
+09-05 08:44:18.053 I/WearInit(29273): [WatchApi]:P Skipping cleanup in persistent process
+09-05 08:44:31.580 W/.apps.wellbeing(29046): ApkAssets: Deleting an ApkAssets object '<empty> and /apex/com.android.healthfitness/priv-app/HealthConnectControll

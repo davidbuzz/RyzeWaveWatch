@@ -35,3 +35,8 @@ Established facts:
 
 **Why:** the user explicitly wants to reverse engineer and write their own app; these identifiers are needed every session.
 **How to apply:** start from the Gadgetbridge GloryFit code and the decompiled APK in the project's `apk/jadx-out` rather than re-researching. See [[ryze-wave-tooling]].
+
+- 2026-09-05: build 6 = phone notifications to the watch, verified end to end (commit after b40739e). Sport ids known:
+  FD 48 list (70) = watch menu order; 1 = Outdoor Running (all workouts so far), 0x23 Outdoor Walking, 2 Cycling.
+  Realtime workout push is `FD <sportType> <hr> …` (14 B) — app decoder only matched type 1 (fix pending), see
+  docs/APP.md "Sport types". Wrist check of names for 0x23/0x02 asked of Buzz.

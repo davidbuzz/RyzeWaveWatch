@@ -108,7 +108,8 @@ object Protocol {
     const val SPORT_PAUSE = 0x22
     const val SPORT_RESUME = 0x33
     const val SPORT_UPDATE = 0x44
-    const val SPORT_RT_DATA = 0x01
+    /** Length of the realtime workout push `FD <type> <hr> …`: byte 1 is the sport id, so only the length identifies it. */
+    const val SPORT_RT_LEN = 14
     const val SPORT_LIST = 0x48
 
     // D1 actions the watch pushes
@@ -232,7 +233,7 @@ object Protocol {
     /** `D6 01` = static/spot HR test, `D6 02` = dynamic/continuous. The vendor app sends this 1.5 s before `E5 11`. */
     fun encHrMode(dynamic: Boolean): ByteArray = bytesOf(CMD_HR_MODE, if (dynamic) 0x02 else 0x01)
 
-    /** `D6 10 <n>`: automatic extra HR spot test interval (vendor menu: 1/2/6/12 hours; 0 = off). Echoed as ack. */
+    /** `D6 10 <n>`: automatic extra HR spot test interval (vendor menu: 1/2/6/12 hours; 0 = off). The Ryze Wave neither echoes nor acks it (docs/PROTOCOL.md), so it is sent fire-and-forget. */
     fun encHrTimed(interval: Int): ByteArray = bytesOf(CMD_HR_MODE, 0x10, interval)
 
     /** `E5 11` start live HR (`E5 11 00 <hr>` per second follows), `E5 00` stop. */
@@ -484,26 +485,46 @@ object Protocol {
      */
     fun decRtHr(b: ByteArray): Int? = if (b.size == 4 && b.u8(1) == 0x11) b.u8(3) else null
 
-    /** `FD 01 <hr> 00 x 11` (14 bytes, ~1/s during a workout). Only the HR is understood so far. */
+    /**
+     * `FD <type> <hr> cal16 pace_min pace_sec steps24 count16 km km_frac2` (exactly 14 bytes, irregular ~1/s during a
+     * workout): realtime workout data from the watch (docs/PROTOCOL.md §5). Byte 1 is the sport id ([SportTypes]),
+     * not a constant 0x01 — verified on the wrist 2026-09-05: an Outdoor Walking workout (`FD 11 23 01`) pushes
+     * `FD 23 5C 00 …` (HR 92) — so only the length tells this packet apart, see [isSportRt]. The Ryze Wave zeros
+     * everything but the HR during a phone-driven workout; the other offsets follow the vendor SDK's realtime parser.
+     */
     fun decSportRt(b: ByteArray): SportRtData {
-        require(b.size >= 3) { "short sport rt packet: ${hex(b)}" }
-        return SportRtData(b.u8(2), hex(b))
+        require(isSportRt(b)) { "not a $SPORT_RT_LEN-byte sport rt packet: ${hex(b)}" }
+        return SportRtData(
+            sportType = b.u8(1),
+            hr = b.u8(2),
+            calories = b.u16(3),
+            paceSecPerKm = b.u8(5) * 60 + b.u8(6),
+            steps = (b.u8(7) shl 16) or (b.u8(8) shl 8) or b.u8(9),
+            count = b.u16(10),
+            distanceMeters = b.u8(12) * 1000.0 + b.u8(13) * 10.0,
+            raw = hex(b),
+        )
     }
+
+    /** True for the 14-byte realtime workout push, whatever its sport type. */
+    fun isSportRt(b: ByteArray): Boolean = b.size == SPORT_RT_LEN && b.u8(0) == CMD_SPORT
 
     /** `FD AA <state> <type>`: reply to [encSportQuery]. */
     fun decSportState(b: ByteArray): SportState? =
         if (b.size >= 4 && b.u8(0) == CMD_SPORT && b.u8(1) == QUERY) SportState(b.u8(2), b.u8(3)) else null
 
     /**
-     * `FD <state> <type> <interval>` echo of a control command (state 00/11/22/33: exactly 4 bytes) or of an
-     * `FD 44` metrics push (7 or 13 bytes, the bytes we sent). Longer `FD 00 …` packets are workout-history
+     * `FD <state> <type> <interval>` echo of a control command (state 00/11/33: exactly 4 bytes; pause 22: 4 bytes or
+     * 13 with `hh mm ss …` appended, docs/PROTOCOL.md §5) or of an `FD 44` metrics push (7 or 13 bytes, the bytes
+     * we sent). The 14-byte realtime push ([isSportRt]) is never an echo. Longer `FD 00 …` packets are workout-history
      * chunks ([decSportHistoryChunk]), never echoes. Caveat: a 4-byte history chunk holding a single HR value
      * (`FD 00 03 76`, seen 2026-09-04) cannot be told from a stop echo without knowing what was requested.
      */
     fun decSportControl(b: ByteArray): SportControl? {
         if (b.size < 4 || b.u8(0) != CMD_SPORT) return null
         val ok = when (b.u8(1)) {
-            SPORT_STOP, SPORT_START, SPORT_PAUSE, SPORT_RESUME -> b.size == 4
+            SPORT_STOP, SPORT_START, SPORT_RESUME -> b.size == 4
+            SPORT_PAUSE -> b.size == 4 || b.size == 13
             SPORT_UPDATE -> b.size == 7 || b.size == 13
             else -> false
         }

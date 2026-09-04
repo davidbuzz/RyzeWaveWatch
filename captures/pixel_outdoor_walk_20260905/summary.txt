@@ -1,0 +1,11 @@
+model: Pixel 9a android 16
+db: 159744 ryzewave.db
+db: 32768 ryzewave.db-shm
+db: 424392 ryzewave.db-wal
+rows workout: 1
+rows track_point: 146
+rows steps_hour: 20
+rows hr_sample: 350
+rows spo2_sample: 167
+rows sleep_stage: 62
+logcat lines: 13353; app lines: 138

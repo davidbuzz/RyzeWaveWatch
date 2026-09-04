@@ -1,0 +1,11 @@
+  227,  333          TextView       All sports
+  338,  438          TextView       Aerobic Combo
+  363,  527          TextView       American Football
+  263,  616          TextView       Archery
+  273,  705          TextView       Athletics
+  292,  794          TextView       Badminton
+  263,  883          TextView       Baseball
+  283,  972          TextView       Basketball
+  261, 1061          TextView       Boating
+  264, 1142          TextView       Bowling
+  526, 1248          TextView       Close

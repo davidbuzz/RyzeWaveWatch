@@ -61,4 +61,13 @@ interface SettingsStore {
     suspend fun setNotificationsEnabled(on: Boolean) {}
     suspend fun setAllowedPackages(packages: Set<String>) {}
     suspend fun setForwardAllNotifications(on: Boolean) {}
+
+    // ---- workout (additive, default = Outdoor Running) ----
+    /** Sport id (`protocol.SportTypes`) the next workout is started with. Default 1 = Outdoor Running. */
+    val workoutSportType: Flow<Int> get() = flowOf(DEFAULT_WORKOUT_SPORT_TYPE)
+    suspend fun setWorkoutSportType(type: Int) {}
+
+    companion object {
+        const val DEFAULT_WORKOUT_SPORT_TYPE = 1
+    }
 }

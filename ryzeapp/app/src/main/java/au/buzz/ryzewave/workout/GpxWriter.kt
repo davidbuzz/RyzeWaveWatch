@@ -3,6 +3,7 @@ package au.buzz.ryzewave.workout
 import au.buzz.ryzewave.core.HrSample
 import au.buzz.ryzewave.core.TrackPoint
 import au.buzz.ryzewave.core.Workout
+import au.buzz.ryzewave.protocol.SportTypes
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -97,10 +98,14 @@ object GpxWriter {
     fun defaultName(workout: Workout, zone: ZoneId = ZoneId.systemDefault()): String =
         "Ryze Wave workout " + nameFormat.format(Instant.ofEpochMilli(workout.start).atZone(zone))
 
-    /** "running" above 2 m/s average, otherwise "walking" — the sport type only tells us "outdoor". */
+    /**
+     * The `<type>`: the sport's name from the watch's menu ([SportTypes]). Type 1 (Outdoor Running) is what every
+     * workout recorded before the sport picker used, walks included, so for type 1 alone the average speed decides
+     * (>= 2 m/s Outdoor Running, otherwise Outdoor Walking — [SportTypes.effectiveId]); other ids are named as-is.
+     */
     fun sportName(workout: Workout): String {
         val avgSpeed = if (workout.durationSeconds > 0) workout.distanceMeters / workout.durationSeconds else 0.0
-        return if (avgSpeed >= 2.0) "running" else "walking"
+        return SportTypes.name(SportTypes.effectiveId(workout.sportType, avgSpeed))
     }
 
     fun iso(epochMs: Long): String =
@@ -111,7 +116,7 @@ object GpxWriter {
         append(WorkoutFormat.elapsed(w.durationSeconds))
         w.avgHr?.let { append(", avg HR ").append(it) }
         w.maxHr?.let { append(", max HR ").append(it) }
-        append(", ").append(w.calories).append(" kcal, sport type ").append(w.sportType)
+        append(", ").append(w.calories).append(" kcal, ").append(sportName(w)).append(" (sport type ").append(w.sportType).append(')')
     }
 
     private fun nearestHr(hr: List<HrSample>, index: Int, time: Long): Int? {

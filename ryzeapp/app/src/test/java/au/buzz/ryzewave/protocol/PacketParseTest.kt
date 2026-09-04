@@ -51,10 +51,45 @@ class PacketParseTest {
         assertEquals(0x3F, Protocol.CMD_GOALS); assertEquals(0x38, Protocol.CMD_BT3)
         assertEquals(0xFA, Protocol.FETCH_START); assertEquals(0x07, Protocol.FETCH_DATA); assertEquals(0xFD, Protocol.FETCH_END)
         assertEquals(0xAA, Protocol.QUERY)
-        assertEquals(listOf(0x00, 0x11, 0x22, 0x33, 0x44, 0x01),
-            listOf(Protocol.SPORT_STOP, Protocol.SPORT_START, Protocol.SPORT_PAUSE, Protocol.SPORT_RESUME, Protocol.SPORT_UPDATE, Protocol.SPORT_RT_DATA))
+        assertEquals(listOf(0x00, 0x11, 0x22, 0x33, 0x44),
+            listOf(Protocol.SPORT_STOP, Protocol.SPORT_START, Protocol.SPORT_PAUSE, Protocol.SPORT_RESUME, Protocol.SPORT_UPDATE))
+        assertEquals(14, Protocol.SPORT_RT_LEN)
         assertEquals("UTE8", String(Protocol.PASSWORD_XOR, Charsets.US_ASCII))
         assertEquals("1234", Protocol.DEFAULT_PASSWORD)
+    }
+
+    /**
+     * The realtime workout push is `FD <sportType> <hr> …`, exactly 14 bytes, for ANY sport type: verified on the
+     * wrist 2026-09-05 with an Outdoor Walking workout (`FD 11 23 01` -> pushes `fd235c00…`, HR 92). Only the length
+     * identifies it — control echoes are 4 bytes, the pause echo 13 — so `FD 11 23 01` / `FD 00 23 01` must stay echoes.
+     */
+    @Test
+    fun sportRtIsIdentifiedByLengthNotBySubCommand() {
+        val walk = Packet.parseHex("fd235c0000000000000000000000") as Packet.SportRt
+        assertEquals(0x23, walk.sportType)
+        assertEquals(92, walk.hr)
+        assertEquals(0, walk.calories); assertEquals(0, walk.steps); assertEquals(0.0, walk.distanceMeters, 0.0)
+        val run = Packet.parseHex("FD015D0000000000000000000000") as Packet.SportRt     // type 1 still decodes
+        assertEquals(1, run.sportType)
+        assertEquals(93, run.hr)
+        assertTrue(Packet.parseHex("fd112301") is Packet.SportControlEcho)              // start echo
+        assertTrue(Packet.parseHex("fd002301") is Packet.SportControlEcho)              // stop echo
+        val pause = Packet.parseHex("fd222301000005000000000000")                        // 13-byte pause echo
+        assertTrue(pause !is Packet.SportRt)
+        assertEquals(Packet.SportControlEcho(Protocol.SPORT_PAUSE, 0x23, 1, "fd222301000005000000000000"), pause)
+        // synthetic full packet: FD <type> <hr> cal16 pace_min pace_sec steps24 count16 km km_frac2
+        val full = Packet.parseHex("fd0196007b051e0010e100070222") as Packet.SportRt
+        assertEquals(1, full.sportType)
+        assertEquals(150, full.hr)
+        assertEquals(123, full.calories)
+        assertEquals(330, full.paceSecPerKm)
+        assertEquals(4321, full.steps)
+        assertEquals(7, full.count)
+        assertEquals(2340.0, full.distanceMeters, 1e-9)
+        assertEquals(SportRtData(1, 150, 123, 330, 4321, 7, 2340.0, "fd0196007b051e0010e100070222"), Protocol.decSportRt(hx("fd0196007b051e0010e100070222")))
+        assertTrue(Protocol.isSportRt(hx("fd0196007b051e0010e100070222")))
+        assertTrue(!Protocol.isSportRt(hx("fd112301")))
+        assertTrue(!Protocol.isSportRt(hx("e5015d0000000000000000000000")))
     }
 
     @Test

@@ -84,7 +84,7 @@ Review of the first build produced 36 findings (2 high: Health Connect export cu
 
 Items 3 and 5–10 do not depend on the outdoor test; only 1, the final confirmation of 2, and 4 need Buzz outside.
 
-Status: Audit done 2026-09-05 07:53 (item 2 largely done: four defects fixed, synthetic runs within 2 %); the 20 m accuracy gate relaxation and item 8 (notifications) are being built and verified now.
+Status 2026-09-05 08:40: item 2 done (four defects fixed, 20 m gate relaxed to 60 m, synthetic runs within 2 %); item 8 done and verified on the wrist (build 6; find-my-phone ringer still open); item 10: CI workflow added (`.github/workflows/ci.yml`), stale `D6 10` comment being fixed with the sport-type work; sport picker + Health Connect exercise type by sport id in progress (docs/APP.md "Sport types"). Next, without the watch: 3, 9, the rest of 10, a sleep history card (6), the find-phone ringer (8).
 
 1. **The outdoor acceptance test.** Walk and then run a known route of at least 1 km with the watch on and the phone in
    a pocket. Compare the app's distance and pace with the known length, look at the raw track, and check that the

@@ -51,8 +51,22 @@ sealed class HrPush {
 /** Entry of the watch's sport-mode menu (`FD 48 AA 00 …`). */
 data class SportListEntry(val id: Int, val enabled: Boolean, val order: Int)
 
-/** `FD 01 <hr> …` realtime workout data; [raw] is the packet as hex. */
-data class SportRtData(val hr: Int, val raw: String)
+/**
+ * `FD <type> <hr> cal16 pace_min pace_sec steps24 count16 km km_frac2` (14 B): realtime workout data from the watch.
+ * [sportType] is the sport id ([SportTypes]) — byte 1 is not a constant 0x01: an Outdoor Walking workout pushes
+ * `FD 23 5C …` (verified on the wrist 2026-09-05). The Ryze Wave sends zeros for everything but [hr] during a
+ * phone-driven workout; the other offsets follow the vendor SDK. [raw] is the packet as hex.
+ */
+data class SportRtData(
+    val sportType: Int,
+    val hr: Int,
+    val calories: Int,
+    val paceSecPerKm: Int,
+    val steps: Int,
+    val count: Int,
+    val distanceMeters: Double,
+    val raw: String,
+)
 
 /** `FD AA <state> <type>`. */
 data class SportState(val state: Int, val sportType: Int)
@@ -142,8 +156,11 @@ sealed class Packet {
     data class LiveHr(val bpm: Int, override val raw: String) : Packet()
     /** `E5 11` / `E5 00` echo. */
     data class LiveHrAck(val on: Boolean, override val raw: String) : Packet()
-    /** `FD 01 <hr> …`. */
-    data class SportRt(val hr: Int, override val raw: String) : Packet()
+    /** 14-byte `FD <type> <hr> …` realtime workout data, any sport type (see [SportRtData]). */
+    data class SportRt(
+        val sportType: Int, val hr: Int, val calories: Int, val paceSecPerKm: Int, val steps: Int, val count: Int,
+        val distanceMeters: Double, override val raw: String,
+    ) : Packet()
     /** `FD 11/22/33/00/44 <type> <interval>` echo. */
     data class SportControlEcho(val state: Int, val sportType: Int, val hrIntervalS: Int, override val raw: String) : Packet()
     /** `FD AA <state> <type>`. */
@@ -238,7 +255,11 @@ sealed class Packet {
                     else -> Unknown(raw)
                 }
                 Protocol.CMD_SPORT -> when {
-                    sub == Protocol.SPORT_RT_DATA && n >= 3 -> SportRt(b.u8(2), raw)
+                    // Realtime workout data is identified by its length alone: byte 1 is the sport type, so it can
+                    // look like any sub-command (control echoes are 4 B, the pause echo 13 B, history chunks longer).
+                    Protocol.isSportRt(b) -> Protocol.decSportRt(b).let {
+                        SportRt(it.sportType, it.hr, it.calories, it.paceSecPerKm, it.steps, it.count, it.distanceMeters, raw)
+                    }
                     sub == Protocol.QUERY -> Protocol.decSportState(b)?.let { SportQuery(it.state, it.sportType, raw) } ?: Unknown(raw)
                     sub == Protocol.SPORT_LIST -> SportList(Protocol.decSportList(b), Protocol.isSportListEnd(b), raw)
                     sub == Protocol.FETCH_START -> Protocol.decSportHistoryStart(b)?.let { SportHistoryStart(it, raw) } ?: Unknown(raw)

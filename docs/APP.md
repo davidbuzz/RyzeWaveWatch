@@ -191,6 +191,34 @@ Two consequences for the app, both open as of build 6:
 Verified on the wrist 2026-09-05 08:23 (bridge, `captures/bridge_20260905_082301.txt`): `FD 11 23 01` and `FD 11 02 01`
 each started a workout on the watch and `FD 00 <type> 01` stopped it.
 
+### Sport types implemented (build 7, 2026-09-05 08:38) — 250 unit tests, 0 failures
+
+- `protocol/SportTypes.kt`: the 70-entry id → name map (copy of `ryzewave/protocol.py` `SPORT_TYPES`), `POPULAR` (the ten
+  picker chips), `GPS_SPORTS` {0x01, 0x02, 0x08, 0x09, 0x23, 0x24}, `name(id)` with a "Sport <id>" fallback, and
+  `effectiveId(type, avgSpeed)`: type 1 alone is split by average speed (>= 2 m/s Outdoor Running, else Outdoor Walking)
+  because every workout recorded before the picker existed used type 1, walks included.
+- Decoder: `Packet.SportRt` is now *any* 14-byte `FD` packet (`Protocol.isSportRt`, `SPORT_RT_LEN = 14`; the misleading
+  `SPORT_RT_DATA = 0x01` is gone) and carries sportType, hr, calories, pace s/km, steps, count and distance. `FD 11/00
+  <type> <ivl>` stay `SportControlEcho`; the 13-byte `FD 22 …` pause echo is now accepted as a pause echo too. Tests
+  replay the wrist capture `fd235c00…` (Outdoor Walking, HR 92). `WatchApiImpl` still turns `SportRt.hr > 0` into
+  `HrSample(WORKOUT)`. The `D6 10` comment no longer claims an echo (the watch neither echoes nor acks it).
+- Workout screen: when idle, a `FlowRow` of `FilterChip`s for the popular ten plus a "More…" `AssistChip` that opens a
+  dialog listing all 70 by name. The choice is persisted in DataStore (`workout_sport_type`, default 1,
+  `SettingsStore.workoutSportType` / `setWorkoutSportType`) and `WorkoutViewModel.start()` passes it to
+  `WorkoutBridge.start` → `WorkoutService.start`; callers that pass nothing still get type 1. The header line reads
+  "<sport> · Ready/Running/…", the "Sport" stat shows the name, the distance stat is labelled "Distance (from GPS)", and
+  the GPS tracker runs for every sport. Workouts list rows, the detail title/card and the GPX `<type>` show the name.
+- Health Connect: exercise type by sport id — 0x01/0x24/0x73 running, 0x1B/0x15 running_treadmill, 0x09/0x23 walking,
+  0x02 biking, 0x12 biking_stationary, 0x08 hiking, 0x04 swimming_pool, 0x13 yoga, 0x1C strength_training, 0x61 HIIT,
+  0x1F elliptical, 0x29 rowing_machine, everything else other_workout; the speed rule survives only as the type-1
+  tie-breaker. Session title = sport name (for type 1, the one the tie-breaker picked); notes end with
+  "<name> (sport type N)".
+- Verified on the Moto (`tools/app_smoke.sh --no-build 25`, then `tools/app_tap.sh`): the Workout tab shows the chip row
+  with Outdoor Running selected (`captures/app_sport_20260905/workout_tab_chips.png`); tapping "Outdoor Walking" flips
+  the header to "Outdoor Walking · Ready" and the Sport stat (`workout_tab_outdoor_walking.png`); after a force-stop and
+  relaunch the selection is still Outdoor Walking (`workout_tab_after_restart.png`). No crash in `logcat -b crash`.
+  Start was not pressed (Buzz was wearing the watch), so a non-type-1 workout end-to-end is still untested from the app.
+
 ## Notifications: independent verification (build 6)
 
 The verifier agent re-ran the unit tests (243, 0 failures), confirmed the installed APK is the built one (md5 match),

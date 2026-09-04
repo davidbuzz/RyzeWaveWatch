@@ -1,4 +1,4 @@
-@file:OptIn(ExperimentalMaterial3Api::class)
+@file:OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 
 package au.buzz.ryzewave.ui
 
@@ -12,31 +12,42 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -53,10 +64,12 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import au.buzz.ryzewave.core.Workout
+import au.buzz.ryzewave.protocol.SportTypes
 
 @Composable
 fun WorkoutScreen(onOpenWorkout: (Long) -> Unit, vm: WorkoutViewModel = viewModel()) {
     val state by vm.state.collectAsStateWithLifecycle()
+    val sportType by vm.sportType.collectAsStateWithLifecycle()
     val status by vm.status.collectAsStateWithLifecycle()
     val workouts by vm.workouts.collectAsStateWithLifecycle()
     val trace by vm.hrTrace.collectAsStateWithLifecycle()
@@ -89,7 +102,7 @@ fun WorkoutScreen(onOpenWorkout: (Long) -> Unit, vm: WorkoutViewModel = viewMode
                 .padding(12.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            LiveWorkoutCard(state, status.isConnected(), onStart, vm::pause, vm::resume, vm::stop)
+            LiveWorkoutCard(state, sportType, vm::setSportType, status.isConnected(), onStart, vm::pause, vm::resume, vm::stop)
             if (locationDenied) {
                 ElevatedCard(Modifier.fillMaxWidth()) {
                     Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -128,28 +141,39 @@ fun WorkoutScreen(onOpenWorkout: (Long) -> Unit, vm: WorkoutViewModel = viewMode
     }
 }
 
+/**
+ * [selectedSport] is the sport the next workout starts with (persisted); while a workout is active the card shows
+ * the session's own sport from [state] instead.
+ */
 @Composable
 private fun LiveWorkoutCard(
     state: WorkoutUiState,
+    selectedSport: Int,
+    onSelectSport: (Int) -> Unit,
     connected: Boolean,
     onStart: () -> Unit,
     onPause: () -> Unit,
     onResume: () -> Unit,
     onStop: () -> Unit,
 ) {
+    val sport = if (state.phase == WorkoutPhase.IDLE) selectedSport else state.sportType
     ElevatedCard(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.weight(1f)) {
                     Text(Fmt.duration(state.elapsedSeconds), style = MaterialTheme.typography.displayMedium, fontWeight = FontWeight.Medium)
-                    Text(phaseLabel(state.phase), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(
+                        "${SportTypes.name(sport)} · ${phaseLabel(state.phase)}",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
                 }
                 if (state.phase == WorkoutPhase.STARTING || state.phase == WorkoutPhase.STOPPING) {
                     CircularProgressIndicator(Modifier.size(22.dp), strokeWidth = 2.dp)
                 }
             }
             Row(horizontalArrangement = Arrangement.spacedBy(20.dp)) {
-                StatText("Distance", Fmt.metres(state.distanceMeters), Modifier.weight(1f))
+                StatText("Distance (from GPS)", Fmt.metres(state.distanceMeters), Modifier.weight(1f))
                 StatText("Pace", Fmt.pace(state.paceSecPerKm), Modifier.weight(1f))
             }
             Row(horizontalArrangement = Arrangement.spacedBy(20.dp)) {
@@ -158,8 +182,9 @@ private fun LiveWorkoutCard(
             }
             Row(horizontalArrangement = Arrangement.spacedBy(20.dp)) {
                 StatText("Calories", "${state.calories} kcal", Modifier.weight(1f))
-                StatText("Mode", "Outdoor (type ${state.sportType})", Modifier.weight(1f))
+                StatText("Sport", SportTypes.name(sport), Modifier.weight(1f))
             }
+            if (state.phase == WorkoutPhase.IDLE) SportPicker(selectedSport, onSelectSport)
             state.message?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error) }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 when (state.phase) {
@@ -186,6 +211,49 @@ private fun LiveWorkoutCard(
     }
 }
 
+/**
+ * Chips for the sports people actually pick ([SportTypes.POPULAR]) plus "More…" for the watch's full menu of 70.
+ * A sport chosen from the full list that is not in the short row gets its own chip so the selection stays visible.
+ */
+@Composable
+private fun SportPicker(selected: Int, onSelect: (Int) -> Unit) {
+    var showAll by remember { mutableStateOf(false) }
+    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+        Text("Sport", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            val chips = if (selected in SportTypes.POPULAR) SportTypes.POPULAR else SportTypes.POPULAR + selected
+            chips.forEach { id ->
+                FilterChip(selected = id == selected, onClick = { onSelect(id) }, label = { Text(SportTypes.name(id)) })
+            }
+            AssistChip(onClick = { showAll = true }, label = { Text("More…") })
+        }
+    }
+    if (showAll) {
+        AlertDialog(
+            onDismissRequest = { showAll = false },
+            title = { Text("All sports") },
+            text = {
+                LazyColumn(Modifier.fillMaxWidth().heightIn(max = 440.dp)) {
+                    items(SportTypes.byName, key = { it.first }) { (id, name) ->
+                        Row(
+                            Modifier
+                                .fillMaxWidth()
+                                .clickable { onSelect(id); showAll = false }
+                                .padding(vertical = 8.dp, horizontal = 4.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            RadioButton(selected = id == selected, onClick = null)
+                            Spacer(Modifier.width(8.dp))
+                            Text(name, style = MaterialTheme.typography.bodyLarge)
+                        }
+                    }
+                }
+            },
+            confirmButton = { TextButton(onClick = { showAll = false }) { Text("Close") } },
+        )
+    }
+}
+
 private fun phaseLabel(phase: WorkoutPhase): String = when (phase) {
     WorkoutPhase.IDLE -> "Ready"
     WorkoutPhase.STARTING -> "Starting…"
@@ -204,7 +272,7 @@ private fun WorkoutRow(w: Workout, onClick: () -> Unit) {
     ElevatedCard(Modifier.fillMaxWidth().clickable(onClick = onClick)) {
         Row(Modifier.padding(horizontal = 16.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
-                Text(Fmt.dateTime(w.start), style = MaterialTheme.typography.titleSmall)
+                Text("${SportTypes.name(w.sportType)} · ${Fmt.dateTime(w.start)}", style = MaterialTheme.typography.titleSmall)
                 val hr = w.avgHr?.let { " · avg $it bpm" } ?: ""
                 Text(
                     "${Fmt.duration(w.durationSeconds)} · ${Fmt.metres(w.distanceMeters)} · ${Fmt.pace(averagePace(w))}$hr",
@@ -235,7 +303,7 @@ fun WorkoutDetailScreen(id: Long, onBack: () -> Unit, vm: WorkoutDetailViewModel
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(w?.let { Fmt.dateTime(it.start) } ?: "Workout") },
+                title = { Text(w?.let { "${SportTypes.name(it.sportType)} · ${Fmt.dateTime(it.start)}" } ?: "Workout") },
                 navigationIcon = {
                     IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back") }
                 },
@@ -256,6 +324,7 @@ fun WorkoutDetailScreen(id: Long, onBack: () -> Unit, vm: WorkoutDetailViewModel
             } else {
                 ElevatedCard(Modifier.fillMaxWidth()) {
                     Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Text(SportTypes.name(w.sportType), style = MaterialTheme.typography.titleMedium)
                         Row(horizontalArrangement = Arrangement.spacedBy(20.dp)) {
                             StatText("Duration", Fmt.duration(w.durationSeconds), Modifier.weight(1f))
                             StatText("Distance", Fmt.metres(w.distanceMeters), Modifier.weight(1f))

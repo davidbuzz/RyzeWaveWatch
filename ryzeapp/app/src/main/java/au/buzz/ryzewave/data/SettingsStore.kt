@@ -96,6 +96,13 @@ class DataStoreSettingsStore(private val dataStore: DataStore<Preferences>) : Se
     override suspend fun setForwardAllNotifications(on: Boolean) {
         dataStore.edit { it[SettingsKeys.NOTIFICATIONS_FORWARD_ALL] = on }
     }
+
+    override val workoutSportType: Flow<Int> =
+        prefs.map { SettingsKeys.readWorkoutSportType(it) }.distinctUntilChanged()
+
+    override suspend fun setWorkoutSportType(type: Int) {
+        dataStore.edit { SettingsKeys.writeWorkoutSportType(it, type) }
+    }
 }
 
 /**
@@ -124,6 +131,8 @@ object SettingsKeys {
     val NOTIFICATIONS_ENABLED = booleanPreferencesKey("notifications_enabled")
     val NOTIFICATION_PACKAGES = stringSetPreferencesKey("notification_packages")
     val NOTIFICATIONS_FORWARD_ALL = booleanPreferencesKey("notifications_forward_all")
+
+    val WORKOUT_SPORT_TYPE = intPreferencesKey("workout_sport_type")
 
     /** Normalised MAC (trimmed, upper case) or null when unset / blank. */
     fun readWatchMac(p: Preferences): String? = p[WATCH_MAC]?.trim()?.takeIf { it.isNotEmpty() }
@@ -184,5 +193,13 @@ object SettingsKeys {
 
     fun writeHealthConnectEnabled(m: MutablePreferences, on: Boolean) {
         m[HEALTH_CONNECT_ENABLED] = on
+    }
+
+    /** Sport id for the next workout; absent or out of range = 1 (Outdoor Running). */
+    fun readWorkoutSportType(p: Preferences): Int =
+        p[WORKOUT_SPORT_TYPE]?.takeIf { it in 1..255 } ?: SettingsStore.DEFAULT_WORKOUT_SPORT_TYPE
+
+    fun writeWorkoutSportType(m: MutablePreferences, type: Int) {
+        m[WORKOUT_SPORT_TYPE] = type.coerceIn(1, 255)
     }
 }

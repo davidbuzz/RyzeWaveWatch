@@ -1,0 +1,31 @@
+  164,  167          TextView       00:00
+  271,  242          TextView       Outdoor Walking · Ready
+  195,  333          TextView       Distance (from GPS)
+   89,  405          TextView       0 m
+  415,  312          TextView       Pace
+  460,  363          TextView       --:-- /km
+  131,  478          TextView       Heart rate
+   59,  529          TextView       –
+  410,  478          TextView       GPS
+  387,  529          TextView       –
+  114,  602          TextView       Calories
+  110,  653          TextView       0 kcal
+  421,  602          TextView       Sport
+  524,  684          TextView       Outdoor Walking
+   93,  787          TextView       Sport
+  239,  854          TextView       Outdoor Running
+  238,  938          TextView       Outdoor Walking
+  548,  938          TextView       Walking
+  147, 1022          TextView       Cycling
+  350, 1022          TextView       Hiking
+  201, 1106          TextView       Trail Running
+  483, 1106          TextView       Treadmill
+  222, 1190          TextView       Indoor Running
+  540, 1190          TextView       Swimming
+  199, 1274          TextView       Free Training
+  453, 1274          TextView       More…
+  220, 1366          TextView       Start workout
+   84, 1478          TextView       Home
+  267, 1478          TextView       History
+  451, 1478          TextView       Workout
+  635, 1478          TextView       Settings

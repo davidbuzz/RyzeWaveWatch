@@ -127,7 +127,7 @@ stride model calibrated from GPS walks. Heart rate, SpO2, steps and sleep come f
 - [x] RyzeBridge headless APK built (no Gradle) and installed on the Pixel; driven by `tools/bridge.py`
 - [x] Full history sync through the phone bridge (steps, HR, SpO2, sleep); record timing verified against the clock
 - [ ] Laptop BlueZ link drops every 5-20 s (supervision timeout) — parked, see `captures/bluez_linkdrop_notes.md`
-- [ ] Notifications, find-phone, camera, music control
+- [x] Phone notifications to the watch (build 6, 2026-09-05); [ ] find-phone ringer, camera, music control
 - [x] Platform decided: native Kotlin app in `ryzeapp/` (docs/APP.md)
 - [x] First build 2026-09-05 00:02: green build, 187 unit tests, installed on the Moto g05, connects, syncs (steps/HR/SpO2/sleep), dashboard + history charts render
 - [x] Health Connect export verified on the phone (172 records: steps, HR, SpO2, distance, sleep; attributed to "Buzz's Ryze Wave" in Health Connect)

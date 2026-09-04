@@ -73,6 +73,17 @@ class SettingsStoreTest {
     }
 
     @Test
+    fun workoutSportTypeDefaultsToOutdoorRunningAndRoundTrips() = runBlocking {
+        assertEquals(1, store.workoutSportType.first())
+        store.setWorkoutSportType(0x23)
+        assertEquals(0x23, store.workoutSportType.first())
+        store.setWorkoutSportType(0x73)
+        assertEquals(0x73, store.workoutSportType.first())
+        store.setWorkoutSportType(0)                  // not a sport id: stored as the default
+        assertEquals(1, store.workoutSportType.first())
+    }
+
+    @Test
     fun writesReadBack() = runBlocking {
         store.setWatchMac(" 78:02:b7:37:91:e5 ")
         assertEquals("78:02:B7:37:91:E5", store.watchMac.first())
@@ -106,5 +117,10 @@ class SettingsStoreTest {
         SettingsKeys.writeProfile(m, UserProfile(heightCm = 170))
         assertEquals(170, SettingsKeys.readProfile(m).heightCm)
         assertEquals(UserProfile().stepGoal, SettingsKeys.readProfile(m).stepGoal)
+        assertEquals(1, SettingsKeys.readWorkoutSportType(m))
+        SettingsKeys.writeWorkoutSportType(m, 0x24)
+        assertEquals(0x24, SettingsKeys.readWorkoutSportType(m))
+        m[SettingsKeys.WORKOUT_SPORT_TYPE] = 999                    // a stale / corrupt value falls back to the default
+        assertEquals(1, SettingsKeys.readWorkoutSportType(m))
     }
 }

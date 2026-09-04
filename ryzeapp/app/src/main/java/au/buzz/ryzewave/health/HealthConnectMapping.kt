@@ -18,6 +18,7 @@ import au.buzz.ryzewave.core.StrideModel
 import au.buzz.ryzewave.core.StrideSettings
 import au.buzz.ryzewave.core.UserProfile
 import au.buzz.ryzewave.core.Workout
+import au.buzz.ryzewave.protocol.SportTypes
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalTime
@@ -59,7 +60,7 @@ object HealthConnectMapping {
     const val MINUTE_MS = 60L * 1000L
 
     /** Average speed (m/s) at or above which a workout counts as running; below it is walking. */
-    const val RUNNING_SPEED_MPS = 2.0
+    const val RUNNING_SPEED_MPS = SportTypes.RUNNING_SPEED_MPS
 
     /** Health Connect's own limits, enforced by the record constructors. */
     private const val MAX_STEPS_PER_RECORD = 1_000_000L
@@ -115,16 +116,36 @@ object HealthConnectMapping {
     fun averageSpeedMps(workout: Workout): Double =
         if (workout.durationSeconds > 0 && workout.distanceMeters.isFinite()) workout.distanceMeters / workout.durationSeconds else 0.0
 
-    /**
-     * The watch's sport type 1 only says "outdoor" (docs/PROTOCOL.md §5), so walking vs running is decided by
-     * the GPS average speed, the same rule as the GPX writer: >= [RUNNING_SPEED_MPS] is running.
-     */
-    fun exerciseType(workout: Workout): Int =
-        if (averageSpeedMps(workout) >= RUNNING_SPEED_MPS) ExerciseSessionRecord.EXERCISE_TYPE_RUNNING
-        else ExerciseSessionRecord.EXERCISE_TYPE_WALKING
+    /** The sport a stored workout really was: the watch id, except that type 1 is split by speed ([SportTypes.effectiveId]). */
+    fun effectiveSportType(workout: Workout): Int = SportTypes.effectiveId(workout.sportType, averageSpeedMps(workout))
 
-    fun exerciseTitle(workout: Workout): String =
-        if (exerciseType(workout) == ExerciseSessionRecord.EXERCISE_TYPE_RUNNING) "Ryze Wave run" else "Ryze Wave walk"
+    /**
+     * Health Connect exercise type from the watch's sport id (docs/PROTOCOL.md §6c). Type 1 (Outdoor Running) was the
+     * only type the app could start before the sport picker existed, walks included, so for type 1 alone the GPS
+     * average speed still decides between running and walking (>= [RUNNING_SPEED_MPS] is running), the same rule as
+     * the GPX writer. Every other id maps directly.
+     */
+    fun exerciseType(workout: Workout): Int = exerciseTypeFor(effectiveSportType(workout))
+
+    /** Sport id -> Health Connect exercise type; ids without a close match become OTHER_WORKOUT. */
+    fun exerciseTypeFor(sportType: Int): Int = when (sportType) {
+        0x01, 0x24, 0x73 -> ExerciseSessionRecord.EXERCISE_TYPE_RUNNING                // Outdoor Running, Trail Running, Marathon
+        0x1B, 0x15 -> ExerciseSessionRecord.EXERCISE_TYPE_RUNNING_TREADMILL             // Indoor Running, Treadmill
+        0x09, 0x23 -> ExerciseSessionRecord.EXERCISE_TYPE_WALKING                       // Walking, Outdoor Walking
+        0x02 -> ExerciseSessionRecord.EXERCISE_TYPE_BIKING                              // Cycling
+        0x12 -> ExerciseSessionRecord.EXERCISE_TYPE_BIKING_STATIONARY                   // Spinning
+        0x08 -> ExerciseSessionRecord.EXERCISE_TYPE_HIKING
+        0x04 -> ExerciseSessionRecord.EXERCISE_TYPE_SWIMMING_POOL
+        0x13 -> ExerciseSessionRecord.EXERCISE_TYPE_YOGA
+        0x1C -> ExerciseSessionRecord.EXERCISE_TYPE_STRENGTH_TRAINING
+        0x61 -> ExerciseSessionRecord.EXERCISE_TYPE_HIGH_INTENSITY_INTERVAL_TRAINING    // HIIT
+        0x1F -> ExerciseSessionRecord.EXERCISE_TYPE_ELLIPTICAL
+        0x29 -> ExerciseSessionRecord.EXERCISE_TYPE_ROWING_MACHINE                      // Rower
+        else -> ExerciseSessionRecord.EXERCISE_TYPE_OTHER_WORKOUT
+    }
+
+    /** Session title: the sport's name (for type 1, the one the speed tie-breaker resolved to). */
+    fun exerciseTitle(workout: Workout): String = SportTypes.name(effectiveSportType(workout))
 
     fun exerciseNotes(workout: Workout): String = buildString {
         append(String.format(Locale.ROOT, "%.2f km", workout.distanceMeters / 1000.0))
@@ -132,7 +153,7 @@ object HealthConnectMapping {
         workout.avgHr?.let { append(", avg HR ").append(it) }
         workout.maxHr?.let { append(", max HR ").append(it) }
         append(", ").append(workout.calories).append(" kcal")
-        append(", sport type ").append(workout.sportType)
+        append(", ").append(SportTypes.name(workout.sportType)).append(" (sport type ").append(workout.sportType).append(')')
     }
 
     // ---- calendar helpers (local wall clock in [zone])

@@ -45,8 +45,8 @@ class GpxWriterTest {
         assertTrue(gpx.contains("<ele>12.3</ele>"))
         assertTrue(gpx.contains("<time>2023-11-14T22:13:20Z</time>"))
         assertTrue(gpx.contains("<name>Ryze Wave workout 2023-11-14 22:13</name>"))
-        assertTrue(gpx.contains("<type>walking</type>"))
-        assertTrue(gpx.contains("1.00 km, 10:00, avg HR 120, max HR 150, 80 kcal"))
+        assertTrue(gpx.contains("<type>Outdoor Walking</type>"))
+        assertTrue(gpx.contains("1.00 km, 10:00, avg HR 120, max HR 150, 80 kcal, Outdoor Walking (sport type 1)"))
         assertTrue(gpx.trim().endsWith("</gpx>"))
         assertFalse(gpx.contains("gpxtpx:hr"))
     }
@@ -90,12 +90,20 @@ class GpxWriterTest {
         assertTrue(gpx.contains("</trk>"))
     }
 
+    /** The `<type>` is the watch's sport name; type 1 alone (used for walks before the picker) is split by speed. */
     @Test
-    fun runningIsDetectedFromAverageSpeed() {
+    fun typeIsTheSportNameWithTypeOneSplitByAverageSpeed() {
         val run = walk.copy(distanceMeters = 1500.0, durationSeconds = 600)   // 2.5 m/s
-        assertEquals("running", GpxWriter.sportName(run))
-        assertEquals("walking", GpxWriter.sportName(walk))
-        assertEquals("walking", GpxWriter.sportName(walk.copy(durationSeconds = 0)))
+        assertEquals("Outdoor Running", GpxWriter.sportName(run))
+        assertEquals("Outdoor Walking", GpxWriter.sportName(walk))
+        assertEquals("Outdoor Walking", GpxWriter.sportName(walk.copy(durationSeconds = 0)))
+        assertEquals("Cycling", GpxWriter.sportName(walk.copy(sportType = 2)))            // slow ride is still a ride
+        assertEquals("Outdoor Walking", GpxWriter.sportName(run.copy(sportType = 0x23)))  // fast walk is still a walk
+        assertEquals("Hiking", GpxWriter.sportName(run.copy(sportType = 8)))
+        assertEquals("Sport 3", GpxWriter.sportName(run.copy(sportType = 3)))
+        val gpx = GpxWriter.toGpx(walk.copy(sportType = 0x24), emptyList(), zone = utc)
+        assertTrue(gpx.contains("<type>Trail Running</type>"))
+        assertTrue(gpx.contains("80 kcal, Trail Running (sport type 36)"))
     }
 
     @Test
