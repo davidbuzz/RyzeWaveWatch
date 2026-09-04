@@ -2,8 +2,8 @@
 
 ## What this is
 Reverse-engineering the Ryze Wave smartwatch BLE protocol and building a replacement for the
-vendor "Ryze Fit" Android app. Read `README.md` for the current state and `docs/PROTOCOL.md`
-for the protocol. Keep both updated as facts are confirmed on real hardware; mark anything
+vendor "Ryze Fit" Android app. Read `README.md` for the current state, `docs/PROTOCOL.md`
+for the protocol, and `docs/wave_application_research.md` for the narrative of what mattered and why. Keep both updated as facts are confirmed on real hardware; mark anything
 that comes only from decompiled code as *(from SDK, unverified)*.
 
 ## Hard rule
