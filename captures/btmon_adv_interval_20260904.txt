@@ -1,0 +1,6 @@
+# Watch LE advertising cadence while idle (laptop btmon, 2026-09-04 ~19:0x, 150 s window)
+# seconds since capture start at which an advertising report from 78:02:B7:37:91:E5 was seen:
+## btmon5
+5 20 36 53 69 86 101 117 133 148 
+## btmon6
+1 18 33 49 65 80 96 112 128 144 160 

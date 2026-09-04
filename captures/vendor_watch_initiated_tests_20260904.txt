@@ -1,0 +1,36 @@
+# Vendor app (Ryze Fit) logcat, 2026-09-04 18:43-18:44: measurements started ON THE WATCH (no phone command precedes them)
+# columns: time direction channel hex
+09-04 18:43:23.953 <-- 33F1/2 F70407EA0904122B693A4B                   HR24               summary 18:43 max=10
+09-04 18:43:24.264 <-- 33F1/2 F70407EA0904122B693A4B                   HR24               summary 18:43 max=10
+09-04 18:43:24.578 <-- 33F1/2 E5110055                                 RT_HR/HR_TEST      hr=85
+09-04 18:43:25.526 <-- 33F1/2 3411                                     SPO2               
+09-04 18:43:48.208 <-- 33F1/2 34000062                                 SPO2               spo2=98%
+09-04 18:43:49.467 <-- 33F1/2 3411                                     SPO2               
+09-04 18:43:49.779 <-- 33F1/2 F70407EA0904122B693A4B                   HR24               summary 18:43 max=10
+09-04 18:43:50.094 <-- 33F1/2 F70407EA0904122B693A4B                   HR24               summary 18:43 max=10
+09-04 18:43:50.724 <-- 33F1/2 E5110000                                 RT_HR/HR_TEST      hr warming up
+09-04 18:43:51.670 <-- 33F1/2 E5110000                                 RT_HR/HR_TEST      hr warming up
+09-04 18:43:52.615 <-- 33F1/2 E5110000                                 RT_HR/HR_TEST      hr warming up
+09-04 18:43:53.560 <-- 33F1/2 E5110000                                 RT_HR/HR_TEST      hr warming up
+09-04 18:43:54.506 <-- 33F1/2 E5110000                                 RT_HR/HR_TEST      hr warming up
+09-04 18:43:55.767 <-- 33F1/2 E5110000                                 RT_HR/HR_TEST      hr warming up
+09-04 18:43:56.709 <-- 33F1/2 E5110000                                 RT_HR/HR_TEST      hr warming up
+09-04 18:43:57.657 <-- 33F1/2 E5110000                                 RT_HR/HR_TEST      hr warming up
+09-04 18:43:58.602 <-- 33F1/2 E5110000                                 RT_HR/HR_TEST      hr warming up
+09-04 18:43:59.547 <-- 33F1/2 E5110000                                 RT_HR/HR_TEST      hr warming up
+09-04 18:44:00.493 <-- 33F1/2 3411                                     SPO2               
+09-04 18:44:02.383 <-- 33F1/2 F70407EA0904122C693A4B                   HR24               summary 18:44 max=10
+09-04 18:44:02.694 <-- 33F1/2 F70407EA0904122C693A4B                   HR24               summary 18:44 max=10
+09-04 18:44:03.642 <-- 33F1/2 E5110000                                 RT_HR/HR_TEST      hr warming up
+09-04 18:44:06.793 <-- 33F1/2 F70407EA0904122C693A4B                   HR24               summary 18:44 max=10
+09-04 18:44:07.106 <-- 33F1/2 F70407EA0904122C693A4B                   HR24               summary 18:44 max=10
+09-04 18:44:07.736 <-- 33F1/2 E5110000                                 RT_HR/HR_TEST      hr warming up
+09-04 18:44:08.049 <-- 33F1/2 3411                                     SPO2               
+09-04 18:44:09.942 <-- 33F1/2 3400FFFF                                 SPO2               spo2 failed
+09-04 18:44:10.887 <-- 33F1/2 3411                                     SPO2               
+09-04 18:44:11.833 <-- 33F1/2 F70407EA0904122C693A4B                   HR24               summary 18:44 max=10
+09-04 18:44:12.148 <-- 33F1/2 F70407EA0904122C693A4B                   HR24               summary 18:44 max=10
+09-04 18:44:12.776 <-- 33F1/2 E5110000                                 RT_HR/HR_TEST      hr warming up
+09-04 18:44:13.721 <-- 33F1/2 E5110000                                 RT_HR/HR_TEST      hr warming up
+09-04 18:44:14.668 <-- 33F1/2 E5110000                                 RT_HR/HR_TEST      hr warming up
+09-04 18:44:15.612 <-- 33F1/2 E5110000                                 RT_HR/HR_TEST      hr warming up

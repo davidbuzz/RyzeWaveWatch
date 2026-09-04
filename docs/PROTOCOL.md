@@ -167,7 +167,7 @@ Full method→opcode map from the SDK: `captures/sdk_opcode_map.txt`. Highlights
 | `D4 …` | drink-water reminder | SDK | |
 | `D5 …` | password (§4) | SDK | |
 | `D6 01` / `D6 02` | HR measurement mode: static (spot test) / dynamic (continuous) — sent 1.5 s before `E5 11` by the app's HR screen | V | `D6 02` + `E5 11` streams; `D6 01` + `E5 11` produced nothing in 75 s on this watch |
-| `D6 10 <hours>` | "timed HR test": an extra spot measurement every 1/2/6/12 **hours** (app menu), `00` = off (app default: off, 2 h) | SDK | echoed as ack. Not the 10-minute series — that cadence is fixed by the continuous mode `F7 01` and cannot be changed |
+| `D6 10 <hours>` | "timed HR test": an extra spot measurement every 1/2/6/12 **hours** (app menu), `00` = off (app default: off, 2 h) | SDK | **no echo/ack observed** (`D6 10 0A` and `D6 10 00` both timed out after 4 s, captures/bridge_d610_restore.txt) [V]. Not the 10-minute series — that cadence is fixed by the continuous mode `F7 01` and cannot be changed |
 | `D7 …` | do-not-disturb / reject-with-button | GB/SDK | |
 | `DB AA` | push-message display query | SDK | |
 | `DF` | HV screen control | SDK | |
@@ -180,9 +180,9 @@ Full method→opcode map from the SDK: `captures/sdk_opcode_map.txt`. Highlights
 | `F7 FA [yyyy MM dd HH mm]` → `F7 yyyy MM dd HH <12 × hr>` (18 B) → `F7 FD xx` | fetch 24h HR, 10-min bins ending HH:00 | V | since-stamp only if feature FL4&0x2000; zeros = all. **Note** Gadgetbridge treats byte 1 (`07`) as a data marker; it is the year high byte (0x07E9=2025, 0x07EA=2026). |
 | `F9 AA`, `F9 …` | watch UI pages query/show-hide | SDK | |
 | `FB/FC 00/01/FD` | HR / wrist-turn calibration | SDK | |
-| `FD 11 <type> <ivl>` / `FD 22` / `FD 33` / `FD 00` | workout start / pause / resume / stop; watch echoes the same bytes | V | type 1 = the mode used on 2026-09-04; ivl = HR report interval s |
+| `FD 11 <type> <ivl>` / `FD 22 <type> <ivl> hh mm ss …` (13 B) / `FD 00 <type> <ivl>` | workout start / pause / stop; watch echoes the same bytes | V | type 1 = the mode used on 2026-09-04; ivl = HR report interval s; `FD 33` resume is SDK-documented, not captured |
 | `FD 44 <type> <ivl> hh mm ss cal16 km km_frac2 pace_min pace_sec` | phone → watch live workout metrics, once per second (echoed back) | V/SDK | distance/pace come from **phone GPS**, this is where the vendor app's bad distance is produced. `km_frac2` is the rounded hundredths; a fraction that rounds to 100 carries into `km` (2999.9 m → `03 00`, not `02 64`); pace above 99:59 /km is sent as `00 00` |
-| `FD 01 <hr> 00×11` ← (14 B) | realtime workout data from the watch, ~1/s | V | verified 2026-09-04 19:37 via the phone bridge: 82-97 bpm from the wrist during a 30 s type-1 workout started with `FD 11 01 01`; `FD 00 01 01` stopped it and the watch echoed both |
+| `FD 01 <hr> 00×11` ← (14 B) | realtime workout data from the watch, irregular 1-11 s (~1/s while the sensor has a fresh reading) | V | verified 2026-09-04 19:37 via the phone bridge: 82-97 bpm from the wrist during a 30 s type-1 workout started with `FD 11 01 01`; `FD 00 01 01` stopped it and the watch echoed both |
 | `FD AA` → `FD AA <state> <type>` | query current workout | SDK | |
 | `FD FA [since]` | fetch workout history | SDK | |
 | `FD 48 …` (34F1) | sport list management | SDK | |
@@ -197,7 +197,7 @@ Full method→opcode map from the SDK: `captures/sdk_opcode_map.txt`. Highlights
 | `34 FA` → `34 FA yyyy MM dd HH mm <12 × spo2>` (20 B) → `34 FA FD xx` | fetch SpO2, 10-min bins ending HH:mm | V | same year-byte caveat |
 | `37 FA <n>` … `37 FB …`(244 B) … `37 FC FD` | contacts upload (34F1) | GB | |
 | `37 AC …` / `37 AD FD xx` / `37 AE` | SOS contact set/end/clear | GB | |
-| `38 02 01\|00` (34F1) | classic Bluetooth (calls/audio) on / off | SDK | keeps the BLE link stable on Linux when no phone is paired (watch otherwise pages for its phone and the LE link hits supervision timeout) |
+| `38 02 01\|00` (34F1) | classic Bluetooth (calls/audio) on / off (echoed) | V | tried as a fix for the Linux link drops (`38 02 00`); the LE link still dropped, so classic paging is not the cause (captures/bluez_linkdrop_notes.md) |
 | `38 01 02 00 <4 rnd>` (34F1) → `38 01 <name:20> <mac6> <bt3_on> <b29> <b30>` | classic BT info query | V | seen `… 7802B73791E5 01 00 00` (radio on, phone not paired) and `… 01 01 01` right after `38 02 01` with the phone bonded; `38 02 00/01` is echoed as ack |
 | `3A 01 …`, `3A FA` | music state | GB | |
 | `3E …` | BP calibration (cSBp*) | SDK | |
@@ -245,6 +245,7 @@ So: since-timestamp fetches = yes (FL4&0x2000), sleep via `31 01` = yes (FL4&0x4
 - `keep 120`: link held for 2 min with zero drops; the watch moved the interval to 252 (315 ms) after ~10 s idle and back to 36 when traffic resumed.
 - full history sync in 4 s; SpO2 spot test works but the first `34 00 FF FF` after the ack is bogus, the real value follows ~1 min later;
 - workout: start/echo, `FD 01 <hr>` every second, per-second `FD 44` updates echoed, stop/echo.
+- unsolicited: while a measurement is started on the watch itself, it streams `E5 11 00 <hr>` once a second (25 min seen with no phone command, `00` during another sensor test).
 - 19:39-19:46: dynamic HR stream (`D6 02` + `E5 11`) and three SpO2 spot tests (97, 96, 96 %) from the phone; the bridge's `mark` statement skips the spurious early `34 00 FF FF`.
 
 ## 7b. Phone-side bridge [V]
