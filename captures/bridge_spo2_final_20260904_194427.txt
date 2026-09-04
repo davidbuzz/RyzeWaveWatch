@@ -1,0 +1,9 @@
+09-04 19:44:28.040 ## SCRIPT connect;write 3411;wait 2000;until 3400 90000;status
+09-04 19:44:28.040 ## STATE already connected
+09-04 19:44:28.041 --> 33F1 3411                                     SPO2               
+09-04 19:44:28.391 <-- 33F2 3411                                     SPO2               
+09-04 19:44:28.391 <-- 33F2 3400ffff                                 SPO2               spo2 failed
+09-04 19:44:28.703 <-- 33F2 3411                                     SPO2               
+09-04 19:44:30.389 ## UNTIL 3400 ok
+09-04 19:44:30.389 ## STATUS connected=true mtu=247
+09-04 19:44:30.389 ## DONE

@@ -1,0 +1,7 @@
+09-04 19:50:32.051 I/RyzeBridge(20280): SCRIPT connect;write d61000;until d610 4000;status
+09-04 19:50:32.052 I/RyzeBridge(20280): STATE already connected
+09-04 19:50:32.053 I/RyzeBridge(20280): TX 33F1 d61000
+09-04 19:50:35.039 I/RyzeBridge(20280): CONNPARAMS interval=27 latency=0 timeout=500 status=0
+09-04 19:50:36.497 W/RyzeBridge(20280): UNTIL d610 timeout
+09-04 19:50:36.497 I/RyzeBridge(20280): STATUS connected=true mtu=247
+09-04 19:50:36.498 I/RyzeBridge(20280): DONE

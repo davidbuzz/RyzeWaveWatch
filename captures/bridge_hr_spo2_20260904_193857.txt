@@ -1,0 +1,61 @@
+##### hr 30 (spot, D6 01 + E5 11)  19:38:57
+09-04 19:38:58.332 ## service created
+09-04 19:38:58.332 ## SCRIPT connect;write d601;wait 1500;write e511;wait 30000;write e500;wait 500;status
+09-04 19:38:58.337 ## CONNECTING 78:02:B7:37:91:E5
+09-04 19:38:59.574 ## STATE connected status=0
+09-04 19:38:59.604 ## SERVICES 11 status=0
+09-04 19:38:59.611 ## MTU 247 status=0
+09-04 19:38:59.648 ## NOTIFY 33f2 on
+09-04 19:38:59.677 ## NOTIFY 34f2 on
+09-04 19:38:59.677 ## READY mtu=247
+09-04 19:38:59.679 --> 33F1 d601                                     HR_MODE            
+09-04 19:38:59.695 ## PHY tx=2 rx=2 status=0
+09-04 19:38:59.857 ## CONNPARAMS interval=36 latency=0 timeout=500 status=0
+09-04 19:39:00.353 ## CONNPARAMS interval=36 latency=0 timeout=500 status=0
+09-04 19:39:00.442 <-- 33F2 4411                                     MOOD               
+09-04 19:39:01.213 --> 33F1 e511                                     RT_HR/HR_TEST      
+09-04 19:39:01.747 <-- 33F2 4400ffff0000                             MOOD               
+09-04 19:39:10.751 <-- 33F2 3411                                     SPO2               
+09-04 19:39:11.889 ## CONNPARAMS interval=252 latency=0 timeout=500 status=0
+09-04 19:39:13.467 <-- 33F2 3400ffff                                 SPO2               spo2 failed
+09-04 19:39:31.305 --> 33F1 e500                                     RT_HR/HR_TEST      
+09-04 19:39:32.237 ## STATUS connected=true mtu=247
+09-04 19:39:32.238 ## DONE
+
+##### spo2  19:39:32
+09-04 19:39:32.596 ## SCRIPT connect;write 3411;until 3400 70000;status
+09-04 19:39:32.597 ## STATE already connected
+09-04 19:39:32.602 --> 33F1 3411                                     SPO2               
+09-04 19:39:32.993 <-- 33F2 3411                                     SPO2               
+09-04 19:39:32.994 <-- 33F2 3400ffff                                 SPO2               spo2 failed
+09-04 19:39:32.994 ## UNTIL 3400 ok
+09-04 19:39:32.994 ## STATUS connected=true mtu=247
+09-04 19:39:32.994 ## DONE
+
+##### hr 20 dyn (D6 02 + E5 11)  19:39:32
+09-04 19:39:33.307 <-- 33F2 3411                                     SPO2               
+09-04 19:39:33.440 ## SCRIPT connect;write d602;wait 1500;write e511;wait 20000;write e500;wait 500;status
+09-04 19:39:33.440 ## STATE already connected
+09-04 19:39:33.442 --> 33F1 d602                                     HR_MODE            
+09-04 19:39:33.624 <-- 33F2 3400ffff                                 SPO2               spo2 failed
+09-04 19:39:34.283 ## CONNPARAMS interval=36 latency=0 timeout=500 status=0
+09-04 19:39:35.790 --> 33F1 e511                                     RT_HR/HR_TEST      
+09-04 19:39:44.727 <-- 33F2 f70407ea09041327693a4c                   HR24               summary 19:39 max=105 min=58 avg=76
+09-04 19:39:45.082 <-- 33F2 f70407ea09041327693a4c                   HR24               summary 19:39 max=105 min=58 avg=76
+09-04 19:39:45.576 <-- 33F2 e511005e                                 RT_HR/HR_TEST      hr=94
+09-04 19:39:46.406 ## CONNPARAMS interval=252 latency=0 timeout=500 status=0
+09-04 19:39:46.721 <-- 33F2 e511005e                                 RT_HR/HR_TEST      hr=94
+09-04 19:39:47.666 <-- 33F2 e511005a                                 RT_HR/HR_TEST      hr=90
+09-04 19:39:48.612 <-- 33F2 e511005a                                 RT_HR/HR_TEST      hr=90
+09-04 19:39:49.557 <-- 33F2 e5110058                                 RT_HR/HR_TEST      hr=88
+09-04 19:39:50.818 <-- 33F2 e5110058                                 RT_HR/HR_TEST      hr=88
+09-04 19:39:51.763 <-- 33F2 e511005b                                 RT_HR/HR_TEST      hr=91
+09-04 19:39:52.709 <-- 33F2 e511005b                                 RT_HR/HR_TEST      hr=91
+09-04 19:39:53.655 <-- 33F2 e511005b                                 RT_HR/HR_TEST      hr=91
+09-04 19:39:54.598 <-- 33F2 e511005b                                 RT_HR/HR_TEST      hr=91
+09-04 19:39:55.544 <-- 33F2 e511005b                                 RT_HR/HR_TEST      hr=91
+09-04 19:39:55.860 --> 33F1 e500                                     RT_HR/HR_TEST      
+09-04 19:39:56.801 <-- 33F2 e511005b                                 RT_HR/HR_TEST      hr=91
+09-04 19:39:56.987 ## STATUS connected=true mtu=247
+09-04 19:39:56.987 ## DONE
+##### done 19:39:56

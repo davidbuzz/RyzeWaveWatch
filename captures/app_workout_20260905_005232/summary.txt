@@ -1,0 +1,27 @@
+workout test, 60s
+crashes: 0
+--- watch traffic (FD / E5) as logged by the app:
+09-05 00:52:40.379 I/ActivityManager( 1870): Background started FGS: Allowed [callingPackage: au.buzz.ryzewave; callingUid: 10378; uidState: TOP ; uidBFSL: [BFS
+09-05 00:52:46.189 I/u.buzz.ryzewave(15394): Compiler allocated 4396KB to compile void au.buzz.ryzewave.ui.WorkoutScreenKt$LiveWorkoutCard$1.invoke(androidx.com
+--- UI nodes at the end:
+  164,  167          TextView       00:00
+  103,  242          TextView       Ready
+  119,  312          TextView       Distance
+   89,  363          TextView       0 m
+  415,  312          TextView       Pace
+  460,  363          TextView       --:-- /km
+  131,  436          TextView       Heart rate
+   59,  487          TextView       –
+  410,  436          TextView       GPS
+  387,  487          TextView       –
+  114,  560          TextView       Calories
+  110,  611          TextView       0 kcal
+  422,  560          TextView       Mode
+  524,  642          TextView       Outdoor (type 1)
+  220,  766          TextView       Start workout
+  188,  908          TextView       Live heart rate
+  163, 1362          TextView       Past workouts
+   84, 1478          TextView       Home
+  267, 1478          TextView       History
+  451, 1478          TextView       Workout
+  635, 1478          TextView       Settings

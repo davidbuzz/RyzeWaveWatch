@@ -1,0 +1,8 @@
+09-04 19:37:24.169 I/RyzeBridge(18241): SCRIPT connect;write 3411;until 3400 70000;status
+09-04 19:37:24.169 I/RyzeBridge(18241): STATE already connected
+09-04 19:37:24.171 I/RyzeBridge(18241): TX 33F1 3411
+09-04 19:37:24.591 I/RyzeBridge(18241): RX 33F2 3411
+09-04 19:37:24.591 I/RyzeBridge(18241): RX 33F2 3400ffff
+09-04 19:37:24.591 I/RyzeBridge(18241): UNTIL 3400 ok
+09-04 19:37:24.592 I/RyzeBridge(18241): STATUS connected=true mtu=247
+09-04 19:37:24.592 I/RyzeBridge(18241): DONE

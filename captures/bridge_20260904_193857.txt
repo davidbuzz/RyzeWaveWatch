@@ -1,0 +1,22 @@
+09-04 19:38:58.332 I/RyzeBridge(18816): service created
+09-04 19:38:58.332 I/RyzeBridge(18816): SCRIPT connect;write d601;wait 1500;write e511;wait 30000;write e500;wait 500;status
+09-04 19:38:58.337 I/RyzeBridge(18816): CONNECTING 78:02:B7:37:91:E5
+09-04 19:38:59.574 I/RyzeBridge(18816): STATE connected status=0
+09-04 19:38:59.604 I/RyzeBridge(18816): SERVICES 11 status=0
+09-04 19:38:59.611 I/RyzeBridge(18816): MTU 247 status=0
+09-04 19:38:59.648 I/RyzeBridge(18816): NOTIFY 33f2 on
+09-04 19:38:59.677 I/RyzeBridge(18816): NOTIFY 34f2 on
+09-04 19:38:59.677 I/RyzeBridge(18816): READY mtu=247
+09-04 19:38:59.679 I/RyzeBridge(18816): TX 33F1 d601
+09-04 19:38:59.695 I/RyzeBridge(18816): PHY tx=2 rx=2 status=0
+09-04 19:38:59.857 I/RyzeBridge(18816): CONNPARAMS interval=36 latency=0 timeout=500 status=0
+09-04 19:39:00.353 I/RyzeBridge(18816): CONNPARAMS interval=36 latency=0 timeout=500 status=0
+09-04 19:39:00.442 I/RyzeBridge(18816): RX 33F2 4411
+09-04 19:39:01.213 I/RyzeBridge(18816): TX 33F1 e511
+09-04 19:39:01.747 I/RyzeBridge(18816): RX 33F2 4400ffff0000
+09-04 19:39:10.751 I/RyzeBridge(18816): RX 33F2 3411
+09-04 19:39:11.889 I/RyzeBridge(18816): CONNPARAMS interval=252 latency=0 timeout=500 status=0
+09-04 19:39:13.467 I/RyzeBridge(18816): RX 33F2 3400ffff
+09-04 19:39:31.305 I/RyzeBridge(18816): TX 33F1 e500
+09-04 19:39:32.237 I/RyzeBridge(18816): STATUS connected=true mtu=247
+09-04 19:39:32.238 I/RyzeBridge(18816): DONE

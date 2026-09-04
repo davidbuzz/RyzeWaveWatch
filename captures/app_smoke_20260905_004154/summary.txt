@@ -1,0 +1,27 @@
+package: au.buzz.ryzewave   waited: 25s
+pid: 14628
+top activity: topResumedActivity=ActivityRecord{854ac56 u0 au.buzz.ryzewave/.MainActivity t82}
+crashes:
+app log lines:
+09-05 00:42:07.141 I/ActivityManager( 1870): Background started FGS: Allowed [callingPackage: au.buzz.ryzewave; callingUid: 10378; uidState: TOP ; uidBFSL: [BFS
+09-05 00:42:07.311 I/HealthConnectExporter(14628): exported 4 records (ExportCounts(steps=0, heartRate=1, spo2=2, distance=0, sleep=1, workouts=0)) from 1788532
+09-05 00:42:08.432 I/WatchService(14628): service created
+09-05 00:42:08.437 I/WatchService(14628): connecting to 78:02:B7:37:91:E5
+09-05 00:42:08.440 I/WatchGatt(14628): CONNECTING 78:02:B7:37:91:E5 (attempt 1)
+09-05 00:42:09.432 I/WatchGatt(14628): STATE connected status=0
+09-05 00:42:09.442 I/WatchConnectedReceiver(14628): watch 78:02:B7:37:91:E5 connected at the ACL level; starting WatchService
+09-05 00:42:09.862 I/WatchGatt(14628): PHY tx=2 rx=2 status=0
+09-05 00:42:10.285 I/WatchGatt(14628): CONNPARAMS interval=24 latency=0 timeout=500 status=0
+09-05 00:42:10.562 I/WatchGatt(14628): CONNPARAMS interval=6 latency=0 timeout=500 status=0
+09-05 00:42:11.273 I/WatchGatt(14628): SERVICES 11 status=0
+09-05 00:42:11.284 I/WatchGatt(14628): MTU 247 status=0
+09-05 00:42:11.366 I/WatchGatt(14628): CONNPARAMS interval=24 latency=0 timeout=500 status=0
+09-05 00:42:11.368 I/WatchGatt(14628): NOTIFY 33F2 on
+09-05 00:42:11.424 I/WatchGatt(14628): NOTIFY 34F2 on
+09-05 00:42:11.487 I/WatchGatt(14628): FEATURES 080a642a210c3943756edffed921005d784ba1d4 FL1=0x4BA1D4 FL2=0x005D78 FL3=0xFED921 FL4=0x756EDF FL5=0x0C3943 FL6=0x
+09-05 00:42:11.489 I/WatchGatt(14628): READY 78:02:B7:37:91:E5 mtu=247 gen=1 features=FL1=0x4BA1D4 FL2=0x005D78 FL3=0xFED921 FL4=0x756EDF FL5=0x0C3943 FL6=0x642
+09-05 00:42:12.297 I/WatchGatt(14628): settings applied: continuousHr=true spo2Auto=true/10 min goal=8000
+09-05 00:42:16.783 I/WatchGatt(14628): sync: steps=17 hr=154 spo2=123 sleep=36
+09-05 00:42:16.837 I/HealthConnectExporter(14628): exported 4 records (ExportCounts(steps=0, heartRate=1, spo2=2, distance=0, sleep=1, workouts=0)) from 1788532
+09-05 00:42:24.620 W/.apps.wellbeing(14446): ApkAssets: Deleting an ApkAssets object '<empty> and /apex/com.android.healthfitness/priv-app/HealthConnectControll
+09-05 00:42:26.885 I/WatchGatt(14628): CONNPARAMS interval=248 latency=0 timeout=500 status=0

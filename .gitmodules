@@ -1,0 +1,7 @@
+[submodule "tools/Gadgetbridge"]
+	path = tools/Gadgetbridge
+	url = https://codeberg.org/Freeyourgadget/Gadgetbridge.git
+[submodule "tools/Gadgetbridge-tools"]
+	path = tools/Gadgetbridge-tools
+	url = https://codeberg.org/Freeyourgadget/Gadgetbridge-tools.git
+	branch = jr-gb-dissector

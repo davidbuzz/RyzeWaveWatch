@@ -1,0 +1,158 @@
+00 ..                        sendAlipayDataSegments
+00 01                        sendAlipayDataFD
+00 01, 00 02, 00 03, 00 04, 00 05, 3F .. sendTodayTargetCommand
+01 01, B3 .., B3 FA          syncAllSleepData
+24 ..                        setRawTemperatureStatus
+24 ..                        syncMaxMinAlarmTemperature
+24 ..                        syncTemperatureAutomaticTestInterval
+24 ..                        syncTemperatureTimePeriod
+24 01                        queryCurrentTemperatureData
+24 05                        deleteTemperatureHistoricalData
+24 07                        calibrationTemperature
+24 09                        queryRawTemperatureStatus
+24 FA                        syncAllTemperatureData
+26 01                        readDeviceOnlineDialConfiguration
+26 02                        prepareSendOnlineDialData
+27 ..                        sendSectionOnlineDialData
+28 ..                        sendSectionEcgHr
+28 .., 28 0B                 syncEcgData
+28 .., 28 0C                 syncEcgHistorySamplingData
+28 0F                        syncEcgHZ
+28 10                        startEcgTest
+28 12                        sendEcgHrEnd
+29 ..                        setPhysiologicalPeriod
+33 01                        sendAccountIdSuperCmd
+33 02                        sendAccountId
+34 ..                        syncOxygenAutomaticTest
+34 ..                        syncOxygenTimePeriod
+34 00                        stopOxygenTest
+34 11                        startOxygenTest
+34 AA                        queryOxygenTestStatus
+34 FA                        syncOxygenData
+37 ..                        sendSectionContacts
+37 ..                        sendSectionSosCall
+37 FA                        sendContactStart
+37 FC                        sendContactEnd
+38 ..                        openDeviceBt3
+3A .., 3A FA                 sendSongInformationToBle
+3E ..                        cSBpAPPResponsePMCrcOKCommand
+3E ..                        cSBpSendCalibrationCOOnSegments
+3E ..                        cSBpSetPersonalInfo
+3E 00                        cSBpStartCalibration
+3E 01                        cSBpSendCalibrationCOFD
+3E 02                        cSBpStopCalibration
+3E 04                        cSBpResetCalibrateParam
+3E 06                        cSBpQueryChipInfo
+3F 01                        syncStandingTimeData
+41 ..                        sendWashHandsRemindCommand
+43 .., 43 FD                 sendTimeZoneSection
+43 FB                        deleteTimeZone
+44 0E                        setMoodActivationCodeTest
+45 ..                        sendPhoneNumber
+46 .., 46 FD                 syncCustomizeSMSSection
+47 .., 47 FA                 syncGPSData
+47 73                        closeGPSMode
+47 73                        openGPSMode
+4A ..                        syncCyweeSwimData
+51 ..                        sendLabelAlarmClockSeciont
+51 AA                        queryLabelAlarmClock
+52 ..                        sendEndCallReplySmsStatus
+52 ..                        sendSmsWhetherSuccessfully
+55 ..                        sendDeviceElbpMiddleDataCrcResults
+55 ..                        sendDeviceElbpPpgDataCrcResults
+55 ..                        sendELBloodPressureTestCommand
+55 ..                        sendELBloodPressureTestModelCommand
+55 ..                        sendElbsCalibrationModelDataSegments
+55 02                        sendELBloodPressureDataCommand
+5B 00                        stopTestBloodSugar
+5B 01                        startTestBloodSugar
+5B FA                        syncBloodSugarData
+60 01                        queryDeviceAlipayActivateStatus
+60 05                        ActivateDeviceAlipayFail
+68 00                        queryWeChatPayAuthState
+A1                           sendToReadBLEVersion
+A1 01                        queryDeviceDspVersion
+A2                           sendToReadBLEBattery
+A3                           syncBLETime
+AA                           sendToGetStepOrSleepStatus
+AB 00                        findBand
+AB 00                        sendIncallCommand
+AB 00                        sendQQWeChatVibrationCommand
+AB 00                        sendSmsCommand
+AB 00                        sendStopVibrationCommand
+AD                           deleteDevicesAllData
+AF ..                        sendLanguageSectionKey
+AF 00                        startCalibrate
+AF AA                        queryBraceletLanguage
+AF AB                        sendBandLanguageNumber
+AF FF                        sendCalibratTimeoutToBLE
+B2 FA, EB 02                 syncAllStepData
+B7 .., B7 FA                 syncAllSwimData
+B8 ..                        openOrCloseSwimMode
+B9 .., B9 FA                 syncAllSkipData
+BA 01                        sendKeyToTestUV
+BA 02                        sendKeyToReadLastUV
+BB                           sendKeyReadIsHasContentPush
+BD ..                        setHRHRateReportInterval
+BD 00                        stopHRHSportMode
+BD 01                        startHRHSportMode
+BD AA                        queryHRHSportStatus
+BE 01                        queryQuickSwitchSupList
+BE 02                        queryQuickSwitchSupListStatus
+C1 04                        sendOffHookCommand
+C4 01                        openShakeMode
+C4 03                        closeShakeMode
+C5 ..                        sendTextSectionKey
+C6 ..                        sendTextSectionKey6
+C7 ..                        sendBloodPressureTestCommand
+C7 ..                        syncBloodPressureAutomaticTestInterval
+C7 ..                        syncBpDayTimePeriod
+C7 ..                        syncBpNightTimePeriod
+C7 ..                        syncMorningBloodPressureAutomaticTestInterval
+C8 .., C8 FA                 syncAllBloodPressureData
+CA                           sendKeyWeatherForecast
+CB ..                        syncWeatherEnglishCityName
+CB ..                        syncWeatherToBLEForXiaoYang
+CD 01                        sendToReadUIResoureVersion
+D1 ..                        controlBandMusicVolume
+D1 ..                        openFindPhone
+D1 ..                        phoneRingStatus
+D1 0C                        controlBandMusic
+D2 ..                        setSmsSwitch
+D3 ..                        sendSedentaryRemindCommand
+D4 ..                        sendDrinkWaterRemindCommand
+D5 ..                        sendSecretKey
+D5 01                        sendToQueryPasswardStatus
+D5 02                        requestCaptcha
+D6 ..                        sendKeyOpenDynamicOrStaticRate
+D6 ..                        sendKeySetTimingTestRate
+D7 ..                        sendDisturbToBle
+DB AA                        queryPushMessageDisplay
+DF                           sendToControlHVScreen
+E5 ..                        sendRateTestCommand
+E6 .., E6 FA                 syncAllRateData
+E9 ..                        startBodyCompositionTest
+E9 .., E9 FA                 syncBodyComposition
+E9 00                        stopBodyCompositionTest
+E9 AA                        queryBodyCompositionStatus
+EC 01                        syncSyweeSleepData
+F3 .., F3 FA                 syncAllRideData
+F4 .., F4 FA                 syncAllSportsModeData
+F4 FA                        syncVarietySportsType
+F7 ..                        set24HourRate
+F7 .., F7 FA                 sync24HourRate
+F9 ..                        displayOrHideBraceletInterface
+F9 AA                        queryBraceletInterface
+FB 00                        stopRateCalibration
+FB 01                        startRateCalibration
+FB FD                        defaultRateCalibration
+FC 00                        stopTurnWristCalibration
+FC 01                        startTurnWristCalibration
+FC FD                        defaultTurnWristCalibration
+FD ..                        sendSportManagementListsSection
+FD ..                        setMultipleSportsModes
+FD ..                        setMultipleSportsModes2
+FD ..                        syncMultipleSportsModes
+FD 48                        sendSportManagementListsEnd
+FD 48                        syncSportManagement
+FD AA                        queryCurrentlySportOpened

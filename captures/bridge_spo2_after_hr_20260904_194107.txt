@@ -1,0 +1,27 @@
+##### spo2 after 12 s of dynamic HR (sensor warmed up)  19:41:07
+09-04 19:41:08.700 ## SCRIPT connect;write d602;wait 1500;write e511;wait 12000;write e500;wait 1500;write 3411;until 3400 70000;status
+09-04 19:41:08.700 ## STATE already connected
+09-04 19:41:08.702 --> 33F1 d602                                     HR_MODE            
+09-04 19:41:10.578 --> 33F1 e511                                     RT_HR/HR_TEST      
+09-04 19:41:11.626 ## CONNPARAMS interval=36 latency=0 timeout=500 status=0
+09-04 19:41:21.140 ## CONNPARAMS interval=252 latency=0 timeout=500 status=0
+09-04 19:41:22.973 --> 33F1 e500                                     RT_HR/HR_TEST      
+09-04 19:41:24.846 --> 33F1 3411                                     SPO2               
+09-04 19:41:25.233 <-- 33F2 3411                                     SPO2               
+09-04 19:41:25.234 <-- 33F2 3400ffff                                 SPO2               spo2 failed
+09-04 19:41:25.234 ## UNTIL 3400 ok
+09-04 19:41:25.234 ## STATUS connected=true mtu=247
+09-04 19:41:25.234 ## DONE
+
+##### static HR spot test, 75 s window  19:41:25
+09-04 19:41:25.830 ## SCRIPT connect;write d601;wait 1500;write e511;wait 75000;write e500;wait 500;status
+09-04 19:41:25.830 ## STATE already connected
+09-04 19:41:25.831 --> 33F1 d601                                     HR_MODE            
+09-04 19:41:25.888 <-- 33F2 3411                                     SPO2               
+09-04 19:41:25.888 ## CONNPARAMS interval=36 latency=0 timeout=500 status=0
+09-04 19:41:27.440 --> 33F1 e511                                     RT_HR/HR_TEST      
+09-04 19:41:37.969 ## CONNPARAMS interval=252 latency=0 timeout=500 status=0
+09-04 19:42:42.518 --> 33F1 e500                                     RT_HR/HR_TEST      
+09-04 19:42:43.362 ## STATUS connected=true mtu=247
+09-04 19:42:43.362 ## DONE
+##### done 19:42:43

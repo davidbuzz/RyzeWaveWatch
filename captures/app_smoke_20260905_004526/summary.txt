@@ -1,0 +1,26 @@
+package: au.buzz.ryzewave   waited: 40s
+pid: 15394
+top activity: topResumedActivity=ActivityRecord{5aa4fd8 u0 au.buzz.ryzewave/.MainActivity t83}
+crashes:
+app log lines:
+09-05 00:45:38.583 I/ActivityManager( 1870): Background started FGS: Allowed [callingPackage: au.buzz.ryzewave; callingUid: 10378; uidState: TOP ; uidBFSL: [BFS
+09-05 00:45:38.756 I/HealthConnectExporter(15394): exported 4 records (ExportCounts(steps=0, heartRate=1, spo2=2, distance=0, sleep=1, workouts=0)) from 1788532
+09-05 00:45:39.862 I/WatchService(15394): service created
+09-05 00:45:39.868 I/WatchService(15394): connecting to 78:02:B7:37:91:E5
+09-05 00:45:39.871 I/WatchGatt(15394): CONNECTING 78:02:B7:37:91:E5 (attempt 1)
+09-05 00:45:39.988 I/WatchGatt(15394): STATE connected status=0
+09-05 00:45:40.087 I/WatchConnectedReceiver(15394): watch 78:02:B7:37:91:E5 connected at the ACL level; starting WatchService
+09-05 00:45:40.417 I/WatchGatt(15394): PHY tx=2 rx=2 status=0
+09-05 00:45:40.825 I/WatchGatt(15394): CONNPARAMS interval=24 latency=0 timeout=500 status=0
+09-05 00:45:41.103 I/WatchGatt(15394): CONNPARAMS interval=6 latency=0 timeout=500 status=0
+09-05 00:45:41.773 I/WatchGatt(15394): SERVICES 11 status=0
+09-05 00:45:41.783 I/WatchGatt(15394): MTU 247 status=0
+09-05 00:45:41.810 I/WatchGatt(15394): NOTIFY 33F2 on
+09-05 00:45:41.846 I/WatchGatt(15394): CONNPARAMS interval=24 latency=0 timeout=500 status=0
+09-05 00:45:41.907 I/WatchGatt(15394): NOTIFY 34F2 on
+09-05 00:45:41.968 I/WatchGatt(15394): FEATURES 080a642a210c3943756edffed921005d784ba1d4 FL1=0x4BA1D4 FL2=0x005D78 FL3=0xFED921 FL4=0x756EDF FL5=0x0C3943 FL6=0x
+09-05 00:45:41.970 I/WatchGatt(15394): READY 78:02:B7:37:91:E5 mtu=247 gen=1 features=FL1=0x4BA1D4 FL2=0x005D78 FL3=0xFED921 FL4=0x756EDF FL5=0x0C3943 FL6=0x642
+09-05 00:45:42.749 I/WatchGatt(15394): settings applied: continuousHr=true spo2Auto=true/10 min goal=8000
+09-05 00:45:47.389 I/WatchGatt(15394): sync: steps=17 hr=154 spo2=123 sleep=36
+09-05 00:45:47.470 I/HealthConnectExporter(15394): exported 4 records (ExportCounts(steps=0, heartRate=1, spo2=2, distance=0, sleep=1, workouts=0)) from 1788532
+09-05 00:45:57.699 I/WatchGatt(15394): CONNPARAMS interval=248 latency=0 timeout=500 status=0

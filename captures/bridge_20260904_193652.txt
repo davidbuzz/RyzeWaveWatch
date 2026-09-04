@@ -1,0 +1,8 @@
+09-04 19:36:52.865 I/RyzeBridge(18241): SCRIPT connect;write e511;wait 30000;write e500;status
+09-04 19:36:52.865 I/RyzeBridge(18241): STATE already connected
+09-04 19:36:52.867 I/RyzeBridge(18241): TX 33F1 e511
+09-04 19:36:55.777 I/RyzeBridge(18241): CONNPARAMS interval=36 latency=0 timeout=500 status=0
+09-04 19:37:03.487 I/RyzeBridge(18241): CONNPARAMS interval=252 latency=0 timeout=500 status=0
+09-04 19:37:23.237 I/RyzeBridge(18241): TX 33F1 e500
+09-04 19:37:23.648 I/RyzeBridge(18241): STATUS connected=true mtu=247
+09-04 19:37:23.648 I/RyzeBridge(18241): DONE

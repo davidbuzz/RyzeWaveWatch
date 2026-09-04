@@ -1,0 +1,80 @@
+# Plan: replacing Ryze Fit
+
+Status 2026-09-04 evening: the protocol is understood well enough to build. Everything the phone needs to do
+to get heart rate, SpO2, steps and workouts from the watch has been exercised through our own code (see
+`README.md` roadmap and `PROTOCOL.md` §7a).
+
+## 1. What the app must do
+
+| Feature | Watch side (verified) | App side |
+|---|---|---|
+| Connect | `connectGatt(TRANSPORT_LE)`, MTU 247, CCCD on 33F2/34F2, no password on this model | reconnect by MAC, keep a foreground service |
+| Time / profile / sampling | `A3` set time, `A9` height/weight/age/gender/goal, `F7 01` continuous HR, `34 03 01 <min16>` SpO2 auto-interval, `34 04` period | **on every connect** — after a factory reset the watch has none of these; the vendor app re-sends them each time it connects and so must we |
+| Steps | hourly `B2` records, `B1` live pushes | store, show today + history |
+| Heart rate | 10-min `F7` history; `F7 03/04` pushes; live via `D6 02`+`E5 11`; workout `FD 01` | charts + live view |
+| SpO2 | 10-min `34 FA` history; auto-sampling `34 03`; spot test `34 11` (~60 s) | history + on-demand test |
+| Sleep | `31 01` → `32` stages | nightly summary |
+| Workout | `FD 11/22/33/00` control, `FD 01` HR stream, `FD 44` metrics push every second | GPS tracking, distance/pace, push to watch |
+| Distance | **not from the watch** | our own model, see §3 |
+| Nice-to-have | notifications `C5`, find watch `AB`, weather `CA/CB`, canned replies `46`, contacts `37` | later |
+
+## 2. Platform
+
+Recommendation: **native Android, Kotlin**, minSdk 26, using the same GATT code that already works in
+`android/src/au/buzz/ryzebridge/BleService.java` (port it to Kotlin, keep the one-outstanding-op queue and the
+foreground service). Reasons: the phone's Bluetooth stack is the only one that holds this watch's link reliably,
+Buzz already has a working Kotlin/Gradle toolchain (`~/MyPulseApp`), and GPS tracking during workouts needs a
+foreground location service anyway. The Python codec (`ryzewave/protocol.py`) stays as the executable spec and
+test oracle; the Kotlin port should mirror its function names so the two can be diffed.
+
+Alternative considered: contributing a fix to Gadgetbridge. Their GloryFit driver is close, but it lacks the
+`D6`/`E5` live HR, SpO2 spot test, the `34 FA`/`F7` year-byte fix and the workout metric push; Buzz also wants
+his own distance handling and UI. Worth upstreaming the protocol findings later regardless.
+
+## 3. Distance, done properly
+
+The vendor app never gets distance from the watch. Two separate calculations, both on the phone:
+
+**a) Daily distance from steps** (`PedometerUtils.calculateDistance`): `km = steps × height_cm × k / 100000`
+with `k` = 0.418, or 0.410/0.415 (walk, male/female) and 0.546/0.505 (run) when feature bit FL2&0x1000 is set
+(it is, on the Ryze Wave). For 175 cm that is 71-73 cm per walking step, 95 cm per running step, and the watch's
+`B2` records split walking vs running steps, so the app should already use the two factors. If the daily figure is
+what's wrong, the fix is a **calibrated stride**: measure stride from a GPS walk (steps in the window ÷ GPS
+distance), keep separate walking/running strides, and let the user override. Sanity: typical walking stride is
+0.40-0.45 × height; running 0.55-0.65 × height depending on pace.
+
+**b) Workout distance from GPS** (`sports/…`, `AMapUtils.calculateLineDistance` on a `PathSmoothTool`-filtered
+track): distance is summed between consecutive fixes after a smoothing pass, with no visible accuracy or speed
+gating in the decompiled code. Classic failure modes: counting GPS jitter while standing still (inflates), or
+over-smoothing corners and dropping fixes (deflates). If the workout figure is what's wrong, our version should:
+1. take fused-location fixes at 1 Hz with `accuracy`, `speed`, `bearing`;
+2. drop fixes with accuracy worse than ~20 m, and ignore movement below the accuracy radius when speed ≈ 0;
+3. accumulate haversine distance between accepted fixes (or use `Location.distanceTo`);
+4. derive pace from a rolling window (e.g. last 200 m / last 30 s), not from consecutive fixes;
+5. push distance/pace/calories to the watch once a second with `FD 44` (we already do this from the bridge);
+6. keep the raw track so a distance can be recomputed with a different filter later.
+
+Which of (a) or (b) is the one that's wrong decides the first milestone. Both can be validated against the phone's
+own GPS or a known route without any watch involvement.
+
+## 4. Milestones (status 2026-09-05 00:20)
+- [x] 1 and 2 done in the first build: Kotlin GATT layer + codec (187 unit tests replaying the captures), dashboard, history charts; connects and syncs on launch on the Moto g05.
+- [~] 3 workout: implemented (GPS tracker, controller, foreground service, GPX) but not yet exercised on the phone.
+- [~] Health Connect export: implemented, permissions flow untested on the phone.
+- [ ] 4 comfort features.
+Review of the first build produced 36 findings (2 high: Health Connect export cursor semantics, BLE "Ready" published on a lost link); the fix pass applied 33 (build 00:36 on the phone, connected + synced). Health Connect export verified (172 records). Build 2 (00:41) fixed and independently verified the profile-edit revert, SpO2 chip overflow, export-button layout and midnight rollover (200 unit tests). Workout verified on the phone at 00:52 (start, live HR, stop; GPS poor indoors). A polish pass (workout → Health Connect exercise session, debug packet log, chart nits) is running with an independent verifier. Remaining real-world test: an outdoor walk for distance/pace and stride calibration.
+
+## 4a. Original milestone list
+
+1. **Kotlin GATT layer** ported from `BleService.java` with the packet codec; instrumented tests replay the hex
+   captures in `captures/` against the decoder.
+2. **Daily dashboard**: connect, sync, show steps/HR/SpO2/sleep; auto-sampling settings.
+3. **Workout**: GPS track, distance model, live HR, push to watch, summary; export GPX.
+4. **Comfort**: notifications, find-watch, weather, alarms.
+5. Optional: upstream protocol notes to Gadgetbridge.
+
+## 5. Open protocol questions (low priority)
+- Static HR spot test (`D6 01`) never reports to the phone; the app's timer may just be longer than 75 s.
+- Sleep stage code meanings (1-4) — compare against Ryze Fit's sleep screen once.
+- `FD 01` bytes after the HR (all zero so far) — probably steps/calories/distance for GPS-less sports.
+- Classic SDP UUIDs `0x5536`/`0x2222` on the watch (vendor-specific, unused).

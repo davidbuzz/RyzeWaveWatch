@@ -1,0 +1,9 @@
+- [Ryze Wave project](ryze-wave-project.md) — goal, watch MAC/name, GloryFit/UTE protocol + Realtek SoC facts
+- [Ryze Wave tooling](ryze-wave-tooling.md) — paths to Gadgetbridge clone, dissector, jadx, decompiled APK, venv
+- [Ryze Wave logcat capture](ryze-wave-logcat-capture.md) — Ryze Fit prints all BLE packets to logcat; use adb logcat, not HCI snoop
+- [Ryze Wave distance motivation](ryze-wave-distance-motivation.md) — user hates the vendor app's distance formula; app must be vendor-independent
+- [No edits outside project](no-edits-outside-project.md) — never touch files outside the repo or /tmp without asking first
+- [Run slow tasks in background](run-slow-tasks-in-background.md) — anything over ~20 s (BLE tests, captures, decompiles) runs as a background task
+- [pkill self-kill pitfall](pkill-self-kill-pitfall.md) — pkill -f matches the Bash tool shell itself; use pkill -x or the [b]racket trick
+- [Ryze app preferences](ryze-app-preferences.md) — app name, four stacked chart cards, Health Connect export, Gradle toolchain
+- [Phone testing approval](phone-testing-approval.md) — install/launch/screenshot on the USB phone is pre-approved
