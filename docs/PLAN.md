@@ -57,6 +57,35 @@ over-smoothing corners and dropping fixes (deflates). If the workout figure is w
 Which of (a) or (b) is the one that's wrong decides the first milestone. Both can be validated against the phone's
 own GPS or a known route without any watch involvement.
 
+## Top 10 next (2026-09-05, in priority order)
+
+1. **The outdoor acceptance test.** Walk and then run a known route of at least 1 km with the watch on and the phone in
+   a pocket. Compare the app's distance and pace with the known length, look at the raw track, and check that the
+   day's steps keep rising through the workout. This is the exact scenario the vendor app failed (0.0 km after a
+   20-minute run) and nothing replaces doing it.
+2. **Act on the distance audit.** Apply whatever the audit and its synthetic 20-minute-run tests confirm (prime
+   suspects: the hard 20 m accuracy cut, and any dependence on the phone reporting a Doppler speed). Keep the
+   synthetic-run tests as permanent regression tests.
+3. **Draw the track.** A Canvas track plot on the workout detail (accepted fixes as a line, rejected as dots, km
+   marks) and an `ExerciseRoute` on the Health Connect session so Health Connect shows the run on a map. No map SDK.
+4. **Stride calibration end to end.** After the outdoor test, calibrate walking and running strides from GPS, then
+   confirm the daily distance uses them and that Health Connect's daily DistanceRecord follows.
+5. **Background reliability over a full day.** Reconnect after phone reboot, app kill, Bluetooth off/on, watch out of
+   range and back; the 30-minute periodic sync; battery use of the foreground service; ask for battery-optimisation
+   exemption if the link drops overnight.
+6. **Sleep.** Confirm the stage codes against the vendor app for one night (it is still installed on the Pixel), fix the
+   1→deep / 2→light / 3→REM / 4→awake mapping if wrong, and give sleep its own history card and Health Connect stages.
+7. **Record watch-initiated measurements.** The watch streams HR (`E5 11`) and reports SpO2 results when a test is
+   started on the watch; store those in history instead of dropping them, and show them as spot samples.
+8. **Phone notifications to the watch** (`C5`: app-type byte + UTF-16 chunks) with per-app filtering, plus the
+   find-my-phone push (`D1 0A`) and the vibrate-watch button. The most-used daily feature after the numbers.
+9. **Health Connect hygiene.** Tighten the export cursor so finished workouts are not re-sent, add a read-back check
+   in the exporter tests, and re-export the day's distance when the stride changes.
+10. **Ship-shape.** Fix the stale `D6 10` comment in the Kotlin codec, the `remember(flowValue)` pattern left in the
+    Stride and Watch settings sections, the "avg" label overdraw; a proper launcher icon and a signed release build;
+    push the repo to a private GitHub and add a workflow that runs the Python and Kotlin unit tests; and upstream the
+    protocol corrections (year byte, `D6 02` live HR, feature bitmap) to Gadgetbridge.
+
 ## 4. Milestones (status 2026-09-05 00:20)
 - [x] 1 and 2 done in the first build: Kotlin GATT layer + codec (187 unit tests replaying the captures), dashboard, history charts; connects and syncs on launch on the Moto g05.
 - [~] 3 workout: implemented (GPS tracker, controller, foreground service, GPX) but not yet exercised on the phone.
