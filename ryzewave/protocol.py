@@ -52,6 +52,28 @@ QUERY = 0xAA
 SPORT_STOP, SPORT_START, SPORT_PAUSE, SPORT_RESUME, SPORT_UPDATE = 0x00, 0x11, 0x22, 0x33, 0x44
 SPORT_RT_DATA = 0x01
 
+# Sport-mode ids (`FD 11 <type>`, `FD 48` list id, byte 1 of the realtime push), as numbered by the Ryze Wave itself:
+# the FD 48 AA reply lists (id, enabled, menu position) for 70 sports and the names below are the watch's own menu,
+# in menu order, transcribed from the wrist on 2026-09-05. Ids have gaps (they are the vendor's global sport ids).
+SPORT_TYPES: dict[int, str] = {
+    0x01: "Outdoor Running", 0x02: "Cycling", 0x04: "Swimming", 0x05: "Badminton", 0x07: "Tennis",
+    0x08: "Hiking", 0x09: "Walking", 0x0A: "Basketball", 0x0B: "Soccer", 0x0C: "Baseball",
+    0x0D: "Volleyball", 0x0E: "Cricket", 0x0F: "Rugby", 0x10: "Hockey", 0x12: "Spinning",
+    0x13: "Yoga", 0x14: "Sit-ups", 0x15: "Treadmill", 0x17: "Boating", 0x18: "Jumping Jacks",
+    0x19: "Free Training", 0x1B: "Indoor Running", 0x1C: "Strength Training", 0x1E: "Horse Riding", 0x1F: "Elliptical",
+    0x22: "Boxing", 0x23: "Outdoor Walking", 0x24: "Trail Running", 0x25: "Skiing", 0x27: "Taekwondo",
+    0x28: "VO2 max Test", 0x29: "Rower", 0x2C: "Athletics", 0x2D: "Waist Training", 0x2E: "Karate",
+    0x34: "Physical Training", 0x35: "Archery", 0x37: "Aerobic Combo", 0x39: "Street Dancing", 0x3A: "Kick Boxing",
+    0x3F: "Handball", 0x40: "Bowling", 0x41: "Racquetball", 0x44: "Snowboarding", 0x46: "American Football",
+    0x48: "Fishing", 0x4B: "Golf", 0x4D: "Downhill Skiing", 0x4E: "Snow Sports", 0x50: "Core Training",
+    0x51: "Skating", 0x55: "Kickboxing Aerobics", 0x56: "Lacrosse", 0x58: "Wrestling", 0x59: "Fencing",
+    0x5A: "Softball", 0x60: "Pickleball", 0x61: "HIIT", 0x62: "Shooting", 0x63: "Judo",
+    0x65: "Skateboarding", 0x68: "Parkour", 0x6A: "Surfing", 0x6B: "Snorkeling", 0x6C: "Pull-up",
+    0x6D: "Push-up", 0x6F: "Rock Climbing", 0x71: "Bungee Jumping", 0x72: "Long Jump", 0x73: "Marathon",
+}
+# The ones a runner/walker/cyclist actually picks; the app's short list.
+SPORT_TYPES_POPULAR = (0x01, 0x23, 0x09, 0x02, 0x08, 0x24, 0x15, 0x1B, 0x04, 0x19)
+
 PASSWORD_XOR = b"UTE8"
 DEFAULT_PASSWORD = "1234"
 
@@ -354,8 +376,29 @@ def dec_rt_hr(b: bytes) -> int | None:
 
 
 def dec_sport_rt(b: bytes) -> dict:
-    """FD 01 <hr> … (14 bytes seen on the Ryze Wave during a workout). Only HR is understood so far."""
-    return {"hr": b[2], "raw": b.hex()}
+    """FD <type> <hr> cal16 pace_min pace_sec steps24 count16 km km_frac2 (14 B): realtime workout data from the watch.
+
+    Byte 1 is the SPORT TYPE (the FD 48 id, see SPORT_TYPES), not a fixed 0x01: verified on the Ryze Wave with
+    `FD 11 23 01` (Outdoor Walking) -> pushes `FD 23 5C 00 ...`. Field offsets follow the vendor SDK
+    (MultipleSportsModesUtils.*Real). The Ryze Wave sends zeros for everything but HR during a phone-driven workout.
+    Control echoes are 4 B (start/stop/resume) or 13 B (pause); only 14-byte FD packets are realtime data."""
+    if len(b) < 3 or b[0] != CMD_SPORT:
+        raise ValueError(f"not a sport packet: {b.hex()}")
+    out = {"sport_type": b[1], "sport": SPORT_TYPES.get(b[1], f"type {b[1]}"), "hr": b[2], "raw": b.hex()}
+    if len(b) >= 14:
+        out.update({
+            "calories": (b[3] << 8) | b[4],
+            "pace_s_per_km": b[5] * 60 + b[6],
+            "steps": (b[7] << 16) | (b[8] << 8) | b[9],
+            "count": (b[10] << 8) | b[11],
+            "distance_m": (b[12] + b[13] / 100.0) * 1000.0,
+        })
+    return out
+
+
+def is_sport_rt(b: bytes) -> bool:
+    """True for the 14-byte realtime workout packet (any sport type)."""
+    return len(b) == 14 and b[0] == CMD_SPORT
 
 
 def dec_spo2_result(b: bytes) -> dict:

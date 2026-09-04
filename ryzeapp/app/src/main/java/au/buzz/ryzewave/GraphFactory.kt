@@ -7,6 +7,7 @@ import au.buzz.ryzewave.data.DataStoreSettingsStore
 import au.buzz.ryzewave.data.Db
 import au.buzz.ryzewave.data.RoomHealthRepository
 import au.buzz.ryzewave.health.HealthConnectExporter
+import au.buzz.ryzewave.notify.NotificationForwarder
 import au.buzz.ryzewave.ui.WorkoutBridgeHolder
 import au.buzz.ryzewave.workout.DefaultStrideModel
 import au.buzz.ryzewave.workout.WorkoutController
@@ -79,6 +80,12 @@ object GraphFactory {
                 }
         }
 
-        return Graph(repo = repo, settings = settings, watch = watch, health = health)
+        // Phone -> watch notifications: the listener service hands posted notifications to this forwarder.
+        val notifications = NotificationForwarder(
+            settings, watch, scope, ownPackage = app.packageName,
+            log = { m, t -> if (t == null) Log.i(TAG, "notify: $m") else Log.w(TAG, "notify: $m", t) },
+        )
+
+        return Graph(repo = repo, settings = settings, watch = watch, health = health, notifications = notifications)
     }
 }

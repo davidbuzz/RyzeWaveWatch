@@ -2,6 +2,16 @@
 
 package au.buzz.ryzewave.ui
 
+import android.content.ActivityNotFoundException
+import android.content.Intent
+import android.provider.Settings
+import android.util.Log
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import au.buzz.ryzewave.notify.WatchNotificationListener
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -65,12 +75,28 @@ fun SettingsScreen(vm: SettingsViewModel = viewModel()) {
     val exporting by vm.exporting.collectAsStateWithLifecycle()
     val busy by vm.busy.collectAsStateWithLifecycle()
     val message by vm.message.collectAsStateWithLifecycle()
+    val notificationsEnabled by vm.notificationsEnabled.collectAsStateWithLifecycle()
+    val allowedPackages by vm.allowedPackages.collectAsStateWithLifecycle()
+    val forwardAll by vm.forwardAllNotifications.collectAsStateWithLifecycle()
+    val installedApps by vm.installedApps.collectAsStateWithLifecycle()
+    val notificationAccess by vm.notificationAccess.collectAsStateWithLifecycle()
     val health = LocalHealthPermissionHost.current
     val sdkStatus by health.sdkStatus.collectAsStateWithLifecycle()
     val granted by health.granted.collectAsStateWithLifecycle()
     val snackbar = remember { SnackbarHostState() }
     MessageSnackbar(message, vm::clearMessage, snackbar)
-    LaunchedEffect(Unit) { health.refresh() }
+    LaunchedEffect(Unit) {
+        health.refresh()
+        vm.refreshNotificationAccess()
+        vm.loadInstalledApps()
+    }
+    // Notification access is granted in the system settings; re-check when the user comes back.
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event -> if (event == Lifecycle.Event.ON_RESUME) vm.refreshNotificationAccess() }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
 
     Scaffold(snackbarHost = { SnackbarHost(snackbar) }) { padding ->
         Column(
@@ -100,6 +126,12 @@ fun SettingsScreen(vm: SettingsViewModel = viewModel()) {
                     if (on && !granted) health.request()     // arming the export without permissions is pointless
                 },
                 onGrant = health::request, onExport = vm::exportNow,
+            )
+            NotificationsSection(
+                enabled = notificationsEnabled, accessGranted = notificationAccess, forwardAll = forwardAll,
+                apps = installedApps, allowed = allowedPackages, connected = status.isConnected(), busy = busy,
+                onToggle = vm::setNotificationsEnabled, onForwardAll = vm::setForwardAllNotifications,
+                onAppToggle = vm::setPackageAllowed, onTest = vm::sendTestNotification,
             )
         }
     }
@@ -343,5 +375,71 @@ private fun exportSummary(r: ExportResult): String {
         ExportResult.Status.OK -> "Last export $at: ${r.inserted} records" + (if (r.failed > 0) ", ${r.failed} rejected" else "")
         ExportResult.Status.NOTHING_TO_EXPORT -> "Last export $at: nothing new"
         else -> "Last export $at failed: ${r.message ?: r.status.name}"
+    }
+}
+
+// ---- notifications to the watch -----------------------------------------------------------------------------
+
+@Composable
+private fun NotificationsSection(
+    enabled: Boolean,
+    accessGranted: Boolean,
+    forwardAll: Boolean,
+    apps: List<InstalledApp>?,
+    allowed: Set<String>,
+    connected: Boolean,
+    busy: Boolean,
+    onToggle: (Boolean) -> Unit,
+    onForwardAll: (Boolean) -> Unit,
+    onAppToggle: (String, Boolean) -> Unit,
+    onTest: () -> Unit,
+) {
+    val context = LocalContext.current
+    SectionCard("Notifications") {
+        SwitchRow("Forward notifications to the watch", enabled, onChange = onToggle)
+        Text(
+            when {
+                accessGranted && WatchNotificationListener.connected -> "Notification access granted; listener running"
+                accessGranted -> "Notification access granted; listener not connected yet (it starts on its own)"
+                else -> "Notification access not granted: nothing is forwarded until you allow it"
+            },
+            style = MaterialTheme.typography.bodyMedium,
+            color = if (enabled && !accessGranted) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface,
+        )
+        OutlinedButton(
+            onClick = {
+                try {
+                    context.startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+                } catch (e: ActivityNotFoundException) {
+                    Log.w("RyzeUi", "no notification access settings screen", e)
+                }
+            },
+            modifier = Modifier.fillMaxWidth(),
+        ) { Text("Open notification access") }
+        Button(onClick = onTest, enabled = connected && !busy, modifier = Modifier.fillMaxWidth()) { Text("Send test notification") }
+        Text(
+            "Calls are not forwarded here (the watch takes them over classic Bluetooth). Emoji are stripped; text is cut at 127 characters.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        SwitchRow("Forward all apps (debug)", forwardAll, enabled = enabled, onChange = onForwardAll)
+        Text("Apps", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        when {
+            apps == null -> LinearProgressIndicator(Modifier.fillMaxWidth())
+            apps.isEmpty() -> Text("No launcher apps found", style = MaterialTheme.typography.bodySmall)
+            else -> apps.forEach { app ->
+                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                    Column(Modifier.weight(1f)) {
+                        Text(app.label, style = MaterialTheme.typography.bodyLarge)
+                        Text(app.packageName, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                    Switch(
+                        checked = app.packageName in allowed,
+                        onCheckedChange = { onAppToggle(app.packageName, it) },
+                        enabled = enabled && !forwardAll,
+                    )
+                }
+            }
+        }
     }
 }

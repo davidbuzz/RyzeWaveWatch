@@ -74,3 +74,31 @@ def test_spo2_auto():
     assert P.enc_spo2_auto(False, 30).hex() == "340300001e"
     assert P.enc_spo2_period(True).hex() == "3404010001173b"
     assert P.enc_hr_continuous(True).hex() == "f701"
+
+
+def test_sport_types_match_watch_menu():
+    from ryzewave.protocol import SPORT_TYPES, dec_sport_list, CMD_SPORT
+    # FD 48 AA reply captured from the watch (70 triples: id, enabled, menu position)
+    ids = [0x01,0x02,0x04,0x05,0x07,0x08,0x09,0x0a,0x0b,0x0c,0x0d,0x0e,0x0f,0x10,0x12,0x13,0x14,0x15,0x17,0x18,0x19,0x1b,0x1c,0x1e,0x1f,
+           0x22,0x23,0x24,0x25,0x27,0x28,0x29,0x2c,0x2d,0x2e,0x34,0x35,0x37,0x39,0x3a,0x3f,0x40,0x41,0x44,0x46,0x48,0x4b,0x4d,0x4e,0x50,
+           0x51,0x55,0x56,0x58,0x59,0x5a,0x60,0x61,0x62,0x63,0x65,0x68,0x6a,0x6b,0x6c,0x6d,0x6f,0x71,0x72,0x73]
+    pkt = bytes([CMD_SPORT, 0x48, 0xAA, 0x00]) + b"".join(bytes([i, 1, n + 1]) for n, i in enumerate(ids))
+    lst = dec_sport_list(pkt)
+    assert len(lst) == 70 and [x[0] for x in lst] == ids and [x[2] for x in lst] == list(range(1, 71))
+    assert set(SPORT_TYPES) == set(ids)
+    assert SPORT_TYPES[0x01] == "Outdoor Running" and SPORT_TYPES[0x23] == "Outdoor Walking" and SPORT_TYPES[0x73] == "Marathon"
+
+
+def test_sport_rt_carries_sport_type():
+    from ryzewave.protocol import dec_sport_rt, is_sport_rt
+    # captured 2026-09-05 08:23:06 during an FD 11 23 01 (Outdoor Walking) workout
+    b = bytes.fromhex("fd235c0000000000000000000000")
+    assert is_sport_rt(b)
+    d = dec_sport_rt(b)
+    assert d["sport_type"] == 0x23 and d["sport"] == "Outdoor Walking" and d["hr"] == 92
+    assert d["calories"] == 0 and d["steps"] == 0 and d["distance_m"] == 0.0
+    # synthetic full packet: type 1, hr 150, 123 kcal, pace 5:30, 4321 steps, count 7, 2.34 km
+    b2 = bytes([0xfd, 0x01, 150, 0x00, 123, 5, 30, 0x00, 0x10, 0xE1, 0x00, 7, 2, 34])
+    d2 = dec_sport_rt(b2)
+    assert (d2["calories"], d2["pace_s_per_km"], d2["steps"], d2["count"], d2["distance_m"]) == (123, 330, 4321, 7, 2340.0)
+    assert not is_sport_rt(bytes.fromhex("fd112301")) and not is_sport_rt(bytes.fromhex("fd220101000000000000000000"))

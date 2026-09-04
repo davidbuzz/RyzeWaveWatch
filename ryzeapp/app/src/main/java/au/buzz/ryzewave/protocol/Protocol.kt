@@ -312,6 +312,45 @@ object Protocol {
         return head + bytesOf(cal shr 8, cal, kmInt, kmFrac, pm, ps)
     }
 
+    // ------------------------------------------------------------------ notifications (C5)
+
+    /** Payload bytes per `C5` chunk (2-byte header, or 4 bytes for chunk 0): 8 UTF-16 characters. */
+    const val NOTIFY_CHUNK_BYTES = 16
+    /** The total-length field is one byte, so at most 255 bytes = 127 UTF-16 code units of text. */
+    const val NOTIFY_MAX_CHARS = 127
+    /** Sub-code of the `C5 FD` end-of-message packet; the watch acks it with `C5 FD <type> <total>`. */
+    const val NOTIFY_END = 0xFD
+
+    /**
+     * Notification text as `C5` chunks (verified 2026-09-05 07:39, captures/bridge_20260905_07395*.txt):
+     * `C5 00 <type> <total_bytes> <16 B>` then `C5 <idx> <16 B>` per chunk (the last one shorter when the text is
+     * not a multiple of 8 characters), each acked by the watch with `C5 <idx>`; send [encNotificationEnd] after
+     * the last chunk. The text is passed through [NotificationText.sanitize] (emoji / control characters
+     * stripped, whitespace collapsed) and cut at [NOTIFY_MAX_CHARS]; an empty result gives an empty list (nothing
+     * to send). [type] is the app icon per docs/PROTOCOL.md §6 ([NotificationType]); 0 (call) is refused here
+     * because calls are the classic-Bluetooth link's job.
+     */
+    fun encNotification(type: Int, text: String): List<ByteArray> {
+        require(type in 1..0xFF) { "notification type $type: calls (0) are not sent over C5" }
+        val clean = NotificationText.sanitize(text).let { if (it.length > NOTIFY_MAX_CHARS) it.substring(0, NOTIFY_MAX_CHARS) else it }
+        if (clean.isEmpty()) return emptyList()
+        val payload = clean.toByteArray(Charsets.UTF_16BE)
+        val out = ArrayList<ByteArray>((payload.size + NOTIFY_CHUNK_BYTES - 1) / NOTIFY_CHUNK_BYTES)
+        var pos = 0
+        var idx = 0
+        while (pos < payload.size) {
+            val end = min(payload.size, pos + NOTIFY_CHUNK_BYTES)
+            val head = if (idx == 0) bytesOf(CMD_NOTIFICATION, 0, type, payload.size) else bytesOf(CMD_NOTIFICATION, idx)
+            out += head + payload.copyOfRange(pos, end)
+            pos = end
+            idx++
+        }
+        return out
+    }
+
+    /** `C5 FD`: end of the notification text; the watch answers `C5 FD <type> <total_bytes>`. */
+    fun encNotificationEnd(): ByteArray = bytesOf(CMD_NOTIFICATION, NOTIFY_END)
+
     // ------------------------------------------------------------------ decoders
 
     /** `A1 <ascii>` (or `A1 01 <ascii>` for the DSP version). */

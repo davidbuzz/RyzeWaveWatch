@@ -449,6 +449,37 @@ class WatchApiImpl(
         link.request(Protocol.encSportControl(Protocol.SPORT_STOP, sportType, 1), Matchers.isSportEcho(Protocol.SPORT_STOP), CONTROL_TIMEOUT_MS)
     }
 
+    // ------------------------------------------------------------------ notifications
+
+    /** One notification burst at a time: chunks of a second message must not interleave with the first. */
+    private val notifyMutex = Mutex()
+
+    /**
+     * `C5 00 <type> <total> …`, `C5 <idx> …` each awaited by its `C5 <idx>` ack (3 s), then `C5 FD` awaited by
+     * `C5 FD <type> <total>` (verified 2026-09-05 07:39: 40-char generic in 5 chunks, 120-char SMS in 15).
+     * Skipped (false) when the link is down or the text sanitises to nothing; a missing ack throws [GattException].
+     */
+    override suspend fun sendNotification(type: Int, text: String): Boolean {
+        if (!link.isReady) {
+            log("notification skipped: watch not connected", null)
+            return false
+        }
+        val chunks = Protocol.encNotification(type, text)
+        if (chunks.isEmpty()) {
+            log("notification skipped: nothing left to send after sanitising", null)
+            return false
+        }
+        notifyMutex.withLock {
+            requireReady()
+            for ((idx, chunk) in chunks.withIndex()) {
+                link.request(chunk, Matchers.isNotifyAck(idx), NOTIFY_ACK_TIMEOUT_MS)
+            }
+            link.request(Protocol.encNotificationEnd(), Matchers::isNotifyEnd, NOTIFY_ACK_TIMEOUT_MS)
+        }
+        log("notification sent: type $type, ${chunks.size} chunks", null)
+        return true
+    }
+
     // ------------------------------------------------------------------ misc
 
     override suspend fun findWatch() {
@@ -589,6 +620,7 @@ class WatchApiImpl(
         const val ACK_TIMEOUT_MS = 5_000L
         const val CONTROL_TIMEOUT_MS = 8_000L
         const val UPDATE_ECHO_TIMEOUT_MS = 2_000L
+        const val NOTIFY_ACK_TIMEOUT_MS = 3_000L
         const val SPO2_TIMEOUT_MS = 90_000L
     }
 }

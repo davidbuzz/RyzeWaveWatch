@@ -148,3 +148,53 @@ stay at −0.08 % (spike rule drops 238 / 550 fixes, the Doppler credit bridges 
 Workout screen GPS label bands: good ≤ 10 m, fair ≤ 20 m, **usable ≤ 60 m** (measures, coarse without Doppler),
 poor > 60 m (fixes dropped). Tests: `SyntheticRunGpsTrackerTest` variants B/B2/B3/B4, `SyntheticRunWorkoutControllerTest`
 25 m and 80 m, `DefaultGpsDistanceTrackerTest.rejectsPoorAccuracy` (gate at exactly 60 m).
+
+### Notifications to the watch implemented (build 6, 2026-09-05 08:12) — 243 unit tests, verified on the wrist
+`Protocol.encNotification(type, text)` / `encNotificationEnd()` (chunks `C5 00 <type> <total> +16 B`, `C5 <idx> +16 B`,
+last chunk shorter, then `C5 FD`; text through `NotificationText.sanitize` — emoji / surrogates / controls stripped,
+whitespace collapsed — and cut at 127 chars); `NotificationType.forPackage()` maps packages to §6 codes (SMS 3,
+WhatsApp 7, Telegram 24, Facebook 5, Messenger 9, Instagram 13, mail packages 19, else 4; never 0).
+`WatchApi.sendNotification(type, text)` (additive, default false) is implemented in `WatchApiImpl`: each chunk waits
+for its `C5 <idx>` ack (3 s), the end for `C5 FD`, one burst at a time, skipped when disconnected.
+`notify/WatchNotificationListener` (NotificationListenerService, manifest-registered) → `NotificationForwarder`
+(master switch + allow-list + debug forward-all from `SettingsStore`, `NotificationFilter`: drops ongoing / group
+summaries / own package, de-dups key+text within 10 s, text "<title or app label>: <text>", bounded queue, drop
+when the watch is down). Settings > Notifications: switch, "Open notification access", status, launcher-app toggles
+(loaded off the main thread), "Send test notification". Grant access with
+`adb shell cmd notification allow_listener au.buzz.ryzewave/au.buzz.ryzewave.notify.WatchNotificationListener`.
+Device log 08:11:59-08:12:43: test "Buzz's Ryze Wave: test" → `c500042c…` 3 chunks acked, `c5fd042c`;
+`adb shell 'cmd notification post -S bigtext -t "Test title" tag2 "Hello from adb"'` with forward-all on →
+`c500043400540065…` 4 chunks acked, `c5fd0434`; the shell's group summary was dropped by the filter.
+
+
+
+## Sport types (2026-09-05)
+
+The watch's sport-mode ids are now known (docs/PROTOCOL.md §6c, `ryzewave/protocol.py` `SPORT_TYPES`): 70 modes, ids
+with gaps, 1 = **Outdoor Running** (what every workout so far has used), 0x23 = Outdoor Walking, 9 = Walking,
+2 = Cycling, 8 = Hiking, 0x24 = Trail Running, 0x15 = Treadmill, 0x1B = Indoor Running, 4 = Swimming.
+
+Two consequences for the app, both open as of build 6:
+
+1. **Realtime workout packet decoder.** `Packets.kt` only recognises `FD 01 <hr>` as `SportRt`; the watch sends
+   `FD <sportType> <hr> …` (14 bytes), verified on the wrist with type 0x23 (`FD 23 5C …`). Any workout started with a
+   type other than 1 would get no watch heart rate. Fix: classify by length (14 B) and carry `sportType`; decode the
+   other fields (calories16, pace min/sec, steps24, count16, km + km/100) even though the Ryze Wave zeros them during a
+   phone-driven workout.
+2. **Sport picker and Health Connect mapping.** `WorkoutService` always starts type 1 and `HealthConnectMapping` guesses
+   walking vs running from average speed. Plan: a short picker on the Workout screen (Outdoor Running, Outdoor Walking,
+   Walking, Cycling, Hiking, Trail Running, Treadmill, Indoor Running, Swimming, Free Training) with the full list behind
+   "more"; persist the choice; map the sport id to the Health Connect exercise type (running, walking, biking, hiking,
+   running_treadmill, swimming_pool, other) instead of the speed heuristic; show the name in the workouts list and in
+   the GPX `<type>`.
+
+Verified on the wrist 2026-09-05 08:23 (bridge, `captures/bridge_20260905_082301.txt`): `FD 11 23 01` and `FD 11 02 01`
+each started a workout on the watch and `FD 00 <type> 01` stopped it.
+
+## Notifications: independent verification (build 6)
+
+The verifier agent re-ran the unit tests (243, 0 failures), confirmed the installed APK is the built one (md5 match),
+confirmed listener access is granted and the service is live, exercised "Send test notification" (3 chunks, every ack
+seen, `C5 FD 04 2C` end ack), posted `Verifier: Ping from verifier` from adb with forward-all on (4 chunks, acked;
+with forward-all off the shell package is dropped as expected), then ran "Sync now" and a Health Connect export with
+no disconnect and no crash. Buzz saw both texts on the watch.

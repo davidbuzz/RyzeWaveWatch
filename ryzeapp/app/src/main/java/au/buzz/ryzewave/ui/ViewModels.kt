@@ -25,6 +25,7 @@ import au.buzz.ryzewave.core.WatchStatus
 import au.buzz.ryzewave.core.Workout
 import au.buzz.ryzewave.ble.WatchService
 import au.buzz.ryzewave.health.ExportResult
+import au.buzz.ryzewave.notify.WatchNotificationListener
 import au.buzz.ryzewave.workout.DefaultStrideModel
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
@@ -502,6 +503,56 @@ class SettingsViewModel(
     fun findWatch() = task("Find watch") {
         graph.watch.findWatch()
         "The watch should be vibrating"
+    }
+
+    // ---- notifications to the watch ----
+
+    val notificationsEnabled: StateFlow<Boolean> =
+        graph.settings.notificationsEnabled.stateIn(viewModelScope, started(), false)
+    val allowedPackages: StateFlow<Set<String>> =
+        graph.settings.allowedPackages.stateIn(viewModelScope, started(), emptySet())
+    val forwardAllNotifications: StateFlow<Boolean> =
+        graph.settings.forwardAllNotifications.stateIn(viewModelScope, started(), false)
+
+    private val _installedApps = MutableStateFlow<List<InstalledApp>?>(null)
+    /** Launcher apps for the per-app toggles; null until [loadInstalledApps] has finished (loaded off the main thread). */
+    val installedApps: StateFlow<List<InstalledApp>?> = _installedApps.asStateFlow()
+
+    private val _notificationAccess = MutableStateFlow(false)
+    /** Whether the user has granted notification access (refreshed by [refreshNotificationAccess] on resume). */
+    val notificationAccess: StateFlow<Boolean> = _notificationAccess.asStateFlow()
+
+    fun refreshNotificationAccess() {
+        _notificationAccess.value = WatchNotificationListener.isAccessGranted(App.instance)
+    }
+
+    fun loadInstalledApps() {
+        if (_installedApps.value != null) return
+        viewModelScope.launch {
+            _installedApps.value = withContext(Dispatchers.IO) { InstalledApps.launcherApps(App.instance) }
+        }
+    }
+
+    fun setNotificationsEnabled(on: Boolean) = task("Notifications", exclusive = false) {
+        graph.settings.setNotificationsEnabled(on)
+        null
+    }
+
+    fun setForwardAllNotifications(on: Boolean) = task("Notifications", exclusive = false) {
+        graph.settings.setForwardAllNotifications(on)
+        null
+    }
+
+    fun setPackageAllowed(packageName: String, allowed: Boolean) = task("Notifications", exclusive = false) {
+        val current = graph.settings.allowedPackages.first()
+        graph.settings.setAllowedPackages(if (allowed) current + packageName else current - packageName)
+        null
+    }
+
+    fun sendTestNotification() = task("Test notification") {
+        if (!status.value.isConnected()) return@task "Watch not connected"
+        if (graph.notifications.sendTest()) "Test notification acknowledged by the watch"
+        else "Test notification was not sent (${graph.notifications.lastError ?: "see log"})"
     }
 
     private suspend fun applyToWatch(p: UserProfile, s: SamplingSettings): String? {

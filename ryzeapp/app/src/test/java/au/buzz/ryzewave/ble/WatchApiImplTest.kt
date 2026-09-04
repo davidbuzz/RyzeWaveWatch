@@ -553,6 +553,49 @@ class WatchApiImplTest {
         }
     }
 
+    /**
+     * captures/bridge_20260905_073950.txt: each `C5 <idx>` chunk is acked with `C5 <idx>` (about 0.6 s later), the
+     * `C5 FD` with `C5 FD 04 50`. The next chunk must only go out after the previous ack.
+     */
+    @Test
+    fun notificationChunksWaitForEachAckThenTheEnd() = runBlocking {
+        link.connect(MAC)
+        val acks = ArrayList<String>()
+        link.responder = { hex, _ ->
+            if (hex.startsWith("c5fd")) { acks += hex; link.rx("c5fd0450") }
+            else if (hex.startsWith("c5")) { acks += hex; link.rx(hex.substring(0, 4)) }
+        }
+        assertTrue(api.sendNotification(4, "Buzz's Ryze Wave: hello from the new app"))
+        assertEquals(
+            listOf(
+                "c500045000420075007a007a0027007300200052", "c5010079007a006500200057006100760065",
+                "c502003a002000680065006c006c006f0020", "c50300660072006f006d0020007400680065",
+                "c5040020006e006500770020006100700070", "c5fd",
+            ),
+            link.txHex(),
+        )
+        assertEquals(6, acks.size)
+        assertTrue(logLines.any { it == "notification sent: type 4, 5 chunks" })
+    }
+
+    @Test
+    fun notificationWithoutAckFailsAndSkipsWhenDisconnectedOrEmpty() = runBlocking {
+        assertFalse(api.sendNotification(4, "x"))            // not connected: skipped, nothing written
+        assertTrue(link.txHex().isEmpty())
+        link.connect(MAC)
+        assertFalse(api.sendNotification(4, "\uD83D\uDE00"))  // only an emoji: nothing left to send
+        assertTrue(link.txHex().isEmpty())
+        link.responder = { _, _ -> }
+        val api2 = WatchApiImpl(link, repo, settings, scope, autoSetupOnConnect = false, clock = clock, zone = zone)
+        try {
+            api2.sendNotification(3, "SMS")
+            fail("expected a timeout")
+        } catch (e: GattException) {
+            assertTrue(e.timeout)
+        }
+        assertEquals(listOf("c50003060053004d0053"), link.txHex())   // the first chunk went out, nothing after it
+    }
+
     @Test
     fun readBatteryAndFindWatch() = runBlocking {
         link.connect(MAC)

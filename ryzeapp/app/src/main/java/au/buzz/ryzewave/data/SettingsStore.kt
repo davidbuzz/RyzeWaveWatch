@@ -10,6 +10,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.datastore.preferences.core.stringSetPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import au.buzz.ryzewave.core.SamplingSettings
 import au.buzz.ryzewave.core.SettingsStore
@@ -71,6 +72,30 @@ class DataStoreSettingsStore(private val dataStore: DataStore<Preferences>) : Se
     override suspend fun setHealthConnectEnabled(on: Boolean) {
         dataStore.edit { SettingsKeys.writeHealthConnectEnabled(it, on) }
     }
+
+    override val notificationsEnabled: Flow<Boolean> =
+        prefs.map { it[SettingsKeys.NOTIFICATIONS_ENABLED] ?: false }.distinctUntilChanged()
+
+    override val allowedPackages: Flow<Set<String>> =
+        prefs.map { it[SettingsKeys.NOTIFICATION_PACKAGES] ?: emptySet() }.distinctUntilChanged()
+
+    override val forwardAllNotifications: Flow<Boolean> =
+        prefs.map { it[SettingsKeys.NOTIFICATIONS_FORWARD_ALL] ?: false }.distinctUntilChanged()
+
+    override suspend fun setNotificationsEnabled(on: Boolean) {
+        dataStore.edit { it[SettingsKeys.NOTIFICATIONS_ENABLED] = on }
+    }
+
+    override suspend fun setAllowedPackages(packages: Set<String>) {
+        dataStore.edit { m ->
+            val clean = packages.map { it.trim() }.filter { it.isNotEmpty() }.toSet()
+            if (clean.isEmpty()) m.remove(SettingsKeys.NOTIFICATION_PACKAGES) else m[SettingsKeys.NOTIFICATION_PACKAGES] = clean
+        }
+    }
+
+    override suspend fun setForwardAllNotifications(on: Boolean) {
+        dataStore.edit { it[SettingsKeys.NOTIFICATIONS_FORWARD_ALL] = on }
+    }
 }
 
 /**
@@ -95,6 +120,10 @@ object SettingsKeys {
     val RUN_STRIDE_M = doublePreferencesKey("run_stride_m")
 
     val HEALTH_CONNECT_ENABLED = booleanPreferencesKey("health_connect_enabled")
+
+    val NOTIFICATIONS_ENABLED = booleanPreferencesKey("notifications_enabled")
+    val NOTIFICATION_PACKAGES = stringSetPreferencesKey("notification_packages")
+    val NOTIFICATIONS_FORWARD_ALL = booleanPreferencesKey("notifications_forward_all")
 
     /** Normalised MAC (trimmed, upper case) or null when unset / blank. */
     fun readWatchMac(p: Preferences): String? = p[WATCH_MAC]?.trim()?.takeIf { it.isNotEmpty() }

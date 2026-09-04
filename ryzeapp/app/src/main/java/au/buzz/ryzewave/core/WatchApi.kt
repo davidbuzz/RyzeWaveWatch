@@ -41,6 +41,15 @@ interface WatchApi {
 
     suspend fun findWatch()
     suspend fun readBattery(): Int?
+
+    /**
+     * Pushes one notification text to the watch (`C5` chunks, each acked, then `C5 FD`). [type] is the icon per
+     * docs/PROTOCOL.md §6 (never 0 = call from the listener); [text] is "<app or sender>: <body>", sanitised and
+     * cut at 127 characters by the protocol layer. Sends are serialised (one burst at a time). Returns true when
+     * the watch acknowledged the whole message, false when it was skipped (not connected, empty text).
+     * Additive member: the default is "not sent" so existing implementations keep compiling.
+     */
+    suspend fun sendNotification(type: Int, text: String): Boolean = false
 }
 
 sealed class WatchEvent {

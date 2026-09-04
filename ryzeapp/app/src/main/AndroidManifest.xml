@@ -27,6 +27,11 @@
 
     <queries>
         <package android:name="com.google.android.apps.healthdata" />
+        <!-- Settings > Notifications lists the launcher apps to pick which ones are forwarded to the watch. -->
+        <intent>
+            <action android:name="android.intent.action.MAIN" />
+            <category android:name="android.intent.category.LAUNCHER" />
+        </intent>
     </queries>
 
     <application
@@ -66,5 +71,14 @@
         </receiver>
         <service android:name=".workout.WorkoutService" android:exported="false"
             android:foregroundServiceType="location" />
+        <!-- Phone -> watch notifications (C5). The user grants access in Settings > Notifications > Open notification
+             access; the system binds the service with BIND_NOTIFICATION_LISTENER_SERVICE. -->
+        <service android:name=".notify.WatchNotificationListener" android:exported="true"
+            android:label="@string/app_name"
+            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
+            <intent-filter>
+                <action android:name="android.service.notification.NotificationListenerService" />
+            </intent-filter>
+        </service>
     </application>
 </manifest>

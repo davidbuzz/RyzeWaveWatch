@@ -134,6 +134,13 @@ object Matchers {
     fun isSportEcho(state: Int): (ByteArray) -> Boolean =
         { p -> p.size >= 2 && p.u8(0) == OP_SPORT && p.u8(1) == (state and 0xFF) }
 
+    /** `C5 <idx>`: the watch acknowledging notification chunk [idx] (captures/bridge_20260905_073950.txt). */
+    fun isNotifyAck(idx: Int): (ByteArray) -> Boolean =
+        { p -> p.size >= 2 && p.u8(0) == 0xC5 && p.u8(1) == (idx and 0xFF) }
+
+    /** `C5 FD <type> <total>`: the watch acknowledging the end of a notification. */
+    fun isNotifyEnd(p: ByteArray): Boolean = p.size >= 2 && p.u8(0) == 0xC5 && p.u8(1) == 0xFD
+
     fun opcodeIs(opcode: Int): (ByteArray) -> Boolean = { p -> p.isNotEmpty() && p.u8(0) == (opcode and 0xFF) }
 
     /** Opcode and sub-code (byte 1) both match — for the `34 03` / `34 04` / `F7 01` style echoes. */

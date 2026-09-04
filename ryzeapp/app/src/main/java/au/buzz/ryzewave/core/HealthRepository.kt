@@ -1,6 +1,7 @@
 package au.buzz.ryzewave.core
 
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 
 /**
  * Local store for everything we get from the watch and the phone. Implemented by `data.RoomHealthRepository`
@@ -49,4 +50,15 @@ interface SettingsStore {
     suspend fun setSampling(s: SamplingSettings)
     suspend fun setStride(s: StrideSettings)
     suspend fun setHealthConnectEnabled(on: Boolean)
+
+    // ---- notification forwarding (additive, defaults = feature off) ----
+    /** Master switch for forwarding phone notifications to the watch. Default false. */
+    val notificationsEnabled: Flow<Boolean> get() = flowOf(false)
+    /** Package names whose notifications are forwarded. Default empty. */
+    val allowedPackages: Flow<Set<String>> get() = flowOf(emptySet())
+    /** Debug: forward every app regardless of [allowedPackages]. Default false. */
+    val forwardAllNotifications: Flow<Boolean> get() = flowOf(false)
+    suspend fun setNotificationsEnabled(on: Boolean) {}
+    suspend fun setAllowedPackages(packages: Set<String>) {}
+    suspend fun setForwardAllNotifications(on: Boolean) {}
 }

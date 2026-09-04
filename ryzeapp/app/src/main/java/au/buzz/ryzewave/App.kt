@@ -32,6 +32,7 @@ class Graph(
     val settings: SettingsStore,
     val watch: WatchApi,
     val health: au.buzz.ryzewave.health.HealthConnectExporter,
+    val notifications: au.buzz.ryzewave.notify.NotificationForwarder,
 ) {
     companion object {
         fun create(app: App): Graph = GraphFactory.create(app)

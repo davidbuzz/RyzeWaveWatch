@@ -180,12 +180,12 @@ Full method→opcode map from the SDK: `captures/sdk_opcode_map.txt`. Highlights
 | `F7 FA [yyyy MM dd HH mm]` → `F7 yyyy MM dd HH <12 × hr>` (18 B) → `F7 FD xx` | fetch 24h HR, 10-min bins ending HH:00 | V | since-stamp only if feature FL4&0x2000; zeros = all. **Note** Gadgetbridge treats byte 1 (`07`) as a data marker; it is the year high byte (0x07E9=2025, 0x07EA=2026). |
 | `F9 AA`, `F9 …` | watch UI pages query/show-hide | SDK | |
 | `FB/FC 00/01/FD` | HR / wrist-turn calibration | SDK | |
-| `FD 11 <type> <ivl>` / `FD 22 <type> <ivl> hh mm ss …` (13 B) / `FD 00 <type> <ivl>` | workout start / pause / stop; watch echoes the same bytes | V | type 1 = the mode used on 2026-09-04; ivl = HR report interval s; `FD 33` resume is SDK-documented, not captured |
+| `FD 11 <type> <ivl>` / `FD 22 <type> <ivl> hh mm ss …` (13 B) / `FD 00 <type> <ivl>` | workout start / pause / stop; watch echoes the same bytes | V | `type` = sport id from the watch's own list (§6c; 1 = Outdoor Running, 0x23 = Outdoor Walking, 2 = Cycling — all three started the matching mode on the wrist 2026-09-04/05); ivl = HR report interval s; `FD 33` resume is SDK-documented, not captured |
 | `FD 44 <type> <ivl> hh mm ss cal16 km km_frac2 pace_min pace_sec` | phone → watch live workout metrics, once per second (echoed back) | V/SDK | distance/pace come from **phone GPS**, this is where the vendor app's bad distance is produced. `km_frac2` is the rounded hundredths; a fraction that rounds to 100 carries into `km` (2999.9 m → `03 00`, not `02 64`); pace above 99:59 /km is sent as `00 00` |
-| `FD 01 <hr> 00×11` ← (14 B) | realtime workout data from the watch, irregular 1-11 s (~1/s while the sensor has a fresh reading) | V | verified 2026-09-04 19:37 via the phone bridge: 82-97 bpm from the wrist during a 30 s type-1 workout started with `FD 11 01 01`; `FD 00 01 01` stopped it and the watch echoed both |
+| `FD <type> <hr> cal16 pace_min pace_sec steps24 count16 km km_frac2` ← (14 B) | realtime workout data from the watch, irregular 1-11 s (~1/s while the sensor has a fresh reading). **Byte 1 is the sport type, not a constant 0x01**: an Outdoor Walking workout (`FD 11 23 01`) pushes `FD 23 5C 00…` (HR 92). Only the 14-byte length identifies this packet (control echoes are 4 B, pause 13 B) | V (type, HR) / SDK (other fields) | verified 2026-09-04 19:37 (type 1, 82-97 bpm) and 2026-09-05 08:23 (type 0x23); the Ryze Wave sends zeros for calories/pace/steps/count/distance during a phone-driven workout. Offsets from the vendor SDK's realtime parser |
 | `FD AA` → `FD AA <state> <type>` | query current workout | SDK | |
 | `FD FA [since]` | fetch workout history | SDK | |
-| `FD 48 …` (34F1) | sport list management | SDK | |
+| `FD 48 AA` (34F1) → `FD 48 AA 00 <(id, enabled, position)×n>` … `FD 48 AA FD` | sport list: the watch's sport-mode menu, 70 entries on the Ryze Wave | V | ids = §6c; position = menu order (1-based); `FD 48 <…>` writes reorder/hide entries (SDK, not used) |
 | `24 …` | temperature | SDK | |
 | `26 01/02`, `27 …` | online dial (watch face) config / upload | SDK | |
 | `28 …` | ECG | SDK | |
@@ -233,6 +233,38 @@ Sleep: `31 01 yyyy MM dd <n>` announces the session date (the morning), then one
 From the app's own log on 2026-09-04 (word 1 not yet seen; read it with our client):
 `FL2=0x005D78 FL3=0xFED921 FL4=0x756EDF FL5=0x0C3943 FL6=0x642A21 FL7=0x00080A` (+ an 8th word 0x400000 from the 34F1 read).
 So: since-timestamp fetches = yes (FL4&0x2000), sleep via `31 01` = yes (FL4&0x40000), workout metric push = yes (FL5&2), account-ID pairing = no (FL5&4), steps via `B2 FA` (FL8&32 = 0).
+
+## 6c. Sport ids [V]
+
+The watch numbers its sport modes with the vendor's global ids (gaps are modes this model does not have). The `FD 48 AA`
+reply lists 70 (id, enabled, position) triples; the names are the watch's own menu, read off the wrist in menu order
+on 2026-09-05, and the count matched exactly. The same id is used in `FD 11/22/00/44 <type>` and as byte 1 of the
+realtime push. Reference codec: `ryzewave/protocol.py` `SPORT_TYPES`.
+
+| id | sport | id | sport | id | sport | id | sport |
+|---|---|---|---|---|---|---|---|
+| 0x01 | Outdoor Running | 0x02 | Cycling | 0x04 | Swimming | 0x05 | Badminton |
+| 0x07 | Tennis | 0x08 | Hiking | 0x09 | Walking | 0x0A | Basketball |
+| 0x0B | Soccer | 0x0C | Baseball | 0x0D | Volleyball | 0x0E | Cricket |
+| 0x0F | Rugby | 0x10 | Hockey | 0x12 | Spinning | 0x13 | Yoga |
+| 0x14 | Sit-ups | 0x15 | Treadmill | 0x17 | Boating | 0x18 | Jumping Jacks |
+| 0x19 | Free Training | 0x1B | Indoor Running | 0x1C | Strength Training | 0x1E | Horse Riding |
+| 0x1F | Elliptical | 0x22 | Boxing | 0x23 | Outdoor Walking | 0x24 | Trail Running |
+| 0x25 | Skiing | 0x27 | Taekwondo | 0x28 | VO2 max Test | 0x29 | Rower |
+| 0x2C | Athletics | 0x2D | Waist Training | 0x2E | Karate | 0x34 | Physical Training |
+| 0x35 | Archery | 0x37 | Aerobic Combo | 0x39 | Street Dancing | 0x3A | Kick Boxing |
+| 0x3F | Handball | 0x40 | Bowling | 0x41 | Racquetball | 0x44 | Snowboarding |
+| 0x46 | American Football | 0x48 | Fishing | 0x4B | Golf | 0x4D | Downhill Skiing |
+| 0x4E | Snow Sports | 0x50 | Core Training | 0x51 | Skating | 0x55 | Kickboxing Aerobics |
+| 0x56 | Lacrosse | 0x58 | Wrestling | 0x59 | Fencing | 0x5A | Softball |
+| 0x60 | Pickleball | 0x61 | HIIT | 0x62 | Shooting | 0x63 | Judo |
+| 0x65 | Skateboarding | 0x68 | Parkour | 0x6A | Surfing | 0x6B | Snorkeling |
+| 0x6C | Pull-up | 0x6D | Push-up | 0x6F | Rock Climbing | 0x71 | Bungee Jumping |
+| 0x72 | Long Jump | 0x73 | Marathon | | | | |
+
+Wrist check 2026-09-05 08:23: `FD 11 23 01` and `FD 11 02 01` each started a workout on the watch and `FD 00` stopped
+it; the type 0x23 run pushed `FD 23 5C …` / `FD 23 5B …` (HR 92/91), which is what proved byte 1 of the realtime push
+is the sport id. (Menu names for those two starts: see docs/APP.md sport picker notes.)
 
 ## 7. Open questions
 - ~~Does our watch set the password bit?~~ No (FL1 = 0x4BA1D4).

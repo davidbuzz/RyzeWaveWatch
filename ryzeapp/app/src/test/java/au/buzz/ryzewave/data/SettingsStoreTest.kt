@@ -56,6 +56,23 @@ class SettingsStoreTest {
     }
 
     @Test
+    fun notificationSettingsDefaultOffAndRoundTrip() = runBlocking {
+        assertFalse(store.notificationsEnabled.first())
+        assertEquals(emptySet<String>(), store.allowedPackages.first())
+        assertFalse(store.forwardAllNotifications.first())
+        store.setNotificationsEnabled(true)
+        store.setAllowedPackages(setOf("com.whatsapp", " com.android.shell ", ""))
+        store.setForwardAllNotifications(true)
+        assertTrue(store.notificationsEnabled.first())
+        assertEquals(setOf("com.whatsapp", "com.android.shell"), store.allowedPackages.first())
+        assertTrue(store.forwardAllNotifications.first())
+        store.setAllowedPackages(emptySet())
+        assertEquals(emptySet<String>(), store.allowedPackages.first())
+        store.setNotificationsEnabled(false)
+        assertFalse(store.notificationsEnabled.first())
+    }
+
+    @Test
     fun writesReadBack() = runBlocking {
         store.setWatchMac(" 78:02:b7:37:91:e5 ")
         assertEquals("78:02:B7:37:91:E5", store.watchMac.first())

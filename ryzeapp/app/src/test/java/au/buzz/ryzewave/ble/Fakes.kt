@@ -195,6 +195,16 @@ class FakeSettings : SettingsStore {
     override suspend fun setSampling(s: SamplingSettings) { _sampling.value = s }
     override suspend fun setStride(s: StrideSettings) { _stride.value = s }
     override suspend fun setHealthConnectEnabled(on: Boolean) { _hc.value = on }
+
+    private val _notify = MutableStateFlow(false)
+    private val _packages = MutableStateFlow<Set<String>>(emptySet())
+    private val _forwardAll = MutableStateFlow(false)
+    override val notificationsEnabled: Flow<Boolean> = _notify
+    override val allowedPackages: Flow<Set<String>> = _packages
+    override val forwardAllNotifications: Flow<Boolean> = _forwardAll
+    override suspend fun setNotificationsEnabled(on: Boolean) { _notify.value = on }
+    override suspend fun setAllowedPackages(packages: Set<String>) { _packages.value = packages }
+    override suspend fun setForwardAllNotifications(on: Boolean) { _forwardAll.value = on }
 }
 
 /** Polls [cond] for up to [timeoutMs]; the packet collector runs on its own coroutine. */
