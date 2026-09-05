@@ -11,3 +11,5 @@ Also (2026-09-04, Buzz stepping away): proceed autonomously, and if help is need
 
 **Why:** the app iteration loop (build → install → launch → screenshot → fix) is the way Buzz wants the app developed and verified on the real phone and watch.
 **How to apply:** run that loop freely in background tasks; still avoid anything destructive on the phone (uninstalling other apps, clearing their data, factory resets) without asking. Related: [[no-edits-outside-project]], [[run-slow-tasks-in-background]].
+
+- END-OF-WORK STANDING INSTRUCTION (2026-09-05): the very last action of any work session must be to build the latest debug APK and install it on BOTH phones — the Moto g05 (MOTO_SERIAL) and the Pixel 9a (PIXEL_SERIAL) — with permissions granted on each (tools/app_smoke.sh --no-build per serial, or adb install -r + pm grant). Do this after all commits/merges are done. Requested so Buzz always has the newest build on both devices.
