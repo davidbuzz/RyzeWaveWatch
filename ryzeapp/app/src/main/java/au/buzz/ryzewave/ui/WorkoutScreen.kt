@@ -294,6 +294,36 @@ private fun WorkoutRow(w: Workout, onClick: () -> Unit) {
  */
 private fun storedSportName(w: Workout): String = SportTypes.name(HealthConnectMapping.effectiveSportType(w))
 
+/**
+ * Lets the user set the workout's exercise type for Health Connect (so a chosen run is not filed as a walk by the
+ * speed heuristic). Chips show the current type — the override when set, otherwise what the heuristic resolved to.
+ */
+@Composable
+private fun ExerciseTypeCard(w: Workout, enabled: Boolean, onSelect: (Int) -> Unit) {
+    ElevatedCard(Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Text("Exercise type", style = MaterialTheme.typography.titleMedium)
+            val current = HealthConnectMapping.exerciseType(w)
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                WorkoutDetailViewModel.EXERCISE_TYPE_CHOICES.forEach { (type, label) ->
+                    FilterChip(
+                        selected = type == current,
+                        onClick = { if (enabled && type != w.exerciseTypeOverride) onSelect(type) },
+                        label = { Text(label) },
+                    )
+                }
+            }
+            if (w.exerciseTypeOverride == null) {
+                Text(
+                    "Auto (from GPS speed / sport). Tap to override and re-export.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+    }
+}
+
 private fun averagePace(w: Workout): Double =
     if (w.distanceMeters > 0.0 && w.durationSeconds > 0) w.durationSeconds / w.distanceMeters * 1000.0 else 0.0
 
@@ -371,6 +401,7 @@ fun WorkoutDetailScreen(id: Long, onBack: () -> Unit, vm: WorkoutDetailViewModel
                         WorkoutChart(detail.hr, detail.pace, detail.kmMarkers, w.start, w.durationSeconds)
                     }
                 }
+                ExerciseTypeCard(w, enabled = !busy, onSelect = vm::setExerciseType)
                 Button(onClick = vm::exportGpx, enabled = !busy && detail.acceptedCount > 0) { Text("Export GPX") }
             }
         }

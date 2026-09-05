@@ -127,12 +127,25 @@ object HealthConnectMapping {
     fun effectiveSportType(workout: Workout): Int = SportTypes.effectiveId(workout.sportType, averageSpeedMps(workout))
 
     /**
-     * Health Connect exercise type from the watch's sport id (docs/PROTOCOL.md §6c). Type 1 (Outdoor Running) was the
-     * only type the app could start before the sport picker existed, walks included, so for type 1 alone the GPS
-     * average speed still decides between running and walking (>= [RUNNING_SPEED_MPS] is running), the same rule as
-     * the GPX writer. Every other id maps directly.
+     * Health Connect exercise type. When the user has set [Workout.exerciseTypeOverride] on the detail screen it
+     * wins outright — the whole point of the override is to stop a chosen run being filed as a walk. Otherwise the
+     * heuristic applies: type 1 (Outdoor Running, the only type the app could start before the sport picker) is
+     * split by GPS average speed (>= [RUNNING_SPEED_MPS] is running, the same rule as the GPX writer); every other
+     * id maps directly.
      */
-    fun exerciseType(workout: Workout): Int = exerciseTypeFor(effectiveSportType(workout))
+    fun exerciseType(workout: Workout): Int =
+        workout.exerciseTypeOverride ?: exerciseTypeFor(effectiveSportType(workout))
+
+    /** Human label for a chosen Health Connect exercise type (for the session title on an overridden workout). */
+    fun exerciseTypeLabel(exerciseType: Int): String = when (exerciseType) {
+        ExerciseSessionRecord.EXERCISE_TYPE_RUNNING -> "Running"
+        ExerciseSessionRecord.EXERCISE_TYPE_RUNNING_TREADMILL -> "Treadmill running"
+        ExerciseSessionRecord.EXERCISE_TYPE_WALKING -> "Walking"
+        ExerciseSessionRecord.EXERCISE_TYPE_HIKING -> "Hiking"
+        ExerciseSessionRecord.EXERCISE_TYPE_BIKING -> "Biking"
+        ExerciseSessionRecord.EXERCISE_TYPE_BIKING_STATIONARY -> "Stationary biking"
+        else -> "Other workout"
+    }
 
     /** Sport id -> Health Connect exercise type; ids without a close match become OTHER_WORKOUT. */
     fun exerciseTypeFor(sportType: Int): Int = when (sportType) {
@@ -151,8 +164,9 @@ object HealthConnectMapping {
         else -> ExerciseSessionRecord.EXERCISE_TYPE_OTHER_WORKOUT
     }
 
-    /** Session title: the sport's name (for type 1, the one the speed tie-breaker resolved to). */
-    fun exerciseTitle(workout: Workout): String = SportTypes.name(effectiveSportType(workout))
+    /** Session title: the user's chosen type when overridden, else the sport's name (type 1 resolved by speed). */
+    fun exerciseTitle(workout: Workout): String =
+        workout.exerciseTypeOverride?.let { exerciseTypeLabel(it) } ?: SportTypes.name(effectiveSportType(workout))
 
     fun exerciseNotes(workout: Workout): String = buildString {
         append(String.format(Locale.ROOT, "%.2f km", workout.distanceMeters / 1000.0))

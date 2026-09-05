@@ -8,7 +8,9 @@ import au.buzz.ryzewave.core.SettingsStore
 import au.buzz.ryzewave.core.TrackPoint
 import au.buzz.ryzewave.core.UserProfile
 import au.buzz.ryzewave.core.WatchApi
+import au.buzz.ryzewave.core.WatchEvent
 import au.buzz.ryzewave.core.Workout
+import au.buzz.ryzewave.core.WorkoutControlAction
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
@@ -89,9 +91,36 @@ class WorkoutController(
     private var calRegimeSpeed = 0.0
     @Volatile private var lastHrTime = 0L
 
+    /** Highest per-session step count seen in the watch's realtime pushes; the workout's step total. */
+    @Volatile private var watchStepsMax = 0
+    /** Steps counted by the phone's step counter for this workout (paused excluded); -1 = none reported. */
+    @Volatile private var phoneStepsValue = -1
+
     private var hrJob: Job? = null
     private var tickerJob: Job? = null
     private var watchUpdateJob: Job? = null
+
+    init {
+        // Watch-originated control (its physical buttons) and realtime step pushes drive the SAME state machine
+        // as the app's buttons. A long-lived collector (not tied to start/stop) so a watch STOP can call stop()
+        // without cancelling the coroutine it runs on.
+        scope.launch { watch.events.collect { onWatchEvent(it) } }
+    }
+
+    /** Applies a watch-originated event. Control is ignored unless it makes sense for the current phase. */
+    private suspend fun onWatchEvent(e: WatchEvent) {
+        when (e) {
+            is WatchEvent.WorkoutControl -> when (e.action) {
+                WorkoutControlAction.PAUSE -> if (_state.value.state == WorkoutPhase.RUNNING) pause(fromWatch = true)
+                WorkoutControlAction.RESUME -> if (_state.value.state == WorkoutPhase.PAUSED) resume(fromWatch = true)
+                WorkoutControlAction.STOP -> if (_state.value.state != WorkoutPhase.STOPPED) stop(fromWatch = true)
+                // The app cannot meaningfully begin a session from a watch press here (no GPS/foreground): ignore.
+                WorkoutControlAction.START -> Unit
+            }
+            is WatchEvent.WorkoutRealtime -> onWatchSteps(e.steps)
+            else -> Unit
+        }
+    }
 
     /**
      * Starts a workout: inserts the [Workout] row, subscribes to [WatchApi.liveHr], tells the watch
@@ -134,6 +163,8 @@ class WorkoutController(
         calCreditedSinceProgress = 0.0
         calRegimeSpeed = 0.0
         lastHrTime = 0L
+        watchStepsMax = 0
+        phoneStepsValue = -1
 
         val id = repo.insertWorkout(
             Workout(
@@ -167,19 +198,25 @@ class WorkoutController(
         id
     }
 
-    suspend fun pause(): Unit = control.withLock {
+    /**
+     * Pauses the workout. [fromWatch] is set when the watch itself paused (an unsolicited `FD 22`): the watch
+     * has already changed state, so the pause is NOT sent back to it — that would loop. An app-button pause
+     * ([fromWatch] false) still sends `FD 22`. Either way the state change is identical to the rest of the app.
+     */
+    suspend fun pause(fromWatch: Boolean = false): Unit = control.withLock {
         if (_state.value.state != WorkoutPhase.RUNNING) return@withLock
         val now = clock()
         runningSince?.let { activeMsBefore += max(0L, now - it) }
         runningSince = null
         val elapsed = elapsedSeconds(now)
         _state.update { it.copy(state = WorkoutPhase.PAUSED, elapsedSeconds = elapsed, speedMps = 0.0, paceSecPerKm = 0.0) }
-        watchCall("pauseWorkout") { watch.pauseWorkout() }
+        if (!fromWatch) watchCall("pauseWorkout") { watch.pauseWorkout() }
         flush()
         persistWorkout(end = null)
     }
 
-    suspend fun resume(): Unit = control.withLock {
+    /** Resumes a paused workout. [fromWatch] (an unsolicited `FD 33`) skips sending `FD 33` back to the watch. */
+    suspend fun resume(fromWatch: Boolean = false): Unit = control.withLock {
         if (_state.value.state != WorkoutPhase.PAUSED) return@withLock
         val now = clock()
         runningSince = now
@@ -191,15 +228,16 @@ class WorkoutController(
         calProgressTime = now
         calCreditedSinceProgress = 0.0
         _state.update { it.copy(state = WorkoutPhase.RUNNING) }
-        watchCall("resumeWorkout") { watch.resumeWorkout() }
+        if (!fromWatch) watchCall("resumeWorkout") { watch.resumeWorkout() }
     }
 
     /**
-     * Ends the workout: stops the ticker and HR stream, tells the watch (`FD 00 <type> 01`), flushes the buffers
-     * and writes the final [Workout] row (end, distance, duration, avg/max HR, calories). Returns that row, or
-     * null when nothing was running.
+     * Ends the workout whether it is RUNNING or PAUSED: stops the ticker and HR stream, tells the watch
+     * (`FD 00 <type> 01`, unless [fromWatch] — the watch already stopped itself), flushes the buffers and writes
+     * the final [Workout] row (end, active-time duration, distance, avg/max HR, calories, steps). Returns that
+     * row, or null when nothing was running.
      */
-    suspend fun stop(): Workout? = control.withLock {
+    suspend fun stop(fromWatch: Boolean = false): Workout? = control.withLock {
         if (_state.value.state == WorkoutPhase.STOPPED) return@withLock null
         val now = clock()
         runningSince?.let { activeMsBefore += max(0L, now - it) }
@@ -222,7 +260,7 @@ class WorkoutController(
                 paceSecPerKm = if (distance > 0.0 && elapsed > 0) elapsed / distance * 1000.0 else 0.0,
             )
         }
-        watchCall("stopWorkout") { watch.stopWorkout() }
+        if (!fromWatch) watchCall("stopWorkout") { watch.stopWorkout() }
         flush()
         val final = buildWorkout(end = now, elapsed = elapsed, distance = distance)
         try {
@@ -245,14 +283,27 @@ class WorkoutController(
 
     /**
      * Feed a location fix (any thread). While RUNNING it goes through the distance filter and is stored as a
-     * [TrackPoint] (accepted or not); while PAUSED only the GPS quality is updated.
+     * [TrackPoint] (accepted or not). While PAUSED the fix is still STORED — tagged [TrackPoint.paused], never
+     * counted (accepted = false) and adding no distance — so the track stays continuous and a missed resume
+     * never loses the route. GPS is left running on pause for exactly this reason (see [WorkoutService]).
      */
     fun onLocation(time: Long, lat: Double, lon: Double, accuracyM: Float, speedMps: Float, altitudeM: Double?) {
         val phase = _state.value.state
         if (phase == WorkoutPhase.STOPPED) return
         lastFixWallTime = clock()
         if (phase == WorkoutPhase.PAUSED) {
-            _state.update { it.copy(gpsAccuracyM = accuracyM, gpsAvailable = true) }
+            val distance: Double
+            synchronized(lock) {
+                distance = tracker.distanceMeters            // unchanged: paused fixes must not add distance
+                pendingPoints += TrackPoint(
+                    workoutId = workoutId, time = time, lat = lat, lon = lon, accuracyM = accuracyM,
+                    speedMps = speedMps, altitudeM = altitudeM, accepted = false, cumulativeM = distance,
+                    paused = true,
+                )
+            }
+            _state.update {
+                it.copy(gpsAccuracyM = accuracyM, gpsAvailable = true, trackPointCount = it.trackPointCount + 1)
+            }
             return
         }
         val accepted: Boolean
@@ -282,6 +333,25 @@ class WorkoutController(
     /** From the location provider's availability callback. */
     fun onGpsAvailability(available: Boolean) {
         _state.update { if (it.gpsAvailable == available) it else it.copy(gpsAvailable = available) }
+    }
+
+    /**
+     * The watch's per-session step count from a realtime push (any thread). The maximum seen is the workout's
+     * step total; it only ever rises. Ignored once STOPPED.
+     */
+    fun onWatchSteps(steps: Int) {
+        if (_state.value.state == WorkoutPhase.STOPPED) return
+        if (steps <= watchStepsMax) return
+        watchStepsMax = steps
+        _state.update { it.copy(steps = steps) }
+    }
+
+    /** The phone step counter's tally for this workout (paused steps already excluded). Ignored once STOPPED. */
+    fun onPhoneSteps(steps: Int) {
+        if (_state.value.state == WorkoutPhase.STOPPED) return
+        if (steps < 0 || steps == phoneStepsValue) return
+        phoneStepsValue = steps
+        _state.update { it.copy(phoneSteps = steps) }
     }
 
     /**
@@ -452,6 +522,8 @@ class WorkoutController(
             id = workoutId, start = startTime, end = end, sportType = sportType,
             distanceMeters = distance, durationSeconds = elapsed, avgHr = avg, maxHr = maxHr,
             calories = caloriesKcal.roundToInt(),
+            steps = if (watchStepsMax > 0) watchStepsMax else null,
+            phoneSteps = if (phoneStepsValue >= 0) phoneStepsValue else null,
         )
     }
 

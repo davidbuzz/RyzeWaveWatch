@@ -73,6 +73,23 @@ class HealthConnectMappingTest {
     }
 
     @Test
+    fun exerciseTypeOverrideWinsOverTheHeuristic() {
+        // a slow type-1 workout the heuristic files as WALKING, but the user chose Running
+        val slowRun = Workout(
+            id = 7, start = 0, end = 1800_000, sportType = 1, distanceMeters = 2000.0,
+            durationSeconds = 1800, avgHr = null, maxHr = null, calories = 0,
+        )
+        assertEquals(ExerciseSessionRecord.EXERCISE_TYPE_WALKING, HealthConnectMapping.exerciseType(slowRun))
+        val overridden = slowRun.copy(exerciseTypeOverride = ExerciseSessionRecord.EXERCISE_TYPE_RUNNING)
+        assertEquals(ExerciseSessionRecord.EXERCISE_TYPE_RUNNING, HealthConnectMapping.exerciseType(overridden))
+        assertEquals("Running", HealthConnectMapping.exerciseTitle(overridden))
+        // and it can force a non-speed type too (a ride filed as hiking, say)
+        val hiked = slowRun.copy(exerciseTypeOverride = ExerciseSessionRecord.EXERCISE_TYPE_HIKING)
+        assertEquals(ExerciseSessionRecord.EXERCISE_TYPE_HIKING, HealthConnectMapping.exerciseType(hiked))
+        assertEquals("Hiking", HealthConnectMapping.exerciseTitle(hiked))
+    }
+
+    @Test
     fun exerciseTypeFollowsTheSportId() {
         val expected = mapOf(
             0x01 to ExerciseSessionRecord.EXERCISE_TYPE_RUNNING,

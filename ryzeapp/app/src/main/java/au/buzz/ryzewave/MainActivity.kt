@@ -99,6 +99,8 @@ class MainActivity : ComponentActivity() {
         }
         list += Manifest.permission.ACCESS_FINE_LOCATION
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) list += Manifest.permission.POST_NOTIFICATIONS
+        // Per-workout phone steps (TYPE_STEP_COUNTER) need ACTIVITY_RECOGNITION from Android 10 (Q) on.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) list += Manifest.permission.ACTIVITY_RECOGNITION
         return list
     }
 

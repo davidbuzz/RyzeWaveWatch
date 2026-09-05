@@ -35,6 +35,18 @@ data class Workout(
     val avgHr: Int?,
     val maxHr: Int?,
     val calories: Int,
+    /**
+     * Steps for this workout as counted by the watch (max of the session-step field in the realtime `FD 01`
+     * pushes). Null on rows recorded before per-workout steps existed. Preferred for stride calibration.
+     */
+    val steps: Int? = null,
+    /** Steps for this workout from the phone's `TYPE_STEP_COUNTER` (paused fixes excluded); null when unavailable. */
+    val phoneSteps: Int? = null,
+    /**
+     * Health Connect exercise type the user chose for this session ([ExerciseSessionRecord.EXERCISE_TYPE_*]).
+     * When set it overrides the speed/sport-id heuristic in the export; null = use the heuristic.
+     */
+    val exerciseTypeOverride: Int? = null,
 )
 
 data class TrackPoint(
@@ -52,6 +64,11 @@ data class TrackPoint(
      * Null on rows written before it existed; the charts then fall back to summing the accepted hops.
      */
     val cumulativeM: Double? = null,
+    /**
+     * True for a fix received while the workout was PAUSED: stored so the track stays continuous (a missed
+     * resume never loses the route) but never counted towards distance ([accepted] is always false for these).
+     */
+    val paused: Boolean = false,
 )
 
 data class UserProfile(

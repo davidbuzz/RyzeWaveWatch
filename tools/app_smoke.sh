@@ -23,7 +23,7 @@ adb shell am force-stop com.yc.ryzefit >/dev/null 2>&1
 adb shell am force-stop au.buzz.ryzebridge >/dev/null 2>&1
 adb shell am force-stop $PKG >/dev/null 2>&1
 adb install -r "$APK" > "$OUT/install.log" 2>&1 || { echo "INSTALL FAILED"; cat "$OUT/install.log"; exit 1; }
-for p in BLUETOOTH_CONNECT BLUETOOTH_SCAN ACCESS_FINE_LOCATION ACCESS_COARSE_LOCATION POST_NOTIFICATIONS; do
+for p in BLUETOOTH_CONNECT BLUETOOTH_SCAN ACCESS_FINE_LOCATION ACCESS_COARSE_LOCATION POST_NOTIFICATIONS ACTIVITY_RECOGNITION; do
   adb shell pm grant $PKG android.permission.$p >/dev/null 2>&1
 done
 # Health Connect permissions are platform permissions on Android 14+, so pm grant works (verified on the Moto g05 / Android 15)

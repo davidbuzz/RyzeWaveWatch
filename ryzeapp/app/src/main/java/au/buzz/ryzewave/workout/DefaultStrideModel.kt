@@ -3,6 +3,20 @@ package au.buzz.ryzewave.workout
 import au.buzz.ryzewave.core.StrideModel
 import au.buzz.ryzewave.core.StrideSettings
 import au.buzz.ryzewave.core.UserProfile
+import au.buzz.ryzewave.core.Workout
+
+/**
+ * Which step count stride calibration should use for a workout. Per-workout steps come from the watch's
+ * realtime pushes ([Workout.steps]) or, failing that, the phone's step counter ([Workout.phoneSteps]); the
+ * old hourly-pro-rating path is gone (it mixed in steps walked in the same hour outside the workout).
+ */
+sealed class CalibrationSteps {
+    /** Use [steps], counted by [source] ("watch" / "phone"), named in the calibration message. */
+    data class Use(val steps: Int, val source: String) : CalibrationSteps()
+
+    /** No usable per-workout step count; [message] explains why (shown to the user). */
+    data class Unavailable(val message: String) : CalibrationSteps()
+}
 
 /**
  * Stride model with the vendor app's factors as defaults (see docs/PROTOCOL.md §9 and docs/PLAN.md §3a):
@@ -49,6 +63,20 @@ class DefaultStrideModel : StrideModel {
             if (steps < minSteps || distanceMeters < minDistanceM || !distanceMeters.isFinite()) return null
             val stride = distanceMeters / steps
             return stride.takeIf { it in MIN_STRIDE_M..MAX_STRIDE_M }
+        }
+
+        const val NO_PER_WORKOUT_STEPS_MESSAGE =
+            "This workout was recorded before steps were counted per workout — walk again with the watch connected"
+
+        /**
+         * Picks the step count for calibrating from [workout]: the watch's per-workout steps when they reach
+         * [minSteps], else the phone's, else [CalibrationSteps.Unavailable] with [NO_PER_WORKOUT_STEPS_MESSAGE].
+         * No hourly pro-rating — only steps the watch or phone attributed to this workout.
+         */
+        fun calibrationSteps(workout: Workout, minSteps: Int = 200): CalibrationSteps {
+            workout.steps?.let { if (it >= minSteps) return CalibrationSteps.Use(it, "watch") }
+            workout.phoneSteps?.let { if (it >= minSteps) return CalibrationSteps.Use(it, "phone") }
+            return CalibrationSteps.Unavailable(NO_PER_WORKOUT_STEPS_MESSAGE)
         }
     }
 }

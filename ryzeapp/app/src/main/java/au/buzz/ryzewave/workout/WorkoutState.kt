@@ -35,6 +35,10 @@ data class WorkoutState(
     val gpsAvailable: Boolean = false,
     val trackPointCount: Int = 0,
     val acceptedPointCount: Int = 0,
+    /** Watch's per-session step count (max seen); null until the first realtime push carries one. */
+    val steps: Int? = null,
+    /** Phone step-counter tally for this workout (paused steps excluded); null when unavailable. */
+    val phoneSteps: Int? = null,
     /** Last watch/database problem, cleared on the next successful watch call. The workout keeps running. */
     val error: String? = null,
     /**

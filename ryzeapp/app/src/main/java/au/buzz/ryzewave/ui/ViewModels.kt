@@ -24,8 +24,11 @@ import au.buzz.ryzewave.core.UserProfile
 import au.buzz.ryzewave.core.WatchStatus
 import au.buzz.ryzewave.core.Workout
 import au.buzz.ryzewave.ble.WatchService
+import androidx.health.connect.client.records.ExerciseSessionRecord
 import au.buzz.ryzewave.health.ExportResult
+import au.buzz.ryzewave.health.HealthConnectMapping
 import au.buzz.ryzewave.notify.WatchNotificationListener
+import au.buzz.ryzewave.workout.CalibrationSteps
 import au.buzz.ryzewave.workout.DefaultStrideModel
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
@@ -54,7 +57,6 @@ import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Locale
-import kotlin.math.roundToInt
 
 private const val TAG = "RyzeUi"
 private fun started() = SharingStarted.WhileSubscribed(5_000L)
@@ -364,8 +366,37 @@ class WorkoutDetailViewModel(private val graph: Graph = App.graph) : RyzeViewMod
         "Saved ${file.absolutePath}"
     }
 
+    /**
+     * User override of the workout's exercise type (Running / Walking / Hiking / Biking / Other). Stored on the
+     * row so the Health Connect export uses it instead of the speed/sport heuristic, then this session is
+     * re-exported (when Health Connect is on) so the change shows up straight away.
+     */
+    fun setExerciseType(exerciseType: Int) = task("Exercise type") {
+        val w = workout.value ?: return@task "No workout loaded"
+        graph.repo.updateWorkout(w.copy(exerciseTypeOverride = exerciseType))
+        val label = HealthConnectMapping.exerciseTypeLabel(exerciseType)
+        if (!graph.settings.healthConnectEnabled.first()) return@task "Exercise type set to $label"
+        try {
+            graph.health.exportNew()
+            "Exercise type set to $label and re-exported to Health Connect"
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            "Exercise type set to $label; Health Connect re-export failed: ${e.message ?: e.javaClass.simpleName}"
+        }
+    }
+
     companion object {
         private const val HR_MARGIN_MS = 10_000L
+
+        /** The exercise types offered by the detail-screen selector, in display order. */
+        val EXERCISE_TYPE_CHOICES: List<Pair<Int, String>> = listOf(
+            ExerciseSessionRecord.EXERCISE_TYPE_RUNNING to "Running",
+            ExerciseSessionRecord.EXERCISE_TYPE_WALKING to "Walking",
+            ExerciseSessionRecord.EXERCISE_TYPE_HIKING to "Hiking",
+            ExerciseSessionRecord.EXERCISE_TYPE_BIKING to "Biking",
+            ExerciseSessionRecord.EXERCISE_TYPE_OTHER_WORKOUT to "Other",
+        )
     }
 }
 
@@ -468,23 +499,20 @@ class SettingsViewModel(
     fun resetStride() = saveStride(StrideSettings())
 
     /**
-     * Stride from the last GPS workout: distance ÷ steps in its time window. The watch only delivers hourly
-     * step totals, so the edge hours are pro-rated by time overlap (steps walked in the same hour outside the
-     * workout are mixed in — a limitation of the hourly bins); the bounds live in
-     * [DefaultStrideModel.calibratedStrideM]. Speeds below 2 m/s calibrate the walking stride, faster ones the
-     * running stride.
+     * Stride from the last GPS workout: distance ÷ the workout's own step count. The step count is the watch's
+     * per-workout total ([Workout.steps]) or the phone's ([Workout.phoneSteps]) — no hourly pro-rating, which used
+     * to mix in steps walked in the same hour outside the workout ([DefaultStrideModel.calibrationSteps]). Speeds
+     * below 2 m/s calibrate the walking stride, faster ones the running stride; the bounds live in
+     * [DefaultStrideModel.calibratedStrideM].
      */
     fun calibrateFromLastWorkout() = task("Calibration") {
         val w = calibrationWorkout.value ?: return@task "No GPS workout of at least ${MIN_CALIBRATION_M.toInt()} m yet"
-        val end = w.end ?: return@task "Workout not finished"
-        val hours = ArrayList<StepsHour>()
-        var day = Fmt.dayStart(w.start)
-        while (day <= end) {
-            hours += graph.repo.stepsForDay(day).first()
-            day = Fmt.plusDays(day, 1)
+        w.end ?: return@task "Workout not finished"
+        val source = when (val s = DefaultStrideModel.calibrationSteps(w, MIN_CALIBRATION_STEPS)) {
+            is CalibrationSteps.Unavailable -> return@task s.message
+            is CalibrationSteps.Use -> s
         }
-        val steps = ChartData.stepsInWindow(hours, w.start, end).roundToInt()
-        if (steps < MIN_CALIBRATION_STEPS) return@task "Only $steps steps recorded during that workout; sync the watch and try again"
+        val steps = source.steps
         val strideM = DefaultStrideModel.calibratedStrideM(steps, w.distanceMeters, MIN_CALIBRATION_STEPS, MIN_CALIBRATION_M)
             ?: return@task "Computed stride ${Fmt.value(w.distanceMeters / steps)} m/step is implausible; not saved"
         val speed = w.distanceMeters / w.durationSeconds
@@ -492,7 +520,7 @@ class SettingsViewModel(
         val next = if (speed < RUN_SPEED_MPS) current.copy(walkStrideM = strideM) else current.copy(runStrideM = strideM)
         graph.settings.setStride(next)
         val kind = if (speed < RUN_SPEED_MPS) "walking" else "running"
-        "Calibrated $kind stride: ${String.format(Locale.US, "%.3f", strideM)} m/step from ${Fmt.metres(w.distanceMeters)} / $steps steps"
+        "Calibrated $kind stride: ${String.format(Locale.US, "%.3f", strideM)} m/step from ${Fmt.metres(w.distanceMeters)} / $steps ${source.source} steps"
     }
 
     fun setHealthConnectEnabled(on: Boolean) = task("Health Connect", exclusive = false) {
