@@ -40,9 +40,32 @@ class SleepChartDataTest {
 
     @Test
     fun laneLabelsFollowLaneOrder() {
-        assertEquals(listOf("Awake", "REM", "Light", "Deep"), (0 until SleepChartData.LANE_COUNT).map { SleepChartData.laneLabel(it) })
+        assertEquals(
+            listOf("Awake", "REM", "Light", "Deep", "Asleep"),
+            (0 until SleepChartData.LANE_COUNT).map { SleepChartData.laneLabel(it) },
+        )
         assertEquals(3, SleepChartData.lane(SleepMath.DEEP))
         assertEquals(0, SleepChartData.lane(SleepMath.AWAKE))
+        assertEquals(4, SleepChartData.lane(SleepMath.ASLEEP))
+    }
+
+    @Test
+    fun genericAsleepCountsAsAsleepInItsOwnLaneNotAwake() {
+        val stages = listOf(
+            SleepStage(bed, SleepMath.ASLEEP, 120),          // 2 h "asleep, stage unknown"
+            SleepStage(bed + 120 * m, SleepMath.DEEP, 30),
+            SleepStage(bed + 150 * m, SleepMath.AWAKE, 10),
+        )
+        val chart = SleepChartData.build(stages)!!
+        // generic-asleep sits in its own bottom lane (4), never the awake lane (0)
+        assertEquals(4, chart.blocks.first { it.stage == SleepMath.ASLEEP }.lane)
+        val s = chart.summary
+        assertEquals(120, s.genericMin)
+        assertEquals(30, s.deepMin)
+        assertEquals(10, s.awakeMin)
+        // total asleep = deep + light + REM + generic, and NOT the awake minutes
+        assertEquals(150, s.totalMin)
+        assertEquals("2 h 30 m asleep · deep 0:30 · light 0:00 · REM 0:00 · awake 0:10 · unstaged 2:00", SleepChartData.totalsLine(s))
     }
 
     @Test

@@ -10,6 +10,7 @@
             <intent-filter>
                 <action android:name="au.buzz.ryzewave.debug.FIND_PHONE" />
                 <action android:name="au.buzz.ryzewave.debug.WORKOUT" />
+                <action android:name="au.buzz.ryzewave.debug.SLEEP" />
             </intent-filter>
         </receiver>
     </application>

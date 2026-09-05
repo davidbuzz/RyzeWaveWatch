@@ -14,6 +14,13 @@ interface HealthRepository {
     suspend fun upsertHr(samples: List<HrSample>)
     suspend fun upsertSpo2(samples: List<Spo2Sample>)
     suspend fun upsertSleep(stages: List<SleepStage>)
+    /**
+     * Replace a whole night's sleep with [stages]: delete every sleep row in the noon-to-noon night window of
+     * [dayStart] (`data.Days.nightWindow`) and insert [stages] with a fresh `updatedAt`, so the Health Connect
+     * export cursor picks the rewritten night up. Used by the honest-reconstruction path (a generic-asleep
+     * window that keeps whatever real stages the watch did record). Default no-op for fakes.
+     */
+    suspend fun replaceSleepForNight(dayStart: Long, stages: List<SleepStage>) {}
     suspend fun insertWorkout(workout: Workout): Long
     suspend fun updateWorkout(workout: Workout)
     suspend fun insertTrackPoints(points: List<TrackPoint>)

@@ -109,13 +109,16 @@ object HealthConnectMapping {
 
     /**
      * Watch sleep stage code → Health Connect stage type. Best current guess (docs/APP.md):
-     * 1 = deep, 2 = light, 3 = REM, 4 = awake; anything else is unknown. The single place this is decided.
+     * 1 = deep, 2 = light, 3 = REM, 4 = awake; 5 = [SleepStage.GENERIC_ASLEEP], the app-generated
+     * "asleep, stage unknown", which maps to Health Connect's generic STAGE_TYPE_SLEEPING (never AWAKE);
+     * anything else is unknown. The single place this is decided.
      */
     fun sleepStageType(code: Int): Int = when (code) {
-        1 -> SleepSessionRecord.STAGE_TYPE_DEEP
-        2 -> SleepSessionRecord.STAGE_TYPE_LIGHT
-        3 -> SleepSessionRecord.STAGE_TYPE_REM
-        4 -> SleepSessionRecord.STAGE_TYPE_AWAKE
+        SleepStage.DEEP -> SleepSessionRecord.STAGE_TYPE_DEEP
+        SleepStage.LIGHT -> SleepSessionRecord.STAGE_TYPE_LIGHT
+        SleepStage.REM -> SleepSessionRecord.STAGE_TYPE_REM
+        SleepStage.AWAKE -> SleepSessionRecord.STAGE_TYPE_AWAKE
+        SleepStage.GENERIC_ASLEEP -> SleepSessionRecord.STAGE_TYPE_SLEEPING
         else -> SleepSessionRecord.STAGE_TYPE_UNKNOWN
     }
 

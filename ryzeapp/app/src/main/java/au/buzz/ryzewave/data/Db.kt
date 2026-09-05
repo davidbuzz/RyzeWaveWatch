@@ -290,6 +290,10 @@ interface SleepDao {
 
     @Query("SELECT * FROM sleep_stage WHERE updatedAt >= :time ORDER BY start")
     suspend fun changedSince(time: Long): List<SleepStageEntity>
+
+    /** Half-open [fromTime, toTime): used by `replaceSleepForNight` to clear a night before re-inserting it. */
+    @Query("DELETE FROM sleep_stage WHERE start >= :fromTime AND start < :toTime")
+    suspend fun deleteRange(fromTime: Long, toTime: Long)
 }
 
 @Dao

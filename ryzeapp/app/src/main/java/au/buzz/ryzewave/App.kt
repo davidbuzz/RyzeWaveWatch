@@ -35,6 +35,8 @@ class Graph(
     val notifications: au.buzz.ryzewave.notify.NotificationForwarder,
     /** Find-my-phone: rings the phone on `D1 0A 01` until `D1 0A 00`, the notification's Stop or 30 s. */
     val findPhone: au.buzz.ryzewave.findphone.FindPhoneRinger,
+    /** Accidental-night-workout guard: stops a watch-started overnight workout that would spoil sleep tracking. */
+    val nightGuard: au.buzz.ryzewave.workout.NightWorkoutGuardController,
 ) {
     companion object {
         fun create(app: App): Graph = GraphFactory.create(app)

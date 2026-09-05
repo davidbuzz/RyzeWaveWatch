@@ -49,6 +49,8 @@ class HealthConnectMappingTest {
         assertEquals(SleepSessionRecord.STAGE_TYPE_LIGHT, HealthConnectMapping.sleepStageType(2))
         assertEquals(SleepSessionRecord.STAGE_TYPE_REM, HealthConnectMapping.sleepStageType(3))
         assertEquals(SleepSessionRecord.STAGE_TYPE_AWAKE, HealthConnectMapping.sleepStageType(4))
+        // code 5 = app-generated generic-asleep -> Health Connect's generic "sleeping" (never awake/unknown)
+        assertEquals(SleepSessionRecord.STAGE_TYPE_SLEEPING, HealthConnectMapping.sleepStageType(5))
         assertEquals(SleepSessionRecord.STAGE_TYPE_UNKNOWN, HealthConnectMapping.sleepStageType(0))
         assertEquals(SleepSessionRecord.STAGE_TYPE_UNKNOWN, HealthConnectMapping.sleepStageType(9))
     }

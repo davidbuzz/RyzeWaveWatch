@@ -93,6 +93,16 @@ class RoomHealthRepository(
         }
     }
 
+    /**
+     * Incremental watch-sync upsert, keyed by [SleepStage.start] via [newOrChanged].
+     *
+     * Re-sync double-count caveat: rows written by [replaceSleepForNight]'s gap-fill are [SleepStage.GENERIC_ASLEEP]
+     * blocks whose `start` is the start of a gap. If the watch *later* re-stages minutes inside that same gap and
+     * they arrive here, the new real stages have different `start` keys, so they are inserted *alongside* the
+     * generic fill rather than replacing it — the two overlap in time and the summary counts those minutes twice.
+     * Nothing is silently wiped, but on such a re-sync of a previously reconstructed night prefer
+     * [replaceSleepForNight] (or de-overlap first) instead of this incremental path.
+     */
     override suspend fun upsertSleep(stages: List<SleepStage>) {
         if (stages.isEmpty()) return
         val now = clock()
@@ -102,6 +112,20 @@ class RoomHealthRepository(
                 .map(SleepStageEntity::toModel)
             val changed = newOrChanged(stages, existing) { it.start }
             if (changed.isNotEmpty()) db.sleep().upsert(changed.map { it.toEntity(now) })
+        }
+    }
+
+    /**
+     * Replace the night of [dayStart]: delete every sleep row in `Days.nightWindow(dayStart)` and insert
+     * [stages] with `updatedAt = now`. Every inserted row is stamped fresh (the idempotent `newOrChanged`
+     * filter is deliberately bypassed) so the Health Connect export cursor re-exports the rewritten night.
+     */
+    override suspend fun replaceSleepForNight(dayStart: Long, stages: List<SleepStage>) {
+        val now = clock()
+        val (from, to) = Days.nightWindow(dayStart, zone())
+        db.withTransaction {
+            db.sleep().deleteRange(from, to)
+            if (stages.isNotEmpty()) db.sleep().upsert(stages.map { it.toEntity(now) })
         }
     }
 

@@ -11,8 +11,22 @@ data class HrSample(val time: Long, val bpm: Int, val source: SampleSource = Sam
 
 data class Spo2Sample(val time: Long, val percent: Int, val source: SampleSource = SampleSource.HISTORY)
 
-/** Watch sleep stage codes as delivered (1..4); [minutes] is the stage duration. */
-data class SleepStage(val start: Long, val stage: Int, val minutes: Int)
+/**
+ * A sleep stage over [minutes] starting at [start]. [stage] is the watch's own code (1 = deep, 2 = light,
+ * 3 = REM, 4 = awake) or the app-generated [GENERIC_ASLEEP] (5) — "asleep, stage unknown" — which the honest
+ * reconstruction uses to fill a sleep window the watch did not stage. Generic-asleep counts as asleep
+ * everywhere (never as awake) but is never split into deep/light/REM.
+ */
+data class SleepStage(val start: Long, val stage: Int, val minutes: Int) {
+    companion object {
+        const val DEEP = 1
+        const val LIGHT = 2
+        const val REM = 3
+        const val AWAKE = 4
+        /** App-generated: asleep, real stage unknown (not from the watch). Maps to Health Connect generic "sleeping". */
+        const val GENERIC_ASLEEP = 5
+    }
+}
 
 data class DailySummary(
     val dayStart: Long,

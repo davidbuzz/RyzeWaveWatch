@@ -23,9 +23,13 @@ data class SleepChart(val start: Long, val end: Long, val blocks: List<SleepBloc
  * `HealthConnectMapping.sleepStageType` and `SleepMath`. No Android imports; unit-tested.
  */
 object SleepChartData {
-    /** Lanes top to bottom, as on a clinical hypnogram: awake, REM, light, deep. */
-    val LANES: List<Int> = listOf(SleepMath.AWAKE, SleepMath.REM, SleepMath.LIGHT, SleepMath.DEEP)
-    const val LANE_COUNT = 4
+    /**
+     * Lanes top to bottom, as on a clinical hypnogram: awake, REM, light, deep, then a separate bottom lane for
+     * app-generated generic-asleep ("asleep, stage unknown"). Generic-asleep gets its own lane so it is never
+     * conflated with a real stage, but it still counts toward the asleep total (see [build]).
+     */
+    val LANES: List<Int> = listOf(SleepMath.AWAKE, SleepMath.REM, SleepMath.LIGHT, SleepMath.DEEP, SleepMath.ASLEEP)
+    const val LANE_COUNT = 5
 
     /** Lane index (0 = top) for a watch stage code; unknown codes go in the light lane, as [SleepMath.summarize] counts them. */
     fun lane(stage: Int): Int = when (stage) {
@@ -33,6 +37,7 @@ object SleepChartData {
         SleepMath.REM -> 1
         SleepMath.LIGHT -> 2
         SleepMath.DEEP -> 3
+        SleepMath.ASLEEP -> 4
         else -> 2
     }
 
@@ -60,11 +65,16 @@ object SleepChartData {
         val light = perLane[lane(SleepMath.LIGHT)]
         val rem = perLane[lane(SleepMath.REM)]
         val awake = perLane[lane(SleepMath.AWAKE)]
+        val generic = perLane[lane(SleepMath.ASLEEP)]
         val start = blocks.first().start
         val end = blocks.last().end
         return SleepChart(
             start, end, blocks,
-            SleepSummary(bedTime = start, wakeTime = end, totalMin = deep + light + rem, deepMin = deep, lightMin = light, remMin = rem, awakeMin = awake),
+            SleepSummary(
+                bedTime = start, wakeTime = end,
+                totalMin = deep + light + rem + generic,
+                deepMin = deep, lightMin = light, remMin = rem, awakeMin = awake, genericMin = generic,
+            ),
         )
     }
 
@@ -74,9 +84,14 @@ object SleepChartData {
     /** "1:05" (hours:minutes, for the per-stage totals). */
     fun hm(minutes: Int): String = String.format(Locale.US, "%d:%02d", minutes / 60, minutes % 60)
 
-    /** "7 h 12 m asleep · deep 1:05 · light 4:30 · REM 1:37 · awake 0:20" */
-    fun totalsLine(s: SleepSummary): String =
-        "${hoursMinutes(s.totalMin)} asleep · deep ${hm(s.deepMin)} · light ${hm(s.lightMin)} · REM ${hm(s.remMin)} · awake ${hm(s.awakeMin)}"
+    /**
+     * "7 h 12 m asleep · deep 1:05 · light 4:30 · REM 1:37 · awake 0:20", with "· unstaged 4:37" appended when
+     * the night has generic-asleep minutes (a reconstructed / manual window the watch did not stage).
+     */
+    fun totalsLine(s: SleepSummary): String = buildString {
+        append("${hoursMinutes(s.totalMin)} asleep · deep ${hm(s.deepMin)} · light ${hm(s.lightMin)} · REM ${hm(s.remMin)} · awake ${hm(s.awakeMin)}")
+        if (s.genericMin > 0) append(" · unstaged ${hm(s.genericMin)}")
+    }
 
     /**
      * X-axis ticks at whole local hours inside [start, end]: every hour for a span up to 6 h, every second

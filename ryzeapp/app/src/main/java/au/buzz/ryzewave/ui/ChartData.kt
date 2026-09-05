@@ -285,26 +285,32 @@ fun nearestByX(points: List<Pt>, frame: ChartFrame, px: Float, maxPx: Float): Pt
 data class SleepSummary(
     val bedTime: Long?,
     val wakeTime: Long?,
-    /** Asleep minutes (deep + light + REM). */
+    /** Total asleep minutes = deep + light + REM + generic-asleep (everything but awake). */
     val totalMin: Int,
     val deepMin: Int,
     val lightMin: Int,
     val remMin: Int,
     val awakeMin: Int,
+    /** Minutes of app-generated generic-asleep ([SleepMath.ASLEEP], code 5): asleep, real stage unknown. */
+    val genericMin: Int = 0,
 )
 
 /** Stage codes as delivered by the watch (best current guess; same mapping the exporter uses). */
 object SleepMath {
-    const val DEEP = 1
-    const val LIGHT = 2
-    const val REM = 3
-    const val AWAKE = 4
+    const val DEEP = SleepStage.DEEP
+    const val LIGHT = SleepStage.LIGHT
+    const val REM = SleepStage.REM
+    const val AWAKE = SleepStage.AWAKE
+
+    /** App-generated "asleep, stage unknown" (code 5); counts as asleep, never as awake, never as deep/light/REM. */
+    const val ASLEEP = SleepStage.GENERIC_ASLEEP
 
     fun stageName(stage: Int): String = when (stage) {
         DEEP -> "Deep"
         LIGHT -> "Light"
         REM -> "REM"
         AWAKE -> "Awake"
+        ASLEEP -> "Asleep"
         else -> "Stage $stage"
     }
 
@@ -315,12 +321,14 @@ object SleepMath {
         var light = 0
         var rem = 0
         var awake = 0
+        var generic = 0
         for (s in sorted) {
             when (s.stage) {
                 DEEP -> deep += s.minutes
                 LIGHT -> light += s.minutes
                 REM -> rem += s.minutes
                 AWAKE -> awake += s.minutes
+                ASLEEP -> generic += s.minutes
                 else -> light += s.minutes
             }
         }
@@ -328,8 +336,8 @@ object SleepMath {
         return SleepSummary(
             bedTime = sorted.first().start,
             wakeTime = last.start + last.minutes * ChartData.MINUTE_MS,
-            totalMin = deep + light + rem,
-            deepMin = deep, lightMin = light, remMin = rem, awakeMin = awake,
+            totalMin = deep + light + rem + generic,
+            deepMin = deep, lightMin = light, remMin = rem, awakeMin = awake, genericMin = generic,
         )
     }
 }

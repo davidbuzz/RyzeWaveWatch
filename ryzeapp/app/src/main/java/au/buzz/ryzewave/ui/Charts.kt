@@ -654,17 +654,22 @@ fun WorkoutChart(
 
 // ---- 6: sleep hypnogram ------------------------------------------------------------------------------------
 
-/** Block colours by stage, in the strip / card colour language: deep = primary, light = faded primary, REM = tertiary, awake = error. */
+/**
+ * Block colours by stage, in the strip / card colour language: deep = primary, light = faded primary,
+ * REM = tertiary, awake = error, generic-asleep ("unstaged") = a neutral grey so it reads as sleep without
+ * claiming a real stage.
+ */
 fun sleepStageColor(stage: Int, colors: ChartColors): Color = when (stage) {
     SleepMath.DEEP -> colors.bar
     SleepMath.LIGHT -> colors.bar.copy(alpha = 0.45f)
     SleepMath.REM -> colors.bar2
     SleepMath.AWAKE -> colors.accent
+    SleepMath.ASLEEP -> colors.text.copy(alpha = 0.30f)
     else -> colors.grid
 }
 
 /**
- * One night as a hypnogram: four lanes (awake, REM, light, deep, top to bottom) with a filled block per stage,
+ * One night as a hypnogram: five lanes (awake, REM, light, deep, generic-asleep, top to bottom) with a filled block per stage,
  * a thin connector where consecutive stages change lane, and ticks at whole hours from bed to rise. Tap a
  * block to read its times and length.
  */

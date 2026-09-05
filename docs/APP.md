@@ -916,3 +916,27 @@ per-session step count went unused.
   stop|steps [--ei n <count>]` injects `WatchEvent.WorkoutControl` / `WatchEvent.WorkoutRealtime` to exercise the
   state machine without the watch (`start` uses the normal foreground path and may send `FD 11` if a watch is
   connected — run it with the watch disconnected).
+
+
+## Build 9 (2026-09-06): honest sleep reconstruction + night-workout guard
+
+**Generic asleep.** Watch sleep codes are 1 deep, 2 light, 3 REM, 4 awake; code **5 = asleep, stage unknown**
+(`SleepStage.GENERIC_ASLEEP`). It counts toward the asleep total, never as awake, is never split into deep/light/REM,
+renders in its own grey "Asleep" lane on the History card ("unstaged h:mm" in the totals line) and exports to Health
+Connect as `STAGE_TYPE_SLEEPING`. `SleepReconstruction` fills a night window with generic-asleep only where the watch
+has no stage (both ends and internal gaps), keeping every real stage byte for byte. `HealthRepository.replaceSleepForNight`
+writes it; the debug-only broadcast `au.buzz.ryzewave.debug.SLEEP` (extras `start`/`end` epoch ms, DUMP-guarded)
+triggers it and re-exports the night. Why: the night of 2026-09-05 the watch was stuck in an accidental exercise mode
+and only staged 00:26–06:11; heart rate showed real sleep 22:15–07:00 (captures/pixel_sleep_20260906/README.md).
+
+**Night workout guard.** `NightWorkoutGuard` (pure): a WATCH-originated workout start is "likely accidental" when it
+starts 22:00–05:59 local, the recent resting HR is below 75 bpm and there is no GPS movement (unknown HR = not
+accidental). `NightWorkoutGuardController` then posts a high-priority "Workout started while you may be asleep — tap to
+stop" notification with a Stop action and auto-stops the watch workout after a grace period if unacknowledged.
+App-initiated workouts are never auto-stopped; daytime starts are only logged. Debug trigger: the existing
+`au.buzz.ryzewave.debug.WORKOUT` broadcast with op `watchstart`. The general per-sport "stuck in exercise mode"
+detector (docs/PLAN.md) is the planned superset.
+
+361 unit tests. Verified on the Moto: the buggy night went from 3 h 33 m to 8 h 10 m asleep (bed 22:15, rise 07:00,
+35 min real awake, 4 h 37 m unstaged), Health Connect export OK; the guard flagged an injected 02:00 start at 58 bpm and
+auto-stopped it after the grace, and allowed a daytime start.

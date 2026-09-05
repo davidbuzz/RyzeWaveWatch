@@ -11,8 +11,12 @@ import au.buzz.ryzewave.findphone.FindPhoneRinger
 import au.buzz.ryzewave.health.HealthConnectExporter
 import au.buzz.ryzewave.notify.NotificationForwarder
 import au.buzz.ryzewave.ui.WorkoutBridgeHolder
+import au.buzz.ryzewave.workout.AndroidNightWorkoutAlerter
 import au.buzz.ryzewave.workout.DefaultStrideModel
+import au.buzz.ryzewave.workout.NightWorkoutGuard
+import au.buzz.ryzewave.workout.NightWorkoutGuardController
 import au.buzz.ryzewave.workout.WorkoutController
+import au.buzz.ryzewave.workout.WorkoutPhase
 import au.buzz.ryzewave.workout.WorkoutSession
 import au.buzz.ryzewave.workout.WorkoutUiBridge
 import kotlinx.coroutines.CoroutineName
@@ -109,9 +113,27 @@ object GraphFactory {
         )
         scope.launch { watch.events.collect { findPhone.onEvent(it) } }
 
+        // Accidental-night-workout guard: a workout the *watch* started overnight, with the wearer's HR still at
+        // rest and no GPS movement, is almost certainly an accidental touch that would block sleep detection for
+        // the rest of the night. It warns (high-priority notification with a Stop action) and auto-stops the
+        // watch's exercise mode after a grace period. App-initiated workouts are never touched (see the guard).
+        val nightGuard = NightWorkoutGuardController(
+            watch = watch,
+            scope = scope,
+            alerter = AndroidNightWorkoutAlerter(app),
+            isAppWorkoutActive = { WorkoutSession.state.value.state != WorkoutPhase.STOPPED },
+            recentRestingHr = {
+                val now = System.currentTimeMillis()
+                NightWorkoutGuard.restingHr(
+                    repo.hrBetween(now - NightWorkoutGuardController.RECENT_HR_WINDOW_MS, now).first(),
+                )
+            },
+            log = { Log.i("NightWorkoutGuard", it) },
+        )
+
         return Graph(
             repo = repo, settings = settings, watch = watch, health = health, notifications = notifications,
-            findPhone = findPhone,
+            findPhone = findPhone, nightGuard = nightGuard,
         )
     }
 }
