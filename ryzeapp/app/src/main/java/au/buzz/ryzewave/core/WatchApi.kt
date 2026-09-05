@@ -52,11 +52,25 @@ interface WatchApi {
     suspend fun sendNotification(type: Int, text: String): Boolean = false
 }
 
+/** A workout control the *watch* originated (its physical buttons), to be applied to the app's controller. */
+enum class WorkoutControlAction { START, PAUSE, RESUME, STOP }
+
 sealed class WatchEvent {
     data class Spo2Result(val time: Long, val percent: Int?) : WatchEvent()
     data class HrSummary(val time: Long, val max: Int, val min: Int, val avg: Int) : WatchEvent()
     data class RealtimeSteps(val stepsHour: StepsHour) : WatchEvent()
     /** `D1 0A 01` (the watch is looking for the phone: ring) / `D1 0A 00` (stop ringing). */
     data class FindPhone(val start: Boolean) : WatchEvent()
+    /**
+     * A pause/resume/stop the user pressed on the *watch* (an unsolicited `FD 22`/`FD 33`/`FD 00`, not the echo
+     * of a command the app just sent). The workout controller applies it exactly as it does the app's own
+     * buttons, without sending the control back to the watch (which already changed state itself).
+     */
+    data class WorkoutControl(val action: WorkoutControlAction) : WatchEvent()
+    /**
+     * The 14-byte realtime workout push (`FD <type> <hr> …`): [steps] is the watch's per-session step count
+     * (bytes 7-9, rising through the workout). The controller keeps the maximum as the workout's step total.
+     */
+    data class WorkoutRealtime(val sportType: Int, val steps: Int, val calories: Int, val distanceMeters: Double) : WatchEvent()
     data class Raw(val channel: String, val hex: String) : WatchEvent()
 }

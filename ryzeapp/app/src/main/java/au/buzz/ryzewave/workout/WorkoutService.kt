@@ -11,11 +11,19 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.pm.ServiceInfo
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
 import android.location.Location
+import android.media.AudioAttributes
+import android.os.Build
 import android.os.IBinder
 import android.os.Looper
 import android.os.PowerManager
+import android.speech.tts.TextToSpeech
 import android.util.Log
+import java.util.Locale
 import androidx.core.app.NotificationCompat
 import androidx.core.app.ServiceCompat
 import androidx.core.content.ContextCompat
@@ -56,6 +64,27 @@ class WorkoutService : Service() {
     private var locationOn = false
     private var wakeLock: PowerManager.WakeLock? = null
     private var stateJob: Job? = null
+    private var sessionJob: Job? = null
+
+    // Spoken workout cues (pause/resume/start/stop), driven by the controller's state so they cover the app
+    // buttons and the watch's buttons alike, each exactly once (see StateAnnouncer).
+    private val announcer = StateAnnouncer()
+    private var tts: TextToSpeech? = null
+    @Volatile private var ttsReady = false
+
+    // Phone step counter (TYPE_STEP_COUNTER): its tally, paused-time excluded, becomes Workout.phoneSteps.
+    private val phoneSteps = PhoneStepCounter()
+    private var sensorManager: SensorManager? = null
+    private val stepListener = object : SensorEventListener {
+        override fun onSensorChanged(event: SensorEvent) {
+            if (event.sensor?.type != Sensor.TYPE_STEP_COUNTER) return
+            val cumulative = event.values.firstOrNull()?.toLong() ?: return
+            phoneSteps.onReading(cumulative)
+            controller.onPhoneSteps(phoneSteps.steps)
+        }
+
+        override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
+    }
 
     private val locationCallback = object : LocationCallback() {
         override fun onLocationResult(result: LocationResult) {
@@ -75,6 +104,9 @@ class WorkoutService : Service() {
         fused = LocationServices.getFusedLocationProviderClient(this)
         notifications = getSystemService(NotificationManager::class.java)
         createChannel()
+        initTts()
+        startSessionObserver()
+        startStepCounter()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -90,6 +122,8 @@ class WorkoutService : Service() {
                 ensureTracking()   // GPS warms up while the watch is being told to start
                 command("start") { if (!controller.state.value.isActive) controller.start(sportType) }
             }
+            // GPS is deliberately NOT stopped on pause (see ensureTracking): fixes keep coming so the track
+            // stays continuous; the controller stores them tagged paused and adds no distance.
             ACTION_PAUSE -> command("pause") { controller.pause() }
             ACTION_RESUME -> command("resume") { controller.resume() }
             ACTION_STOP -> command("stop") { controller.stop() }
@@ -100,6 +134,9 @@ class WorkoutService : Service() {
 
     override fun onDestroy() {
         stateJob?.cancel()
+        sessionJob?.cancel()
+        stopStepCounter()
+        shutdownTts()
         stopLocationUpdates()
         releaseWakeLock()
         if (controller.state.value.isActive) {
@@ -325,6 +362,97 @@ class WorkoutService : Service() {
         } catch (e: Exception) {
             Log.d(TAG, "wake lock release: ${e.message}")
         }
+    }
+
+    // ---- spoken cues + phone steps -------------------------------------------------------------------
+
+    private fun initTts() {
+        try {
+            tts = TextToSpeech(this) { status ->
+                ttsReady = status == TextToSpeech.SUCCESS
+                if (!ttsReady) {
+                    Log.w(TAG, "TTS init failed (status $status)")
+                    return@TextToSpeech
+                }
+                tts?.setAudioAttributes(
+                    AudioAttributes.Builder()
+                        .setUsage(AudioAttributes.USAGE_ALARM)          // audible from a pocket, over music
+                        .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
+                        .build(),
+                )
+                runCatching { tts?.language = Locale.getDefault() }
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "TTS unavailable: ${e.message}")
+        }
+    }
+
+    private fun speak(text: String) {
+        Log.i(TAG, "announce: \"$text\"")               // always logged at INFO, even when TTS is not ready
+        val engine = tts ?: return
+        if (!ttsReady) return
+        try {
+            engine.speak(text, TextToSpeech.QUEUE_ADD, null, "workout:$text")
+        } catch (e: Exception) {
+            Log.d(TAG, "speak failed: ${e.message}")
+        }
+    }
+
+    private fun shutdownTts() {
+        try {
+            tts?.stop()
+            tts?.shutdown()
+        } catch (e: Exception) {
+            Log.d(TAG, "tts shutdown: ${e.message}")
+        }
+        tts = null
+        ttsReady = false
+    }
+
+    /** One collector of the controller's state: speaks the phase transitions and pauses the phone step counter. */
+    private fun startSessionObserver() {
+        if (sessionJob?.isActive == true) return
+        sessionJob = scope.launch {
+            var lastPhase: WorkoutPhase? = null
+            controller.state.collect { st ->
+                if (st.state != lastPhase) {
+                    lastPhase = st.state
+                    announcer.onPhase(st.state)?.let { speak(it) }
+                    phoneSteps.setPaused(st.state == WorkoutPhase.PAUSED)
+                }
+            }
+        }
+    }
+
+    private fun startStepCounter() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q &&
+            !granted(Manifest.permission.ACTIVITY_RECOGNITION)
+        ) {
+            Log.i(TAG, "phone step counter skipped: ACTIVITY_RECOGNITION not granted")
+            return
+        }
+        val sm = getSystemService(SensorManager::class.java) ?: return
+        val sensor = sm.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
+        if (sensor == null) {
+            Log.i(TAG, "phone step counter skipped: no TYPE_STEP_COUNTER sensor")
+            return
+        }
+        phoneSteps.reset()
+        sensorManager = sm
+        try {
+            sm.registerListener(stepListener, sensor, SensorManager.SENSOR_DELAY_NORMAL)
+        } catch (e: Exception) {
+            Log.w(TAG, "step counter register failed: ${e.message}")
+        }
+    }
+
+    private fun stopStepCounter() {
+        try {
+            sensorManager?.unregisterListener(stepListener)
+        } catch (e: Exception) {
+            Log.d(TAG, "step counter unregister: ${e.message}")
+        }
+        sensorManager = null
     }
 
     companion object {

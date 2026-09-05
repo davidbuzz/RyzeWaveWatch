@@ -14,6 +14,7 @@ import au.buzz.ryzewave.core.UserProfile
 import au.buzz.ryzewave.core.WatchApi
 import au.buzz.ryzewave.core.WatchEvent
 import au.buzz.ryzewave.core.WatchStatus
+import au.buzz.ryzewave.core.WorkoutControlAction
 import au.buzz.ryzewave.protocol.Packet
 import au.buzz.ryzewave.protocol.Protocol
 import au.buzz.ryzewave.protocol.Spo2Phase
@@ -100,6 +101,14 @@ class WatchApiImpl(
     @Volatile private var sportType = 1
     @Volatile private var spo2TestStartedAt = 0L
     @Volatile private var lastLivePersist = 0L
+
+    /**
+     * Sport-control commands the app has just sent, with the time they went out. The watch echoes every control
+     * it receives, so a `FD 22`/`FD 33`/`FD 00` that matches a recent send (within [ECHO_WINDOW_MS]) is our own
+     * echo and is ignored; any other one is a press on the watch and becomes a [WatchEvent.WorkoutControl].
+     */
+    private data class ExpectedEcho(val state: Int, val at: Long)
+    private val expectedEchoes = java.util.concurrent.CopyOnWriteArrayList<ExpectedEcho>()
 
     /** Set when a write fails "not connected" while the link claims to be Ready; consumed by [syncAllLocked]. */
     @Volatile private var linkSuspect: String? = null
@@ -417,6 +426,7 @@ class WatchApiImpl(
     override suspend fun startWorkout(sportType: Int) {
         requireReady()
         this.sportType = sportType
+        expectEcho(Protocol.SPORT_START)
         link.request(
             Protocol.encSportControl(Protocol.SPORT_START, sportType, 1),
             Matchers.isSportEcho(Protocol.SPORT_START), CONTROL_TIMEOUT_MS,
@@ -436,17 +446,42 @@ class WatchApiImpl(
 
     override suspend fun pauseWorkout() {
         requireReady()
+        expectEcho(Protocol.SPORT_PAUSE)
         link.request(Protocol.encSportControl(Protocol.SPORT_PAUSE, sportType, 1), Matchers.isSportEcho(Protocol.SPORT_PAUSE), CONTROL_TIMEOUT_MS)
     }
 
     override suspend fun resumeWorkout() {
         requireReady()
+        expectEcho(Protocol.SPORT_RESUME)
         link.request(Protocol.encSportControl(Protocol.SPORT_RESUME, sportType, 1), Matchers.isSportEcho(Protocol.SPORT_RESUME), CONTROL_TIMEOUT_MS)
     }
 
     override suspend fun stopWorkout() {
         requireReady()
+        expectEcho(Protocol.SPORT_STOP)
         link.request(Protocol.encSportControl(Protocol.SPORT_STOP, sportType, 1), Matchers.isSportEcho(Protocol.SPORT_STOP), CONTROL_TIMEOUT_MS)
+    }
+
+    /** Records that the app just sent a control [state], so its echo can be told apart from a watch button press. */
+    private fun expectEcho(state: Int) {
+        val now = clock()
+        expectedEchoes.removeAll { now - it.at > ECHO_WINDOW_MS }
+        expectedEchoes.add(ExpectedEcho(state, now))
+    }
+
+    /** Consumes (and returns true for) a pending expected echo of [state] within [ECHO_WINDOW_MS]; prunes stale ones. */
+    private fun consumeExpectedEcho(state: Int, now: Long): Boolean {
+        val match = expectedEchoes.firstOrNull { it.state == state && now - it.at <= ECHO_WINDOW_MS }
+        expectedEchoes.removeAll { now - it.at > ECHO_WINDOW_MS || it === match }
+        return match != null
+    }
+
+    /**
+     * Debug/test hook: publishes [e] on [events] as if it had come from the watch (used by the debug broadcast
+     * receiver to exercise the workout state machine, and by unit tests). Does not touch the GATT link.
+     */
+    fun injectEvent(e: WatchEvent) {
+        _events.tryEmit(e)
     }
 
     // ------------------------------------------------------------------ notifications
@@ -540,7 +575,12 @@ class WatchApiImpl(
                     }
                 }
             }
-            is Packet.SportRt -> if (p.hr > 0) _liveHr.tryEmit(HrSample(now, p.hr, SampleSource.WORKOUT))
+            is Packet.SportRt -> {
+                if (p.hr > 0) _liveHr.tryEmit(HrSample(now, p.hr, SampleSource.WORKOUT))
+                // Session steps (and the other live fields) so the workout controller can keep the watch's count.
+                _events.tryEmit(WatchEvent.WorkoutRealtime(p.sportType, p.steps, p.calories, p.distanceMeters))
+            }
+            is Packet.SportControlEcho -> onSportControlEcho(p, raw.consumed, now)
             is Packet.HrAutoSample -> attempt("persist auto hr") { repo.upsertHr(listOf(p.toHrSample(zone))) }
             is Packet.HrSummary -> _events.tryEmit(p.toEvent(zone))
             is Packet.Spo2Test -> onSpo2Packet(p, now)
@@ -590,6 +630,28 @@ class WatchApiImpl(
         return hour.total >= stored.total
     }
 
+    /**
+     * A `FD <state> <type> <ivl>` control echo. Distinguishes the echo of a command the app just sent (the link
+     * consumed it for a pending request, or it matches a recent [expectEcho]) from a press on the watch. A
+     * watch-originated pause/resume/stop is surfaced as [WatchEvent.WorkoutControl] so the controller applies it
+     * on the same path as the app buttons — the controller does NOT send the control back, so there is no loop.
+     * `FD 44` (metrics-push) echoes are not controls and are dropped.
+     */
+    private fun onSportControlEcho(p: Packet.SportControlEcho, consumed: Boolean, now: Long) {
+        if (p.state == Protocol.SPORT_UPDATE) return
+        val expected = consumeExpectedEcho(p.state, now)
+        if (consumed || expected) return       // our own command's echo
+        val action = when (p.state) {
+            Protocol.SPORT_PAUSE -> WorkoutControlAction.PAUSE
+            Protocol.SPORT_RESUME -> WorkoutControlAction.RESUME
+            Protocol.SPORT_STOP -> WorkoutControlAction.STOP
+            Protocol.SPORT_START -> WorkoutControlAction.START
+            else -> return
+        }
+        log("watch-originated workout control $action (${p.raw})", null)
+        _events.tryEmit(WatchEvent.WorkoutControl(action))
+    }
+
     private suspend fun onSpo2Packet(p: Packet.Spo2Test, now: Long) {
         val r = p.result
         if (r.phase != Spo2Phase.FINAL) return
@@ -620,6 +682,9 @@ class WatchApiImpl(
         const val ACK_TIMEOUT_MS = 5_000L
         const val CONTROL_TIMEOUT_MS = 8_000L
         const val UPDATE_ECHO_TIMEOUT_MS = 2_000L
+
+        /** How long after sending a control command its echo is still recognised as ours (not a watch press). */
+        const val ECHO_WINDOW_MS = 2_000L
         const val NOTIFY_ACK_TIMEOUT_MS = 3_000L
         const val SPO2_TIMEOUT_MS = 90_000L
     }

@@ -9,6 +9,7 @@
             android:permission="android.permission.DUMP">
             <intent-filter>
                 <action android:name="au.buzz.ryzewave.debug.FIND_PHONE" />
+                <action android:name="au.buzz.ryzewave.debug.WORKOUT" />
             </intent-filter>
         </receiver>
     </application>

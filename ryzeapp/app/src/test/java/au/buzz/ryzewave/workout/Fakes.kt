@@ -105,6 +105,8 @@ class FakeWatch : WatchApi {
     data class Update(val duration: Int, val distance: Double, val pace: Double, val calories: Int)
 
     val hr = MutableSharedFlow<HrSample>()
+    /** Watch events a test can push (watch-originated control, realtime steps); buffered so tryEmit never drops. */
+    val eventBus = MutableSharedFlow<WatchEvent>(replay = 0, extraBufferCapacity = 64)
     val calls = CopyOnWriteArrayList<String>()
     val updates = CopyOnWriteArrayList<Update>()
 
@@ -112,7 +114,17 @@ class FakeWatch : WatchApi {
 
     override val status: StateFlow<WatchStatus> = MutableStateFlow(WatchStatus())
     override val liveHr: SharedFlow<HrSample> = hr
-    override val events: SharedFlow<WatchEvent> = MutableSharedFlow()
+    override val events: SharedFlow<WatchEvent> = eventBus
+
+    /**
+     * Pushes a watch event to whoever collects [events] (the controller). Waits for the controller's collector
+     * to be subscribed first, so this replay-0 flow never drops the event on a start-up race.
+     */
+    suspend fun emitEvent(e: WatchEvent) {
+        val deadline = System.currentTimeMillis() + 3_000L
+        while (eventBus.subscriptionCount.value == 0 && System.currentTimeMillis() < deadline) delay(5L)
+        eventBus.emit(e)
+    }
 
     override suspend fun connect(mac: String) {}
     override suspend fun disconnect() {}

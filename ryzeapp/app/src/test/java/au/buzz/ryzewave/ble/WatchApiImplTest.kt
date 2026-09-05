@@ -6,6 +6,7 @@ import au.buzz.ryzewave.core.SampleSource
 import au.buzz.ryzewave.core.SamplingSettings
 import au.buzz.ryzewave.core.UserProfile
 import au.buzz.ryzewave.core.WatchEvent
+import au.buzz.ryzewave.core.WorkoutControlAction
 import au.buzz.ryzewave.protocol.Protocol
 import au.buzz.ryzewave.protocol.Features
 import java.time.LocalDateTime
@@ -456,6 +457,50 @@ class WatchApiImplTest {
         api.stopWorkout()
         assertEquals(listOf("fd110101", "fd440101000001000000000000", "fd220101", "fd330101", "fd000101"), link.txHex())
         assertTrue(repo.hr.isEmpty())   // workout samples are persisted by the workout controller, not here
+        job.cancel()
+    }
+
+    @Test
+    fun appControlEchoesAreIgnoredButWatchButtonPressesBecomeWorkoutControl() = runBlocking {
+        link.connect(MAC)
+        val events = ArrayList<WatchEvent>()
+        val job = scope.launch { api.events.collect { events += it } }
+
+        // Echo of a command the app sent: the link consumes it for the pending request AND it matches the
+        // expected-echo window -> NOT surfaced as a control.
+        link.on("fd220101", "fd220101")
+        api.pauseWorkout()
+        assertTrue(eventually { link.txHex().contains("fd220101") })
+        Thread.sleep(30)
+        assertTrue("an app echo must not become a WorkoutControl", events.none { it is WatchEvent.WorkoutControl })
+
+        // Move past the echo window, then an unsolicited FD 22 (a press on the watch) IS surfaced.
+        now += WatchApiImpl.ECHO_WINDOW_MS + 1
+        link.rx("fd220101")
+        assertTrue(eventually { events.any { it == WatchEvent.WorkoutControl(WorkoutControlAction.PAUSE) } })
+
+        link.rx("fd330101")
+        assertTrue(eventually { events.any { it == WatchEvent.WorkoutControl(WorkoutControlAction.RESUME) } })
+        link.rx("fd000101")
+        assertTrue(eventually { events.any { it == WatchEvent.WorkoutControl(WorkoutControlAction.STOP) } })
+
+        // exactly one of each control was surfaced (the echo added none)
+        val controls = events.filterIsInstance<WatchEvent.WorkoutControl>()
+        assertEquals(3, controls.size)
+        job.cancel()
+    }
+
+    @Test
+    fun realtimeSportPacketSurfacesSessionSteps() = runBlocking {
+        link.connect(MAC)
+        val events = ArrayList<WatchEvent>()
+        val job = scope.launch { api.events.collect { events += it } }
+        // FD 01 <hr=0x5c> cal=0x0000 pace 0 0 steps=0x000f5d(3933) count=0 km=3 frac=0  (14 bytes)
+        link.rx("fd015c00000000000f5d00000300")
+        assertTrue(eventually { events.any { it is WatchEvent.WorkoutRealtime && it.steps == 3933 } })
+        val rt = events.filterIsInstance<WatchEvent.WorkoutRealtime>().first()
+        assertEquals(1, rt.sportType)
+        assertEquals(3933, rt.steps)
         job.cancel()
     }
 

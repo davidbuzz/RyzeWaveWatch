@@ -3,6 +3,8 @@ package au.buzz.ryzewave.workout
 import au.buzz.ryzewave.core.HrSample
 import au.buzz.ryzewave.core.SampleSource
 import au.buzz.ryzewave.core.UserProfile
+import au.buzz.ryzewave.core.WatchEvent
+import au.buzz.ryzewave.core.WorkoutControlAction
 import au.buzz.ryzewave.ui.ChartData
 import java.util.concurrent.CopyOnWriteArrayList
 import kotlinx.coroutines.CoroutineScope
@@ -12,6 +14,7 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
@@ -105,17 +108,23 @@ class WorkoutControllerTest {
         assertEquals(100.0, ctl.state.value.distanceMeters, 0.5)
         assertEquals(5f, ctl.state.value.gpsAccuracyM)
 
+        // the fix taken while paused is stored (track stays continuous) but not counted and adds no distance
+        awaitUntil("paused fix stored") { repo.points().size == 4 }
+        val pausedPt = repo.points().maxByOrNull { it.time }!!
+        assertTrue(pausedPt.paused)
+        assertEquals(false, pausedPt.accepted)
+
         ctl.resume()
         assertEquals(WorkoutPhase.RUNNING, ctl.state.value.state)
         assertEquals("resume", watch.calls.last())
         now += 5_000L
         ctl.onLocation(now, LAT + 500.0 / DEG_LAT_M, LON, 5f, 1.5f, null)   // re-anchors after the pause
         assertEquals(100.0, ctl.state.value.distanceMeters, 0.5)
-        awaitUntil("re-anchor point persisted") { repo.points().size == 4 }
+        awaitUntil("re-anchor point persisted") { repo.points().size == 5 }
         // the stored track carries the tracker's running total, so the detail screen's "GPS track" agrees
         // with the workout distance instead of adding the 400 m straight line walked during the pause
         val stored = repo.points().sortedBy { it.time }
-        assertEquals(listOf(0.0, 100.0, 100.0, 100.0), stored.map { it.cumulativeM!! }.map { Math.round(it * 10) / 10.0 })
+        assertEquals(listOf(0.0, 100.0, 100.0, 100.0, 100.0), stored.map { it.cumulativeM!! }.map { Math.round(it * 10) / 10.0 })
         val cum = ChartData.cumulativeDistance(stored)
         assertEquals(3, cum.size)                                            // the accepted fixes only
         assertEquals(100.0, cum.last().value, 0.5)
@@ -283,5 +292,117 @@ class WorkoutControllerTest {
         assertEquals(repo.updates().last(), w)     // the row is written before the hook fires
         assertNull(ctl.stop())
         assertEquals(1, finished.size)
+    }
+
+    @Test
+    fun watchOriginatedPausePausesWithoutSendingPauseBack() = runBlocking<Unit> {
+        val ctl = controller(tickMs = 10_000L)
+        ctl.start(1)
+        assertEquals(listOf("start:1"), watch.calls.toList())
+        // the watch itself paused (an unsolicited FD 22): the controller must pause but NOT echo FD 22 back
+        watch.emitEvent(WatchEvent.WorkoutControl(WorkoutControlAction.PAUSE))
+        awaitUntil("controller paused from the watch") { ctl.state.value.state == WorkoutPhase.PAUSED }
+        assertFalse("must not re-send pause to the watch", watch.calls.contains("pause"))
+        assertEquals(listOf("start:1"), watch.calls.toList())
+
+        // and resume from the watch resumes without echoing FD 33
+        watch.emitEvent(WatchEvent.WorkoutControl(WorkoutControlAction.RESUME))
+        awaitUntil("controller resumed from the watch") { ctl.state.value.state == WorkoutPhase.RUNNING }
+        assertFalse("must not re-send resume to the watch", watch.calls.contains("resume"))
+
+        // stop from the watch finalises the row without echoing FD 00
+        watch.emitEvent(WatchEvent.WorkoutControl(WorkoutControlAction.STOP))
+        awaitUntil("controller stopped from the watch") { ctl.state.value.state == WorkoutPhase.STOPPED }
+        assertFalse("must not re-send stop to the watch", watch.calls.contains("stop"))
+        awaitUntil("row finalised") { repo.updates().lastOrNull()?.end != null }
+        assertEquals(1, finished.size)
+    }
+
+    @Test
+    fun appPauseStillSendsPauseToTheWatch() = runBlocking<Unit> {
+        val ctl = controller(tickMs = 10_000L)
+        ctl.start(1)
+        ctl.pause()
+        assertEquals("pause", watch.calls.last())
+        assertEquals(WorkoutPhase.PAUSED, ctl.state.value.state)
+        ctl.stop()
+    }
+
+    @Test
+    fun stopFromPausedFinalisesTheRow() = runBlocking<Unit> {
+        val ctl = controller(tickMs = 10_000L)
+        ctl.start(1)
+        watch.hr.emit(HrSample(now, 120, SampleSource.LIVE))
+        awaitUntil("hr in state") { ctl.state.value.lastHr == 120 }
+        now += 20_000L
+        ctl.pause()
+        assertEquals(WorkoutPhase.PAUSED, ctl.state.value.state)
+        now += 60_000L                                   // 60 s paused: not counted in the active duration
+        val final = ctl.stop()!!
+        assertEquals(WorkoutPhase.STOPPED, ctl.state.value.state)
+        assertNotNull(final.end)
+        assertEquals(20, final.durationSeconds)          // active time only, pause excluded
+        assertEquals(120, final.avgHr)
+        assertEquals(120, final.maxHr)
+        assertEquals(final, repo.updates().last())
+        assertNotNull(repo.updates().last().end)
+    }
+
+    @Test
+    fun watchStepsAreRecordedAsTheWorkoutStepMaximum() = runBlocking<Unit> {
+        val ctl = controller(tickMs = 10_000L)
+        ctl.start(1)
+        watch.emitEvent(WatchEvent.WorkoutRealtime(sportType = 1, steps = 100, calories = 5, distanceMeters = 80.0))
+        awaitUntil("first step count") { ctl.state.value.steps == 100 }
+        watch.emitEvent(WatchEvent.WorkoutRealtime(sportType = 1, steps = 3933, calories = 40, distanceMeters = 3000.0))
+        awaitUntil("rising step count") { ctl.state.value.steps == 3933 }
+        watch.emitEvent(WatchEvent.WorkoutRealtime(sportType = 1, steps = 10, calories = 0, distanceMeters = 0.0))
+        // a lower value (a fresh push) never lowers the recorded maximum
+        Thread.sleep(30)
+        assertEquals(3933, ctl.state.value.steps)
+        val final = ctl.stop()!!
+        assertEquals(3933, final.steps)
+        assertNull(final.phoneSteps)
+    }
+
+    @Test
+    fun phoneStepsAreRecordedOnTheRow() = runBlocking<Unit> {
+        val ctl = controller(tickMs = 10_000L)
+        ctl.start(1)
+        ctl.onPhoneSteps(250)
+        awaitUntil("phone steps in state") { ctl.state.value.phoneSteps == 250 }
+        val final = ctl.stop()!!
+        assertEquals(250, final.phoneSteps)
+    }
+
+    @Test
+    fun fixesDuringPauseAreStoredNotCountedAndResumeContinuesTheTrack() = runBlocking<Unit> {
+        val ctl = controller(tickMs = 20L)
+        ctl.start(1)
+        now += 5_000L
+        ctl.onLocation(now, LAT, LON, 5f, 10f, 10.0)
+        now += 10_000L
+        ctl.onLocation(now, LAT + 100.0 / DEG_LAT_M, LON, 5f, 10f, 10.0)   // 100 m in 10 s: a fast run, accepted
+        awaitUntil("two running fixes") { repo.points().size == 2 }
+        val distanceBeforePause = ctl.state.value.distanceMeters
+        assertEquals(100.0, distanceBeforePause, 0.5)
+
+        ctl.pause()
+        now += 60_000L
+        ctl.onLocation(now, LAT + 500.0 / DEG_LAT_M, LON, 5f, 1.5f, null)  // far, but paused: not counted
+        awaitUntil("paused fix stored") { repo.points().size == 3 }
+        assertEquals("distance must not grow while paused", distanceBeforePause, ctl.state.value.distanceMeters, 0.01)
+        val paused = repo.points().sortedBy { it.time }.last()
+        assertTrue(paused.paused)
+        assertFalse(paused.accepted)
+
+        ctl.resume()
+        now += 5_000L
+        ctl.onLocation(now, LAT + 500.0 / DEG_LAT_M, LON, 5f, 1.5f, null)  // re-anchors after the pause
+        awaitUntil("resume fix stored") { repo.points().size == 4 }
+        // exactly one paused point, and the distance is continuous (no jump across the 400 m walked while paused)
+        assertEquals(1, repo.points().count { it.paused })
+        assertEquals(distanceBeforePause, ctl.state.value.distanceMeters, 0.5)
+        ctl.stop()
     }
 }

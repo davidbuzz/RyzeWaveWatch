@@ -1,6 +1,7 @@
 package au.buzz.ryzewave.data
 
 import android.content.Context
+import androidx.room.ColumnInfo
 import androidx.room.Dao
 import androidx.room.Database
 import androidx.room.Entity
@@ -104,6 +105,11 @@ data class WorkoutEntity(
     val maxHr: Int?,
     val calories: Int,
     val updatedAt: Long,
+    /** Per-workout steps from the watch and from the phone; added in schema version 4 (see [Db.MIGRATION_3_4]). */
+    val steps: Int? = null,
+    val phoneSteps: Int? = null,
+    /** User-chosen Health Connect exercise type override; added in schema version 4. Null = use the heuristic. */
+    val exerciseTypeOverride: Int? = null,
 )
 
 @Entity(tableName = "track_point", primaryKeys = ["workoutId", "time"], indices = [Index(value = ["time"])])
@@ -118,6 +124,8 @@ data class TrackPointEntity(
     val accepted: Boolean,
     /** Added in schema version 2 (see [Db.MIGRATION_1_2]); null on rows from version 1. */
     val cumulativeM: Double?,
+    /** True for a fix taken while paused; added in schema version 4 (see [Db.MIGRATION_3_4]), default 0. */
+    @ColumnInfo(defaultValue = "0") val paused: Boolean = false,
 )
 
 @Entity(tableName = "sync_cursor")
@@ -163,16 +171,16 @@ fun SleepStageEntity.toModel(): SleepStage = SleepStage(start, stage, minutes)
 fun SleepStage.toEntity(updatedAt: Long): SleepStageEntity = SleepStageEntity(start, stage, minutes, updatedAt)
 
 fun WorkoutEntity.toModel(): Workout =
-    Workout(id, start, endTime, sportType, distanceMeters, durationSeconds, avgHr, maxHr, calories)
+    Workout(id, start, endTime, sportType, distanceMeters, durationSeconds, avgHr, maxHr, calories, steps, phoneSteps, exerciseTypeOverride)
 
 fun Workout.toEntity(updatedAt: Long): WorkoutEntity =
-    WorkoutEntity(id, start, end, sportType, distanceMeters, durationSeconds, avgHr, maxHr, calories, updatedAt)
+    WorkoutEntity(id, start, end, sportType, distanceMeters, durationSeconds, avgHr, maxHr, calories, updatedAt, steps, phoneSteps, exerciseTypeOverride)
 
 fun TrackPointEntity.toModel(): TrackPoint =
-    TrackPoint(workoutId, time, lat, lon, accuracyM, speedMps, altitudeM, accepted, cumulativeM)
+    TrackPoint(workoutId, time, lat, lon, accuracyM, speedMps, altitudeM, accepted, cumulativeM, paused)
 
 fun TrackPoint.toEntity(): TrackPointEntity =
-    TrackPointEntity(workoutId, time, lat, lon, accuracyM, speedMps, altitudeM, accepted, cumulativeM)
+    TrackPointEntity(workoutId, time, lat, lon, accuracyM, speedMps, altitudeM, accepted, cumulativeM, paused)
 
 // ---------------------------------------------------------------- DAOs
 // `between` ranges are half-open: fromTime <= t < toTime. `rangeOnce` is inclusive on both ends (it fetches the
@@ -354,7 +362,7 @@ interface HcExportDao {
         SyncCursorEntity::class,
         HcExportEntity::class,
     ],
-    version = 3,
+    version = 4,
     exportSchema = false,
 )
 abstract class Db : RoomDatabase() {
@@ -387,6 +395,25 @@ abstract class Db : RoomDatabase() {
             }
         }
 
+        /**
+         * v3 → v4: per-workout steps (`workout.steps`, `workout.phoneSteps` — nullable), the user's exercise-type
+         * override (`workout.exerciseTypeOverride` — nullable) and the paused flag on GPS fixes
+         * (`track_point.paused` — NOT NULL DEFAULT 0, matching `@ColumnInfo(defaultValue = "0")`). The statements
+         * are exposed as [MIGRATION_3_4_SQL] so a unit test can assert they add exactly these columns.
+         */
+        val MIGRATION_3_4_SQL: List<String> = listOf(
+            "ALTER TABLE `workout` ADD COLUMN `steps` INTEGER",
+            "ALTER TABLE `workout` ADD COLUMN `phoneSteps` INTEGER",
+            "ALTER TABLE `workout` ADD COLUMN `exerciseTypeOverride` INTEGER",
+            "ALTER TABLE `track_point` ADD COLUMN `paused` INTEGER NOT NULL DEFAULT 0",
+        )
+
+        val MIGRATION_3_4: Migration = object : Migration(3, 4) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                for (sql in MIGRATION_3_4_SQL) db.execSQL(sql)
+            }
+        }
+
         @Volatile
         private var instance: Db? = null
 
@@ -399,7 +426,7 @@ abstract class Db : RoomDatabase() {
         fun get(context: Context): Db =
             instance ?: synchronized(this) {
                 instance ?: Room.databaseBuilder(context.applicationContext, Db::class.java, NAME)
-                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
+                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
                     .build()
                     .also { instance = it }
             }
