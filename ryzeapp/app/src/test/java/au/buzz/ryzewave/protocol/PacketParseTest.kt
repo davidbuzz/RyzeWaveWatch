@@ -74,7 +74,8 @@ class PacketParseTest {
         assertEquals(Packet.SportControlEcho(Protocol.SPORT_PAUSE, 1, 1, "fd22010100001000010001153a"),
             Packet.parseHex("fd22010100001000010001153a"))
         assertTrue(Packet.parseHex("fd330101") is Packet.SportControlEcho)              // 4-byte app echo still fine
-        assertTrue(Packet.parseHex("fd000101000005000000000000") is Packet.SportControlEcho) // a 13-byte stop too
+        // A 13-byte FD 00 has never been seen from the watch (its stop echo is 4 B); Packets.kt parses FD 00 with
+        // 5+ bytes as a sport-HISTORY chunk first, so the long stop form is deliberately not asserted here.
         assertTrue(resume !is Packet.SportRt)                                           // 13 B, not the 14-byte realtime
     }
 
