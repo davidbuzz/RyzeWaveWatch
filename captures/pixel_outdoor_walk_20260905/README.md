@@ -26,3 +26,9 @@ i.e. the watch counted only ~70–80 steps in the hour that contained a 158-s, 1
 Either the watch arm was not swinging (phone held in the watch hand while watching the screen), or the watch's
 pedometer lags/pauses during a sport session. To settle: compare with the watch face's own step total for the day,
 and repeat with the phone in a pocket. Daily total in the DB at 08:41: 160 steps (58 at 06:00 + 78 at 08:00 + …).
+
+## Coordinates
+The unit-test fixture made from this walk (`ryzeapp/app/src/test/resources/pixel_outdoor_walk_20260905_track.csv`)
+is shifted by +0.0180° latitude and −0.0250° longitude (about 3.2 km displacement); the track length changes by
+1.4 cm over 192 m. Per the repo rule (CLAUDE.md "GPS data in the repo") every log gets its own shift of at least 1 km.
+The pulled database with the real coordinates is git-ignored.

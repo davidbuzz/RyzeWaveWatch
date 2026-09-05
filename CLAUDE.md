@@ -70,3 +70,8 @@ tooling keeps working; edit the files here, never under `~/.claude`.
 The project is a local git repo (initialised 2026-09-05, branch `main`, no remote yet). `tools/Gadgetbridge` and
 `tools/Gadgetbridge-tools` are submodules. Commit only when Buzz asks; never push — the GitHub remote will be a
 *private* repo that Buzz creates after checking the layout himself.
+
+## GPS data in the repo
+Never commit real coordinates. Any GPS track that becomes a fixture or capture gets its latitude **and** longitude
+shifted by constants of at least 1 km, with a different pair of constants for each log (Buzz, 2026-09-05). Record the
+shift in the file's header comment or the capture's `.md`. Pulled databases stay git-ignored.
