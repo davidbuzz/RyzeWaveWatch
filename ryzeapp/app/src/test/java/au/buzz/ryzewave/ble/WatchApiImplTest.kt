@@ -522,9 +522,11 @@ class WatchApiImplTest {
         assertTrue(eventually { api.status.value.charging })
         assertEquals(78, api.status.value.batteryPercent)
 
-        link.rx("d10a01")                                   // find phone
-        assertTrue(eventually { events.any { it is WatchEvent.FindPhone } })
+        link.rx("d10a01")                                   // find phone: start, then stop, both surfaced
+        assertTrue(eventually { events.any { it == WatchEvent.FindPhone(start = true) } })
+        assertFalse(events.any { it == WatchEvent.FindPhone(start = false) })
         link.rx("d10a00")
+        assertTrue(eventually { events.any { it == WatchEvent.FindPhone(start = false) } })
 
         link.rx("440f0001000456503630")                     // Ryze Fit's mood query reply: raw event only
         assertTrue(eventually { events.any { it is WatchEvent.Raw && it.hex == "440f0001000456503630" } })

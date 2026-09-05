@@ -1,0 +1,33 @@
+10:27:56 local file:
+6d2501762db8ea96302129382303d115  /tmp/claude-1000/-home-buzz-RyzeWaveWatch/a8cfe5ce-cab3-47da-bf23-26c8acc106be/scratchpad/db5/ryzewave.db
+/tmp/claude-1000/-home-buzz-RyzeWaveWatch/a8cfe5ce-cab3-47da-bf23-26c8acc106be/scratchpad/db5/ryzewave.db: 1 file pushed, 0 skipped. 196.2 MB/s (188416 bytes in 0.001s)
+/tmp/claude-1000/-home-buzz-RyzeWaveWatch/a8cfe5ce-cab3-47da-bf23-26c8acc106be/scratchpad/swap.sh: 1 file pushed, 0 skipped. 3.9 MB/s (218 bytes in 0.000s)
+10:27:56 SWAP (force-stop + copy in one shell):
+pid-before-swap: 9766
+total 242
+drwxrwx--x 2 u0_a378 u0_a378   3452 2026-09-05 10:27 .
+drwx------ 7 u0_a378 u0_a378   3452 2026-09-04 23:57 ..
+-rw-r--r-- 1 u0_a378 u0_a378 188416 2026-09-05 10:27 ryzewave.db
+-rw-rw---- 1 u0_a378 u0_a378  32768 2026-09-05 10:27 ryzewave.db-shm
+-rw-rw---- 1 u0_a378 u0_a378  16512 2026-09-05 10:27 ryzewave.db-wal
+733a728a2b8203a65127262189a4defe  ryzewave.db
+pid-after-swap: 9766
+pid-4s-later: 9766
+total 222
+drwxrwx--x 2 u0_a378 u0_a378   3452 2026-09-05 10:27 .
+drwx------ 7 u0_a378 u0_a378   3452 2026-09-04 23:57 ..
+-rw-r--r-- 1 u0_a378 u0_a378 188416 2026-09-05 10:27 ryzewave.db
+-rw-r--r-- 1 u0_a378 u0_a378  32768 2026-09-05 10:27 ryzewave.db-shm
+-rw-r--r-- 1 u0_a378 u0_a378      0 2026-09-05 10:27 ryzewave.db-wal
+733a728a2b8203a65127262189a4defe  databases/ryzewave.db
+10:28:02 LAUNCH
+10:28:12 journal-mode problems: 0
+10:28:12 crashes: 0
+  359,  695          TextView       Today
+  338,  761          TextView       Goal
+  419,  812          TextView       8,000 steps
+  371,  878          TextView       Distance
+  385,  929          TextView       0.00 km
+  387,  995          TextView       Walk / run
+  348, 1046          TextView       0 / 0
+tapping 635,1478 ('Settings')

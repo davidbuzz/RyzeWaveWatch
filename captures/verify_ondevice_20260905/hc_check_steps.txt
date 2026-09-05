@@ -1,0 +1,56 @@
+  360,  226          FrameLayout    Health Connect
+   49,  119  [click] ImageButton    Navigate up
+  684,  119  [click] ImageButton    More options
+  360,  579          TextView       Steps tracked on your phone will appear in Health Connect
+  360,  780          TextView       Steps tracked by this device are now stored in Health Connect for connected apps to access
+  383,  932  [click] Button         Dismiss
+  558,  932  [click] Button         Review
+  360, 1072          TextView       Your health apps
+  314, 1172          TextView       Buzz's Ryze Wave
+  194, 1290          TextView       Health
+  339, 1347          TextView       Not connected
+  615, 1316          ImageView      Click to connect this app to Health Connect
+  232, 1461          TextView       Mi Fitness
+  339, 1506          TextView       Not connected
+  615, 1461          ImageView      Click to connect this app to Health Connect
+  231, 1560          TextView       SmartLife
+  615, 1546          ImageView      Click to connect this app to Health Connect
+no node containing 'Data and access'
+no node containing 'Data'
+  360,  226          FrameLayout    Health Connect
+   49,  119  [click] ImageButton    Navigate up
+  684,  119  [click] ImageButton    More options
+  360,  579          TextView       Steps tracked on your phone will appear in Health Connect
+  360,  780          TextView       Steps tracked by this device are now stored in Health Connect for connected apps to access
+  383,  932  [click] Button         Dismiss
+  558,  932  [click] Button         Review
+  360, 1072          TextView       Your health apps
+  314, 1172          TextView       Buzz's Ryze Wave
+  194, 1290          TextView       Health
+  339, 1347          TextView       Not connected
+  615, 1316          ImageView      Click to connect this app to Health Connect
+  232, 1461          TextView       Mi Fitness
+  339, 1506          TextView       Not connected
+  615, 1461          ImageView      Click to connect this app to Health Connect
+  231, 1560          TextView       SmartLife
+  615, 1546          ImageView      Click to connect this app to Health Connect
+no node containing 'Exercise'
+  360,  226          FrameLayout    Health Connect
+   49,  119  [click] ImageButton    Navigate up
+  684,  119  [click] ImageButton    More options
+  360,  579          TextView       Steps tracked on your phone will appear in Health Connect
+  360,  780          TextView       Steps tracked by this device are now stored in Health Connect for connected apps to access
+  383,  932  [click] Button         Dismiss
+  558,  932  [click] Button         Review
+  360, 1072          TextView       Your health apps
+  314, 1172          TextView       Buzz's Ryze Wave
+  194, 1290          TextView       Health
+  339, 1347          TextView       Not connected
+  615, 1316          ImageView      Click to connect this app to Health Connect
+  232, 1461          TextView       Mi Fitness
+  339, 1506          TextView       Not connected
+  615, 1461          ImageView      Click to connect this app to Health Connect
+  231, 1560          TextView       SmartLife
+  615, 1546          ImageView      Click to connect this app to Health Connect
+10:30:49 DONE
+EXIT=0

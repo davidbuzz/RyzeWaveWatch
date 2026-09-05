@@ -23,3 +23,5 @@ tools/jadx.zip
 tools/jadx/
 captures/**/ryzewave.db*
 captures/**/batterystats.txt
+ryzeapp/keystore/
+ryzeapp/keystore.properties

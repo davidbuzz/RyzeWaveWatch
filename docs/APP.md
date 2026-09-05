@@ -5,6 +5,20 @@ Room 2.6.1 via KSP, Health Connect client 1.1.0-alpha11, play-services-location 
 Build: `cd ryzeapp && ./gradlew :app:assembleDebug` (SDK in `../tools/android-sdk`, see `local.properties`).
 Install: `adb install -r app/build/outputs/apk/debug/app-debug.apk`.
 
+### Release build and signing (2026-09-05)
+`cd ryzeapp && ./gradlew :app:assembleRelease` writes `app/build/outputs/apk/release/app-release.apk`, signed with the
+`release` signing config in `app/build.gradle.kts`. That config is only created when `ryzeapp/keystore.properties`
+exists; it reads `storeFile` (relative to `ryzeapp/`), `storePassword`, `keyAlias` and `keyPassword` from it. The
+keystore is `ryzeapp/keystore/release.jks` (PKCS12, one RSA-2048 key, alias `ryzewave`, `CN=Buzz's Ryze Wave`,
+valid 10,000 days, generated with JDK 17's `keytool`; the passwords are random and live only in `keystore.properties`).
+**Both files are git-ignored (`ryzeapp/keystore/`, `ryzeapp/keystore.properties`) and exist only on this laptop: back
+them up — losing the keystore means a new app identity (Android will not update an installed release build with an
+APK signed by a different key; it has to be uninstalled first).** Without the properties file the release APK is
+built unsigned (Gradle warns, `apksigner verify` fails), which is what a fresh clone or CI gets. Check a build with
+`tools/android-sdk/build-tools/35.0.0/apksigner verify --print-certs app/build/outputs/apk/release/app-release.apk`.
+`isMinifyEnabled` stays false for now (no R8 rules written yet). The debug and release builds share the package name
+`au.buzz.ryzewave` but not a signing key, so one cannot be installed over the other: the phone keeps the debug build.
+
 The protocol is fully described in `docs/PROTOCOL.md`; `ryzewave/protocol.py` is the reference codec and
 `android/src/au/buzz/ryzebridge/BleService.java` is proven GATT code for this watch (connect, MTU, CCCD, write
 queue, notification dispatch). Port, don't reinvent.
@@ -16,22 +30,36 @@ queue, notification dispatch). Port, don't reinvent.
 | `core` | `Models.kt`, `WatchApi.kt`, `HealthRepository.kt`, `DistanceModel.kt` | contracts (already written, do not change signatures without updating all users) |
 | `protocol` | `Protocol.kt`, `Packets.kt` | pure Kotlin port of `ryzewave/protocol.py`: UUIDs, opcodes, encoders `encXxx(): ByteArray`, decoders for B2/F7/34/31+32/E5/FD 01/F7 03/F7 04/A1/A2/38 01, `Features` bitmap. Unit tests in `app/src/test` replaying the hex packets from `docs/PROTOCOL.md` and `tests/test_protocol.py`. No Android imports. |
 | `ble` | `WatchGatt.kt`, `WatchService.kt`, `WatchApiImpl.kt` | `WatchGatt`: BluetoothGatt wrapper with a single-outstanding-op queue (Mutex + CompletableDeferred), `connectGatt(TRANSPORT_LE)`, `requestMtu(247)`, CCCD on 33F2/34F2, `write(cmd)`, `request(cmd, opcode)`, `collect(cmd, opcode, isEnd)` (like the Python client), reconnect with backoff, `onConnectionUpdated` logging. `WatchService`: foreground service (type connectedDevice) that owns the link and runs `applySettings` + `syncAll` on connect and every 30 min. `WatchApiImpl` implements `core.WatchApi` and persists through `HealthRepository`. |
-| `data` | `Db.kt` (Room database + entities + DAOs), `RoomHealthRepository.kt`, `SettingsStore.kt` (DataStore) | implements `HealthRepository` and `SettingsStore`. Entities: steps_hour(hourStart PK), hr_sample(time, source PK), spo2_sample(time, source PK), sleep_stage(start PK), workout(id auto), track_point(workoutId, time PK), sync_cursor(kind PK). `DailySummary` computed with a query + `StrideModel`. |
-| `health` | `HealthConnectExporter.kt` | writes Steps/HeartRate/OxygenSaturation/Distance/Sleep/ExerciseSession records to Health Connect since the export cursor, idempotent via `clientRecordId` (e.g. `hr-<time>`), handles SDK availability (`HealthConnectClient.getSdkStatus`), permission request contract for the UI, `exportAll()` and `exportSince(cursor)`. Mirrors `~/MyPulseApp/app/src/main/java/com/example/pulseapp/MainActivity.kt` for the permission flow. |
+| `data` | `Db.kt` (Room database + entities + DAOs), `RoomHealthRepository.kt`, `SettingsStore.kt` (DataStore) | implements `HealthRepository` and `SettingsStore`. Entities: steps_hour(hourStart PK), hr_sample(time, source PK), spo2_sample(time, source PK), sleep_stage(start PK), workout(id auto), track_point(workoutId, time PK), sync_cursor(kind PK), hc_export(clientRecordId PK — the Health Connect export ledger, schema v3). `DailySummary` computed with a query + `StrideModel`. |
+| `health` | `HealthConnectExporter.kt`, `HealthConnectExportPlanner.kt`, `HealthConnectMapping.kt` | writes Steps/HeartRate/OxygenSaturation/Distance/Sleep/ExerciseSession records (the session with an `ExerciseRoute` of the workout's accepted GPS fixes) to Health Connect since the export cursor, idempotent via `clientRecordId` (e.g. `hr-<time>`) and an export ledger (`hc_export`: content fingerprint per client id, so only records whose content changed since their last export are written), handles SDK availability (`HealthConnectClient.getSdkStatus`), permission request contract for the UI, `exportNew()`, `exportAll(force)` and `exportSince(cursor)`. The SDK entry points sit behind `HealthConnectBackend` so the export loop is unit-tested against a fake client. Mirrors `~/MyPulseApp/app/src/main/java/com/example/pulseapp/MainActivity.kt` for the permission flow. |
 | `workout` | `DefaultStrideModel.kt`, `DefaultGpsDistanceTracker.kt`, `WorkoutService.kt`, `WorkoutController.kt` | stride model (vendor factors as defaults: walk 0.410/0.415 × height, run 0.546/0.505; calibrated override), GPS tracker per `docs/PLAN.md §3b`, foreground location service using FusedLocationProvider at 1 Hz, drives `WatchApi.startWorkout/updateWorkout/stopWorkout`, stores `Workout` + `TrackPoint`s, exposes `StateFlow<WorkoutState>` (elapsed, distance, pace, hr, gps quality), GPX export to the app's files dir. |
-| `ui` | `RyzeApp.kt` (NavHost + bottom bar), `DashboardScreen.kt`, `HistoryScreen.kt`, `WorkoutScreen.kt`, `SettingsScreen.kt`, `Charts.kt`, `ViewModels.kt` | Material3 Compose. Dashboard: connection card (state, battery, firmware, connect/sync buttons), today's steps + goal ring, distance (stride model), last HR / SpO2 with time, sleep last night. History: day picker, HR line chart (10-min series + live/workout samples), SpO2 chart, steps bar chart per hour; 7/30-day step totals. Workout: start/pause/stop, live HR, distance, pace, elapsed, GPS accuracy; list of past workouts with summary. Settings: watch MAC (scan list or manual), profile, sampling (continuous HR, SpO2 auto + interval incl. 5/20 min), stride calibration (auto from last GPS walk + manual), Health Connect toggle + permission button + "export now", find watch. `Charts.kt`: hand-drawn Compose Canvas charts (no chart library; same idea as the `PulseView` Path-on-Canvas in `~/MyPulseApp/.../MainActivity.kt`). |
-
+| `ui` | `RyzeApp.kt` (NavHost + bottom bar), `DashboardScreen.kt`, `HistoryScreen.kt`, `WorkoutScreen.kt`, `SettingsScreen.kt`, `Charts.kt`, `ViewModels.kt` | Material3 Compose. Dashboard: connection card (state, battery, firmware, connect/sync buttons), today's steps + goal ring, distance (stride model), last HR / SpO2 with time, sleep last night. History: day picker, HR line chart (10-min series + live/workout samples), SpO2 chart, steps bar chart per hour; 7/30-day step totals. Fifth card "Sleep": the night that ended on the selected morning (`repo.sleepForNight`, previous noon .. noon) as a hypnogram — four lanes awake/REM/light/deep top to bottom, a filled block per stage, hourly ticks from bed to rise, tap a block to read it — with the totals line ("7 h 12 m asleep · deep 1:05 · light 4:30 · REM 1:37 · awake 0:20"), bed/rise times and the stage list. Layout maths in `ui/SleepChartData.kt` (pure Kotlin, unit-tested against the night synced on 2026-09-05). The dashboard's sleep card is a one-liner ("Last night: 6 h 19 m" + strip) and is hidden until a night exists. Workout: start/pause/stop, live HR, distance, pace, elapsed, GPS accuracy; list of past workouts with summary. Settings: watch MAC (scan list or manual), profile, sampling (continuous HR, SpO2 auto + interval incl. 5/20 min), stride calibration (auto from last GPS walk + manual), Health Connect toggle + permission button + "export now", find watch. `Charts.kt`: hand-drawn Compose Canvas charts (no chart library; same idea as the `PulseView` Path-on-Canvas in `~/MyPulseApp/.../MainActivity.kt`). |
+| `findphone` | `FindPhoneRinger.kt`, `AndroidFindPhoneAlerter.kt` | find-my-phone: `FindPhoneRinger` (Android-free state machine fed with `WatchEvent.FindPhone(start)` from `WatchApi.events`: start rings, `D1 0A 00` / the notification's Stop / 30 s stops, duplicate starts ignored; unit-tested on virtual time) and `AndroidFindPhoneAlerter` (alarm ringtone looped on the alarm stream at full volume — volume restored afterwards —, repeating vibration with alarm attributes, high-priority `find_phone` notification whose Stop action / tap / swipe go to `WatchService.ACTION_FIND_PHONE_STOP`). Wired in `GraphFactory` as `App.graph.findPhone`. |
 | root | `App.kt`, `GraphFactory.kt`, `MainActivity.kt` | `GraphFactory.create(app)` wires Room repo, settings, `WatchApiImpl`, exporter. `MainActivity`: runtime permissions (BLUETOOTH_CONNECT/SCAN, ACCESS_FINE_LOCATION, POST_NOTIFICATIONS), Health Connect permission launcher, sets content to `RyzeApp()`. |
+
+### Permissions
+Runtime (manifest + `MainActivity`): `BLUETOOTH_CONNECT`, `BLUETOOTH_SCAN`, `ACCESS_FINE_LOCATION` (+ `ACCESS_COARSE_LOCATION`),
+`POST_NOTIFICATIONS`; foreground-service types `connectedDevice` and `location`; notification-listener access is granted
+in system settings. Health Connect (write-only, requested through `PermissionController`, `pm grant`-able on Android 14+):
+`android.permission.health.WRITE_STEPS`, `WRITE_HEART_RATE`, `WRITE_OXYGEN_SATURATION`, `WRITE_DISTANCE`, `WRITE_SLEEP`,
+`WRITE_EXERCISE` — these six gate the export (`HealthConnectExporter.REQUIRED_PERMISSIONS`) — plus
+`WRITE_EXERCISE_ROUTE`, requested with them but optional: without it the exercise sessions are exported without their
+GPS route. `tools/app_smoke.sh` grants all of them. The Settings gate ("Permissions granted", "Export now") is computed
+against `REQUIRED_PERMISSIONS` only — `ui/HealthPermissionGate.evaluate` (pure, unit-tested) — while the request goes
+out for `WRITE_PERMISSIONS`; a declined route permission shows a hint and a "Grant route permission" button instead
+of a red status (build 13).
 ### The charts (at least these five)
 1. **Heart rate, one day** — line chart of the 10-minute `F7` series with gaps for missing bins, plus dots for live/workout/auto samples; min/max/avg labels; tap to read a value.
 2. **SpO2, one day** — line/dot chart of the 10-minute series and spot tests, y-axis 85-100 %.
 3. **Steps per hour, one day** — bar chart (walk vs run stacked), with the daily goal line on the cumulative total.
 4. **Daily steps and distance, last 7 / 30 days** — bars for steps with the distance (stride model) as a secondary line; today highlighted.
 5. **Workout detail** — HR over elapsed time with pace (from the GPS tracker) as a second series; distance markers every km.
+6. **Workout track** (`ui/TrackPlot.kt`, maths in `ui/TrackGeometry.kt`) — the GPS track north-up on a Canvas, scaled to fit with padding: accepted fixes as a polyline, rejected fixes as small dots, green start / red end markers, a numbered ring where each whole km was crossed (from `cumulativeM`, falling back to summed hops for old rows), a 10/50/100/500 m/1 km scale bar that fits 45 % of the width, and a north arrow. No map tiles.
+7. **Sleep hypnogram, one night** (`SleepHypnogram` in `Charts.kt`, maths in `ui/SleepChartData.kt`) — four lanes (awake, REM, light, deep, top to bottom), a filled block per watch stage (1 deep / 2 light / 3 REM / 4 awake, unknown codes drawn in the light lane), x axis from bed (first stage start) to rise (last stage end) with ticks at whole hours (every 2 h for nights over 6 h), thin connectors where the lane changes, tap a block for "23:27–23:46 · Light 19 min". Colours match the dashboard strip: deep = primary, light = faded primary, REM = tertiary, awake = error.
 All charts: axis ticks with times/dates, dark and light theme aware, `Modifier.fillMaxWidth().height(200.dp)`, empty-state text when there is no data.
 
 **History screen layout (Buzz's request, 2026-09-04):** one shared date navigator at the top (`<  4 Sept 2026  >`),
-then FOUR chart cards stacked in a scrollable column — heart rate, SpO2, steps per hour, daily steps + distance
+then FOUR chart cards (a fifth, sleep, added 2026-09-05) stacked in a scrollable column — heart rate, SpO2, steps per hour, daily steps + distance
 (7/30 days) — each styled like the vendor app's blood-oxygen card in `captures/ryzefit_spo2_reference.png`:
 a coloured header card with the line-and-dots chart, dashed horizontal gridlines with the value labels on the left
 (e.g. 88/91/94/97/100 for SpO2, 40..180 for HR), x-axis time labels (00:10 … 20:00), then a "Minimum / Maximum"
@@ -48,7 +76,20 @@ The workout-detail chart is its own screen.
 - Ryze Fit (`com.yc.ryzefit`) shares the GATT link if running; nothing to do about it, but the app should not be confused by its traffic (only react to opcodes it asked for or the pushes above).
 
 ## Health Connect mapping
-StepsRecord per hour (count, start/end), HeartRateRecord with samples grouped per day (or per hour), OxygenSaturationRecord per sample, DistanceRecord per day (stride model) and per workout (GPS), SleepSessionRecord per night with stages mapped (1 → deep, 2 → light, 3 → REM, 4 → awake — best current guess, keep a single mapping function), ExerciseSessionRecord per workout (type walking/running by sport type). Use `Metadata(clientRecordId = …, clientRecordVersion = 1)` so re-exports update instead of duplicate.
+StepsRecord per hour (count, start/end), HeartRateRecord with samples grouped per epoch hour (client id `hr-<hourStart>`), OxygenSaturationRecord per sample, DistanceRecord per day (stride model) and per workout (GPS), SleepSessionRecord per night with stages mapped (1 → deep, 2 → light, 3 → REM, 4 → awake — best current guess, keep a single mapping function), ExerciseSessionRecord per workout (type walking/running by sport type) with an `ExerciseRoute` built from the workout's *accepted* track points (time, lat, lon, altitude, horizontal accuracy; fixes outside the session's start..end and duplicate instants dropped; no route with fewer than 2 points — `HealthConnectMapping.routeLocations` / `exerciseRoute`). The planner reads the points with `HealthRepository.trackPointsOnce` only when `WRITE_EXERCISE_ROUTE` is granted, and the exporter logs `exercise route attached to workout-<id>: <n> locations` at INFO. Every record carries `Metadata(clientRecordId = …, clientRecordVersion = <export clock>)` so a re-export updates instead of duplicating (Health Connect only applies an upsert with a *higher* version).
+
+**Cursor and ledger.** The export cursor (`sync_cursor` kind `hc-export`) is the phone clock at the start of planning; the
+planner takes every row whose `updatedAt` is at or after `cursor − 5 min` (the lookback covers clock jitter between a
+sync and the export) as a *candidate*, rebuilds the affected hour / day / night completely, then compares each candidate
+record's content fingerprint (`HealthConnectMapping.fingerprint`: the data, not the version and not the `now` cap of
+the hour / day in progress) with the ledger of what was last written under that client id (`hc_export`). Only records
+whose content differs are written; the exporter stores their fingerprints chunk by chunk as Health Connect accepts them.
+So a finished workout goes out once, an export with nothing changed writes 0 records, and a changed workout row re-sends
+exactly its session and its GPS distance record. The daily DistanceRecord is steps × stride: the ledger also keeps a
+marker of the effective strides (`stride`), and when it differs from the current one (calibration, manual edit, reset,
+or a height change with derived strides) every day with steps is rebuilt and the days that moved are re-sent;
+`GraphFactory` triggers an export when the stride setting changes. `exportAll(force = true)` clears the ledger first
+(after the app's data was deleted in Health Connect); "Export now" in Settings is `exportAll()` without force.
 
 ## Definition of done for this iteration
 `./gradlew :app:assembleDebug` succeeds; unit tests in `app/src/test` pass; APK installs on the USB phone (Moto g05, Android 15, Health Connect 2026.08 present, location high-accuracy); the app connects to `78:02:B7:37:91:E5`, syncs, shows today's numbers and charts, can run a workout with live HR and GPS distance, and exports to Health Connect after permissions are granted.
@@ -167,6 +208,20 @@ Device log 08:11:59-08:12:43: test "Buzz's Ryze Wave: test" → `c500042c…` 3 
 `c500043400540065…` 4 chunks acked, `c5fd0434`; the shell's group summary was dropped by the filter.
 
 
+### Find-my-phone ringer implemented (build 11, 2026-09-05) — 300 unit tests, verified on the Moto without the watch
+`WatchEvent.FindPhone` now carries `start` and `WatchApiImpl` emits it for both `D1 0A 01` and `D1 0A 00`
+(`WatchApiImplTest.pushesAtAnyTime…` checks both). `findphone/FindPhoneRinger` (state machine, `FindPhoneAlerter`
+interface) + `findphone/AndroidFindPhoneAlerter` (ringtone / vibration / notification) as in the package table;
+`GraphFactory` collects `watch.events` into `findPhone.onEvent`, and `WatchService.onStartCommand` handles
+`ACTION_FIND_PHONE_STOP` from the notification (before its own foreground check, so a tap always silences the
+ring). The ring runs in the process the `WatchService` foreground service keeps alive, so it works with the
+screen off; the 30 s cap is `FindPhoneRinger.TIMEOUT_MS`. Settings > Watch > "Find watch" (`AB 00 00 00 01 02 07 01`
+via `WatchApi.findWatch`) was already there. `src/debug` (debug build only) adds `debug/DebugEventReceiver`, an
+exported receiver that injects the event into the same `onEvent` path:
+`adb shell am broadcast -n au.buzz.ryzewave/.debug.DebugEventReceiver -a au.buzz.ryzewave.debug.FIND_PHONE --ez start true`
+(`--ez start false` = the watch's `D1 0A 00`). Evidence in `captures/app_findphone_20260905/` (screenshots of the
+ringing notification, after Stop, after the 30 s timeout; `logcat.txt`; `steps.txt`). Still unverified: the real
+`D1 0A 01` from the wrist end to end (the packet → event mapping is unit-tested on the captured bytes).
 
 ## Sport types (2026-09-05)
 
@@ -206,7 +261,7 @@ each started a workout on the watch and `FD 00 <type> 01` stopped it.
   dialog listing all 70 by name. The choice is persisted in DataStore (`workout_sport_type`, default 1,
   `SettingsStore.workoutSportType` / `setWorkoutSportType`) and `WorkoutViewModel.start()` passes it to
   `WorkoutBridge.start` → `WorkoutService.start`; callers that pass nothing still get type 1. The header line reads
-  "<sport> · Ready/Running/…", the "Sport" stat shows the name, the distance stat is labelled "Distance (from GPS)", and
+  "<sport> · Ready/Running/…", the "Sport" stat shows the name, the distance stat is labelled "Distance (GPS)" (was "Distance (from GPS)", which wrapped), and
   the GPS tracker runs for every sport. Workouts list rows, the detail title/card and the GPX `<type>` show the name.
 - Health Connect: exercise type by sport id — 0x01/0x24/0x73 running, 0x1B/0x15 running_treadmill, 0x09/0x23 walking,
   0x02 biking, 0x12 biking_stationary, 0x08 hiking, 0x04 swimming_pool, 0x13 yoga, 0x1C strength_training, 0x61 HIIT,
@@ -219,6 +274,124 @@ each started a workout on the watch and `FD 00 <type> 01` stopped it.
   relaunch the selection is still Outdoor Walking (`workout_tab_after_restart.png`). No crash in `logcat -b crash`.
   Start was not pressed (Buzz was wearing the watch), so a non-type-1 workout end-to-end is still untested from the app.
 
+### Track plot + Health Connect exercise route (build 8, 2026-09-05 09:05) — 261 unit tests, 0 failures
+PLAN item 3. `ui/TrackGeometry.kt` (pure: projection scaled to fit with padding, km marks from `cumulativeM` with the
+summed-hops fallback, scale bar) + `ui/TrackPlot.kt` (Canvas) + a "Track" card on `WorkoutDetailScreen`
+(`WorkoutDetail.points`). `HealthConnectMapping.routeLocations / exerciseRoute / exerciseSessionRecords(tracks)` attach
+an `ExerciseRoute` of the accepted fixes (>= 2 points, inside start..end — Health Connect wants route times strictly
+before the session end); `HealthRepository.trackPointsOnce` (default = `trackPoints().first()`, Room one-shot query)
+feeds the planner, which reads tracks only when `WRITE_EXERCISE_ROUTE` is granted (`Plan.routes`,
+`ExportCounts.routePoints`); the exporter logs `exercise route attached to workout-<id>: <n> locations`. The route
+permission is requested with the others but does not gate the export (`REQUIRED_PERMISSIONS` vs `WRITE_PERMISSIONS`).
+Tests: `TrackGeometryTest` (square loop, km marks, empty/single, scale bar, outliers, the real walk),
+`HealthConnectMappingTest` (route filtering, < 2 points, the real walk = 86 locations), `HealthConnectExportPlannerTest`
+(route loaded from the repository, skipped without the permission); the real track lives in
+`app/src/test/resources/pixel_outdoor_walk_20260905_track.csv` (`workout/RealTrack.kt`). Verified on the Moto with the
+Pixel's database (watch absent): `captures/app_track_20260905/` — plot screenshots, logcat
+`exercise route attached to workout-1: 86 locations` / `exported 230 records (... workouts=1, routePoints=86) ... failed 0`,
+Health Connect's Exercise list shows "Exercise map route available" and the entry a route thumbnail.
+
+### Health Connect hygiene (build 9, 2026-09-05 09:30) — 283 unit tests, 0 failures
+PLAN item 9. Room schema v3 (`Db.MIGRATION_2_3`) adds the export ledger `hc_export(clientRecordId PK, fingerprint,
+exportedAt)`; `HealthRepository.exportedFingerprints / markExported / clearExported` (defaults keep the test fakes
+compiling). `HealthConnectMapping.fingerprint(record, now)` is a 64-bit FNV-1a of the record's data (not the version,
+not the `now` cap of the hour / day in progress; the route and the notes are part of a session's content), and
+`strideFingerprint` hashes the effective walk / run stride. The planner compares every candidate with the ledger and
+plans only what differs (`Plan.fingerprints`, `Plan.markers`, `Plan.unchanged`); when the stored `stride` marker
+differs from the current stride every day with steps is rebuilt. The exporter stores fingerprints chunk by chunk as
+Health Connect accepts them, the markers after a successful run (also on "nothing to export"), and logs
+`exported N records (...) from F, U unchanged skipped, cursor -> C, failed M` or `nothing to export: U candidate
+records unchanged since their last export`. `HealthConnectBackend` wraps `getSdkStatus` / `getOrCreate` so
+`HealthConnectExporterTest` runs the real export loop against `FakeHealthConnectClient` (upsert by client id, only a
+higher `clientRecordVersion` counts) with read-back: first export = exactly the planned ids; second export = 0 writes;
+changed workout = same ten ids, only `workout-1` / `wdist-1` at the new version; `exportAll(force = true)` rewrites all
+at a higher version without duplicates; stride change re-sends the daily distances only; rejected / transient failures.
+`GraphFactory` also exports on a stride change (`settings.stride.drop(1)`). Known, deliberate extra write: an hour whose
+count did not change after its last mid-hour export is sent once more when it closes (its end time moves from the
+export time to the hour end). Verified on the Moto with the build-8 database (watch absent): `captures/hc_ledger_20260905/`
+— first export after the migration 230 records, second export `nothing to export: 230 candidate records unchanged`,
+walk stride 0.8 → `export after stride change: distance=3, inserted=3`, "Use defaults" → 3 again; `hc_export` holds 231
+rows, `user_version = 3`. Unit tests need `testOptions.unitTests.isReturnDefaultValues = true` (the exporter calls
+`android.util.Log`).
+
+### Ship-shape polish (build 12, 2026-09-05) — 307 unit tests, 0 failures; watch absent
+PLAN item 10, the parts that need no watch.
+- **Settings edit state.** `ui/SettingsScreen.kt` `EditGuard` / `rememberEditGuard` (KDoc there): "local edits win until
+  saved". The Watch (MAC) and Stride sections used `remember(flowValue) { mutableStateOf(…) }`, which re-created the
+  field state whenever the settings flow re-emitted (another setting saved, the service re-applying settings, DataStore
+  rewriting its file) and so reverted what was being typed — the profile bug of build 1. All three text sections now
+  share the guard: fields are seeded once; while nothing is edited the stored value re-seeds them on change
+  (`LaunchedEffect(stored)`); `touch()` on every keystroke, `saved()` on Save (the flow's echo re-seeds with the same
+  or normalised values), `discard()` when an outside action replaces the value (scan result tapped, "Use defaults",
+  "Calibrate from last GPS workout") so the fields show it at once even if the flow does not re-emit. Verified by
+  reading (the watch is out of range); the Save buttons still compare the parsed fields with the stored value.
+- **"avg" / "goal" label overdraw.** `ui/ChartData.kt` `Box` + `LabelLayout.pick` (pure Kotlin, `LabelLayoutTest`):
+  a label that annotates a horizontal reference line is offered ten candidate boxes (right edge, left edge, centre,
+  quarter points; above then below the line) and takes the first one that covers no data — dots within their radius,
+  polyline segments (Liang–Barsky clip test), bars — with a ×100 penalty for overlapping the min / max point labels;
+  otherwise the least-covered one. It is drawn on a translucent card-coloured pill so a line underneath cannot cut
+  through the glyphs. Used by the HR chart's "avg NN" (`drawLineLabel` in `Charts.kt`) and the steps chart's "goal".
+  Min / max point labels are also inset 4 dp from the plot's left edge so SpO2's "99" no longer touches the "100"
+  axis tick. Before / after on the Moto: `captures/app_polish_20260905/hr_card_before_4sep.png` ("avg 81" on top of
+  the 22:00–23:50 dots) vs `hr_card_after_4sep.png`.
+- **Launcher icon.** `res/mipmap-anydpi-v26/ic_launcher.xml` (adaptive; minSdk 26 so no legacy PNGs) with
+  `drawable/ic_launcher_bg.xml` (deep blue radial gradient), `drawable/ic_launcher_fg.xml` (white rounded watch case
+  with strap stubs and crown, coral heart-rate wave, all inside the 66 dp safe circle) and `drawable/ic_launcher_mono.xml`
+  (same shapes in one colour for Android 13+ themed icons). `drawable/ic_watch.xml` stays the notification icon.
+  Screenshots: `captures/app_polish_20260905/app_drawer.png` (drawer tile) and `app_info_icon.png` (App info, larger).
+- **Signed release build.** See "Release build and signing" at the top. `assembleRelease` also runs `lintVitalRelease`,
+  which failed on `InvalidFragmentVersionForActivityResult` (play-services-base drags in `androidx.fragment:fragment:1.0.0`);
+  a dependency constraint lifts it to 1.6.2. `app-release.apk` verified with `apksigner verify --print-certs`
+  (APK Signature Scheme v2 — AGP's default for minSdk 26 —, `CN=Buzz's Ryze Wave`, RSA 2048; output in `captures/app_polish_20260905/apksigner_release.txt`); the debug build stays installed on the Moto (same package name, different key).
+- Small fixes on the way: Settings > Watch buttons in a `FlowRow` ("Find watch" was squashed onto two lines in a
+  `Row`); the Watch Save button now saves the trimmed text it compares against; Workout stat label "Distance (GPS)".
+
+### Review fixes (build 13, 2026-09-05) — 324 unit tests, 0 failures; watch absent
+Nine review findings, all fixed; verified on the Moto without the watch (`captures/app_fixes_20260905/steps.md` lists
+the evidence per item: the gate with the route permission revoked and re-granted, three lossless lower-case typing
+trials in the MAC field, ring 1 / ring 2 from the DUMP-guarded receiver, "Outdoor Walking" in the workout list,
+two stride exports from a height change, and a `user_version = 4` database that made the launch throw
+`A migration from 4 to 3 was required but not found` instead of emptying the tables). Not done: a negative test of
+the DUMP guard from a third-party uid (needs another app; `run-as` sends as the app's own uid, which Android
+always admits).
+- **Settings permission gate = exporter gate.** `HealthConnectPermissionHost(request, required)` requests the seven
+  `WRITE_*` permissions but computes `granted` against `HealthConnectExporter.REQUIRED_PERMISSIONS` (six) through the
+  pure `HealthPermissionGate.evaluate(have, required, optional)` (`ui/HealthPermissions.kt`, `HealthPermissionGateTest`);
+  `optionalMissing` drives the hint "Permissions granted (GPS routes not allowed: workouts are exported without their
+  track)" and turns the button into "Grant route permission". The exporter's instance properties now mean what they
+  say: `requiredPermissions` = the six, `writePermissions` = the seven, `optionalPermissions` = the route;
+  `HealthConnectExporter.routeGranted(result)` joins `granted(result)`.
+- **MAC field.** `WatchSection` keeps the raw text (no `uppercase()` inside `onValueChange`, which made Gboard drop
+  keystrokes under its composition); `KeyboardCapitalization.Characters` asks the keyboard for capitals and
+  `MacText.normalise` (`ui/Format.kt`, `MacTextTest`) upper-cases and trims when the value is compared and saved.
+- **Find-my-phone ringer.** Each ring has a `generation`; the timeout job stops only its own ring
+  (`stop(reason, ringGeneration)`), so a stale timer cannot silence a later ring. The alerter calls run outside the
+  state lock (serialised by a second lock), so a Stop tap on the main thread flips the state at once instead of
+  waiting behind `MediaPlayer.prepare()`; a stop issued from inside `startAlarm` is honoured (`FindPhoneRingerTest`).
+- **Debug receiver.** `DebugEventReceiver` (debug builds) is still exported for adb but guarded with
+  `android:permission="android.permission.DUMP"`: the shell holds it, ordinary apps cannot get it.
+- **Planner: sessions read their track once.** With every exercise session the exporter stores two companion
+  ledger entries (`workout-<id>.base` = fingerprint of the session without its route, `workout-<id>.route` = number
+  of route locations, or -1 when written without the route permission). A candidate workout whose route-less
+  fingerprint and route state match them is unchanged without `trackPointsOnce` being called
+  (`Plan.sessionsSkipped`, logged as "N sessions unchanged without reading their tracks"); a session exported before
+  the companions existed is read once more and gets them through `Plan.markers`.
+- **Planner: missing stride marker.** On an incremental run (cursor > 0) a missing `stride` marker now counts as a
+  stride change (exports ran before the ledger existed — the v2 → v3 upgrade — or the marker write failed): every day
+  with steps is rebuilt and the fingerprints decide what is sent. A full run never needed the marker.
+- **Export toast.** `exportMessage(ExportResult)` (`ui/ViewModels.kt`): a no-op "Export now" reads "Nothing new to
+  export: N records already in Health Connect" instead of "Exported 0 records"; the Settings "Last export" line says
+  "nothing new (N records unchanged)".
+- **Room.** `fallbackToDestructiveMigration()` is gone from `Db.get`: a schema version without a migration (a
+  downgrade, a forgotten `MIGRATION_n_m`) throws at the first query instead of silently emptying every table.
+- **Workout titles.** The workouts list, the detail title and the detail card name a stored workout by
+  `HealthConnectMapping.effectiveSportType` (type 1 split by speed), the same name the Health Connect session and the
+  GPX carry — the 155 m walk is "Outdoor Walking" everywhere now.
+- **Profile height.** `GraphFactory` exports on a change of the *effective* stride: `combine(settings.profile,
+  settings.stride)` through the stride model, so a height change with derived strides re-exports the daily distances
+  at once (a height change with manual strides changes nothing and exports nothing).
+- Docs: the Health Connect mapping paragraph now says HeartRateRecord samples are grouped per epoch hour.
+
 ## Notifications: independent verification (build 6)
 
 The verifier agent re-ran the unit tests (243, 0 failures), confirmed the installed APK is the built one (md5 match),
@@ -226,3 +399,19 @@ confirmed listener access is granted and the service is live, exercised "Send te
 seen, `C5 FD 04 2C` end ack), posted `Verifier: Ping from verifier` from adb with forward-all on (4 chunks, acked;
 with forward-all off the shell package is dropped as expected), then ran "Sync now" and a Health Connect export with
 no disconnect and no crash. Buzz saw both texts on the watch.
+
+
+## Tracker finding from the first real walk (2026-09-05, build 8 track plot)
+
+The track plot of the Pixel walk shows the first fix (52 m accuracy, reported speed 0) sitting about 45 m away from
+the loop the walker actually made, joined to it by one long accepted hop. The rules credited that hop with
+`speed × dt` of the *next accepted* fix (1.17 m/s × 33 s ≈ 38 m) although the Doppler speeds reported during those
+33 s were 0–0.46 m/s (≈ 10–15 m of real movement). Two refinements, both watch-independent and testable with the
+real 146-fix fixture (`app/src/test/resources/pixel_outdoor_walk_20260905_track.csv`):
+
+1. Integrate the Doppler credit per fix (sum of each fix's `speed × its dt` since the last accepted fix, still capped by
+   hop + accuracy) instead of the last speed times the whole interval.
+2. Do not anchor on a poor first fix: wait for accuracy ≤ 20 m (or replace the anchor without credit when a much
+   better fix arrives inside the poor fix's radius).
+
+Expected effect on the walk: 155 m → roughly 130–140 m; the truth is unknown until Buzz gives the route length.

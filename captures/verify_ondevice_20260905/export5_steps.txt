@@ -1,0 +1,71 @@
+10:28:47 local file:
+6d2501762db8ea96302129382303d115  /tmp/claude-1000/-home-buzz-RyzeWaveWatch/a8cfe5ce-cab3-47da-bf23-26c8acc106be/scratchpad/db5/ryzewave.db
+/tmp/claude-1000/-home-buzz-RyzeWaveWatch/a8cfe5ce-cab3-47da-bf23-26c8acc106be/scratchpad/db5/ryzewave.db: 1 file pushed, 0 skipped. 210.2 MB/s (188416 bytes in 0.001s)
+/tmp/claude-1000/-home-buzz-RyzeWaveWatch/a8cfe5ce-cab3-47da-bf23-26c8acc106be/scratchpad/swap.sh: 1 file pushed, 0 skipped. 3.8 MB/s (218 bytes in 0.000s)
+10:28:47 disallow the notification listener so the system cannot restart the process during the swap
+pid-2s:
+pid-4s:
+10:28:52 SWAP:
+pid-before-swap:
+total 190
+drwxrwx--x 2 u0_a378 u0_a378   3452 2026-09-05 10:28 .
+drwx------ 7 u0_a378 u0_a378   3452 2026-09-04 23:57 ..
+-rw-r--r-- 1 u0_a378 u0_a378 188416 2026-09-05 10:28 ryzewave.db
+6d2501762db8ea96302129382303d115  ryzewave.db
+pid-after-swap:
+pid-4s-later:
+total 190
+drwxrwx--x 2 u0_a378 u0_a378   3452 2026-09-05 10:28 .
+drwx------ 7 u0_a378 u0_a378   3452 2026-09-04 23:57 ..
+-rw-r--r-- 1 u0_a378 u0_a378 188416 2026-09-05 10:28 ryzewave.db
+6d2501762db8ea96302129382303d115  databases/ryzewave.db
+10:28:56 re-allow the notification listener
+pid-after-allow: 10066
+total 234
+drwxrwx--x 2 u0_a378 u0_a378   3452 2026-09-05 10:28 .
+drwx------ 7 u0_a378 u0_a378   3452 2026-09-04 23:57 ..
+-rw-rw---- 1 u0_a378 u0_a378 188416 2026-09-05 10:28 ryzewave.db
+-rw-r--r-- 1 u0_a378 u0_a378  32768 2026-09-05 10:28 ryzewave.db-shm
+-rw-rw---- 1 u0_a378 u0_a378   8272 2026-09-05 10:28 ryzewave.db-wal
+6d2501762db8ea96302129382303d115  databases/ryzewave.db
+10:29:00 LAUNCH
+10:29:09 journal-mode problems: 0
+10:29:09 crashes: 0
+  359,  695          TextView       Today
+  338,  761          TextView       Goal
+  419,  812          TextView       8,000 steps
+  371,  878          TextView       Distance
+  377,  929          TextView       0.12 km
+  387,  995          TextView       Walk / run
+  368, 1046          TextView       160 / 0
+tapping 635,1478 ('Settings')
+  360,  592          TextView       Export now
+  283,  673          TextView       Last export 10:28: nothing new
+10:29:42 EXPORT 1
+tapping 360,592 ('Export now')
+09-05 10:29:43.946 I/HealthConnectExporter(10066): exercise route attached to workout-1: 86 locations
+09-05 10:29:43.946 I/HealthConnectExporter(10066): exported 2 records (ExportCounts(steps=0, heartRate=0, spo2=0, distance=1, sleep=0, workouts=1, routePoints=86)) from 0, 228 unchanged skipped, cursor -> 1788568183585, failed 0
+  360,  592          TextView       Export now
+  258,  673          TextView       Last export 10:29: 2 records
+10:29:56 EXPORT 2
+tapping 360,592 ('Export now')
+09-05 10:29:43.946 I/HealthConnectExporter(10066): exercise route attached to workout-1: 86 locations
+09-05 10:29:43.946 I/HealthConnectExporter(10066): exported 2 records (ExportCounts(steps=0, heartRate=0, spo2=0, distance=1, sleep=0, workouts=1, routePoints=86)) from 0, 228 unchanged skipped, cursor -> 1788568183585, failed 0
+09-05 10:29:57.965 I/HealthConnectExporter(10066): nothing to export: 230 candidate records unchanged since their last export (from 0)
+  360,  592          TextView       Export now
+  283,  673          TextView       Last export 10:29: nothing new
+10:30:11 crashes after exports: 0
+total 268
+drwxrwxr-x  2 buzz buzz   4096 Sep  5 10:30 .
+drwx------ 27 buzz buzz   4096 Sep  5 10:30 ..
+-rw-rw-r--  1 buzz buzz 188416 Sep  5 10:30 ryzewave.db
+-rw-rw-r--  1 buzz buzz  32768 Sep  5 10:30 ryzewave.db-shm
+-rw-rw-r--  1 buzz buzz  41232 Sep  5 10:30 ryzewave.db-wal
+integrity ('ok',)
+steps_hour 20; hr_sample 350; spo2_sample 167; sleep_stage 62; workout 1; track_point 146; sync_cursor 6; hc_export 231; 
+('stride', -6906952972937982323, 1788568197722) 10:29:57
+('wdist-1', -8597149873581914062, 1788568183585) 10:29:43
+('workout-1', -2428533830545981772, 1788568183585) 10:29:43
+hc-export cursor 1788568183585 10:29:43
+10:30:11 DONE
+EXIT=0

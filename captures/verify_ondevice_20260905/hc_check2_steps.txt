@@ -1,0 +1,43 @@
+  360,  226          FrameLayout    Data and access
+   49,  119  [click] ImageButton    Navigate up
+  523,  119  [click] Button         Data sources and priority
+  607,  119  [click] Button         Enter deletion
+  684,  119  [click] ImageButton    More options
+  360,  451          TextView       Activity
+  217,  551          TextView       Distance
+  212,  669          TextView       Exercise
+  186,  787          TextView       Steps
+  360,  914          TextView       Sleep
+  184, 1014          TextView       Sleep
+  360, 1141          TextView       Vitals
+  231, 1241          TextView       Heart rate
+  320, 1359          TextView       Oxygen saturation
+tapping 212,669 ('Exercise')
+  360,  226          FrameLayout    Exercise
+   49,  119  [click] ImageButton    Navigate up
+  607,  119  [click] Button         Enter deletion
+  684,  119  [click] ImageButton    More options
+  263,  425          LinearLayout   Entries
+  263,  425          TextView       Entries
+  456,  425  [click] LinearLayout   Access
+  456,  425          TextView       Access
+   49,  555  [click] ImageButton    Previous day
+  360,  555  [click] Spinner        Today
+  339,  555          CheckedTextView Today
+  671,  555          ImageButton    Next day
+  360,  858  [click] ViewGroup      from 8:35 AM to 8:37 AM • Buzz's Ryze Wave, Walking • Outdoor Walking
+  286,  696          TextView       8:35 AM - 8:37 AM • Buzz's Ryze Wave
+  286,  813          TextView       Walking • Outdoor Walking
+  286,  971          TextView       0.16 km, 2:38, avg HR 99, max HR 105, 14 kcal, Outdoor Running (sport type 1)
+  583,  858          FrameLayout    Exercise map route available
+  360, 1261  [click] ViewGroup      from 7:22 AM to 7:22 AM • Buzz's Ryze Wave, Walking • Ryze Wave walk
+  360, 1176          TextView       7:22 AM - 7:22 AM • Buzz's Ryze Wave
+  315, 1265          TextView       Walking • Ryze Wave walk
+  360, 1346          TextView       0.00 km, 0:30, avg HR 90, max HR 99, 4 kcal, sport type 1
+  360, 1472  [click] ViewGroup      from 1:04 AM to 1:05 AM • Buzz's Ryze Wave, Walking • Ryze Wave walk
+  360, 1486          TextView       1:04 AM - 1:05 AM • Buzz's Ryze Wave
+  315, 1540          TextView       Walking • Ryze Wave walk
+--- return to our app
+    topResumedActivity=ActivityRecord{cbe295 u0 au.buzz.ryzewave/.MainActivity t112}
+DONE
+EXIT=0

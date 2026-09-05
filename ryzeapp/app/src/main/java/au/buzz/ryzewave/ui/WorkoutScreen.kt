@@ -64,6 +64,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import au.buzz.ryzewave.core.Workout
+import au.buzz.ryzewave.health.HealthConnectMapping
 import au.buzz.ryzewave.protocol.SportTypes
 
 @Composable
@@ -173,7 +174,7 @@ private fun LiveWorkoutCard(
                 }
             }
             Row(horizontalArrangement = Arrangement.spacedBy(20.dp)) {
-                StatText("Distance (from GPS)", Fmt.metres(state.distanceMeters), Modifier.weight(1f))
+                StatText("Distance (GPS)", Fmt.metres(state.distanceMeters), Modifier.weight(1f))
                 StatText("Pace", Fmt.pace(state.paceSecPerKm), Modifier.weight(1f))
             }
             Row(horizontalArrangement = Arrangement.spacedBy(20.dp)) {
@@ -272,7 +273,7 @@ private fun WorkoutRow(w: Workout, onClick: () -> Unit) {
     ElevatedCard(Modifier.fillMaxWidth().clickable(onClick = onClick)) {
         Row(Modifier.padding(horizontal = 16.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
-                Text("${SportTypes.name(w.sportType)} · ${Fmt.dateTime(w.start)}", style = MaterialTheme.typography.titleSmall)
+                Text("${storedSportName(w)} · ${Fmt.dateTime(w.start)}", style = MaterialTheme.typography.titleSmall)
                 val hr = w.avgHr?.let { " · avg $it bpm" } ?: ""
                 Text(
                     "${Fmt.duration(w.durationSeconds)} · ${Fmt.metres(w.distanceMeters)} · ${Fmt.pace(averagePace(w))}$hr",
@@ -285,6 +286,13 @@ private fun WorkoutRow(w: Workout, onClick: () -> Unit) {
         }
     }
 }
+
+/**
+ * The name shown for a *stored* workout: the same sport the Health Connect session and the GPX carry
+ * ([HealthConnectMapping.effectiveSportType]) — type 1 is split by average speed because every workout recorded
+ * before the sport picker existed used type 1, walks included.
+ */
+private fun storedSportName(w: Workout): String = SportTypes.name(HealthConnectMapping.effectiveSportType(w))
 
 private fun averagePace(w: Workout): Double =
     if (w.distanceMeters > 0.0 && w.durationSeconds > 0) w.durationSeconds / w.distanceMeters * 1000.0 else 0.0
@@ -303,7 +311,7 @@ fun WorkoutDetailScreen(id: Long, onBack: () -> Unit, vm: WorkoutDetailViewModel
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(w?.let { "${SportTypes.name(it.sportType)} · ${Fmt.dateTime(it.start)}" } ?: "Workout") },
+                title = { Text(w?.let { "${storedSportName(it)} · ${Fmt.dateTime(it.start)}" } ?: "Workout") },
                 navigationIcon = {
                     IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back") }
                 },
@@ -324,7 +332,7 @@ fun WorkoutDetailScreen(id: Long, onBack: () -> Unit, vm: WorkoutDetailViewModel
             } else {
                 ElevatedCard(Modifier.fillMaxWidth()) {
                     Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                        Text(SportTypes.name(w.sportType), style = MaterialTheme.typography.titleMedium)
+                        Text(storedSportName(w), style = MaterialTheme.typography.titleMedium)
                         Row(horizontalArrangement = Arrangement.spacedBy(20.dp)) {
                             StatText("Duration", Fmt.duration(w.durationSeconds), Modifier.weight(1f))
                             StatText("Distance", Fmt.metres(w.distanceMeters), Modifier.weight(1f))
@@ -339,6 +347,20 @@ fun WorkoutDetailScreen(id: Long, onBack: () -> Unit, vm: WorkoutDetailViewModel
                             StatText("GPS fixes", "${detail.acceptedCount} of ${detail.pointCount}", Modifier.weight(1f))
                             StatText("GPS track", Fmt.metres(detail.gpsDistanceMeters), Modifier.weight(1f))
                             StatText("HR samples", "${detail.hr.size}", Modifier.weight(1f))
+                        }
+                    }
+                }
+                ElevatedCard(Modifier.fillMaxWidth()) {
+                    Column(Modifier.padding(12.dp)) {
+                        Text("Track", style = MaterialTheme.typography.titleMedium)
+                        Spacer(Modifier.height(8.dp))
+                        TrackPlot(detail.points)
+                        if (detail.points.isNotEmpty()) {
+                            Text(
+                                "Line: accepted fixes · dots: rejected fixes · green start, red end · rings: whole km · north up",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
                         }
                     }
                 }

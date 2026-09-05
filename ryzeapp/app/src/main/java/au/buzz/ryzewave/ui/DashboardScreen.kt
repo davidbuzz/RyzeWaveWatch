@@ -42,7 +42,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.dp
@@ -269,55 +268,39 @@ private fun VitalsCard(
     }
 }
 
+/**
+ * One line for last night ("Last night: 7 h 12 m", bed and rise times) over the stage strip; the hypnogram and
+ * the per-stage totals live on the History tab. Nothing is shown until a night has been synced.
+ */
 @Composable
 private fun SleepCard(stages: List<SleepStage>) {
-    val summary = remember(stages) { SleepMath.summarize(stages) }
+    val chart = remember(stages) { SleepChartData.build(stages) } ?: return
     ElevatedCard(Modifier.fillMaxWidth()) {
-        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            Text("Sleep last night", style = MaterialTheme.typography.titleMedium)
-            if (stages.isEmpty() || summary.bedTime == null || summary.wakeTime == null) {
-                Text("No sleep data yet — sync the watch after a night's sleep.", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            } else {
-                Row(horizontalArrangement = Arrangement.spacedBy(20.dp)) {
-                    StatText("Asleep", Fmt.minutes(summary.totalMin))
-                    StatText("Bed", Fmt.time(summary.bedTime))
-                    StatText("Wake", Fmt.time(summary.wakeTime))
-                }
-                SleepStrip(stages, summary)
-                Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                    StatText("Deep", Fmt.minutes(summary.deepMin))
-                    StatText("Light", Fmt.minutes(summary.lightMin))
-                    StatText("REM", Fmt.minutes(summary.remMin))
-                    StatText("Awake", Fmt.minutes(summary.awakeMin))
-                }
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text("Sleep", style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
+                Text(
+                    "Bed ${Fmt.time(chart.start)} · Rise ${Fmt.time(chart.end)}",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
             }
+            Text("Last night: ${SleepChartData.hoursMinutes(chart.summary.totalMin)}", style = MaterialTheme.typography.bodyLarge)
+            SleepStrip(chart)
         }
     }
 }
 
-/** One coloured block per stage across the night. */
+/** One coloured block per stage across the night (same colours as the History hypnogram). */
 @Composable
-private fun SleepStrip(stages: List<SleepStage>, summary: SleepSummary) {
-    val bed = summary.bedTime ?: return
-    val wake = summary.wakeTime ?: return
-    val span = (wake - bed).toDouble().coerceAtLeast(1.0)
-    val deep = MaterialTheme.colorScheme.primary
-    val light = MaterialTheme.colorScheme.primary.copy(alpha = 0.45f)
-    val rem = MaterialTheme.colorScheme.tertiary
-    val awake = MaterialTheme.colorScheme.error
-    val other: Color = MaterialTheme.colorScheme.outline
+private fun SleepStrip(chart: SleepChart) {
+    val span = (chart.end - chart.start).toDouble().coerceAtLeast(1.0)
+    val colors = chartColors()
     Canvas(Modifier.fillMaxWidth().height(20.dp)) {
-        for (s in stages) {
-            val x0 = ((s.start - bed) / span * size.width).toFloat().coerceIn(0f, size.width)
-            val x1 = ((s.start + s.minutes * ChartData.MINUTE_MS - bed) / span * size.width).toFloat().coerceIn(0f, size.width)
-            val c = when (s.stage) {
-                SleepMath.DEEP -> deep
-                SleepMath.LIGHT -> light
-                SleepMath.REM -> rem
-                SleepMath.AWAKE -> awake
-                else -> other
-            }
-            drawRect(c, Offset(x0, 0f), Size((x1 - x0).coerceAtLeast(1f), size.height))
+        for (b in chart.blocks) {
+            val x0 = ((b.start - chart.start) / span * size.width).toFloat().coerceIn(0f, size.width)
+            val x1 = ((b.end - chart.start) / span * size.width).toFloat().coerceIn(0f, size.width)
+            drawRect(sleepStageColor(b.stage, colors), Offset(x0, 0f), Size((x1 - x0).coerceAtLeast(1f), size.height))
         }
     }
 }

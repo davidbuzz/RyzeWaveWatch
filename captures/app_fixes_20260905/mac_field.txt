@@ -1,0 +1,34 @@
+== baseline
+FIELD: '78:02:B7:37:91:E5'
+SAVE text node enabled= true
+== trial 1: input text abcdefabcdef
+FIELD: 'abcdefabcdef'
+SAVE text node enabled= true
+== trial 2: input text abcdefabcdef
+FIELD: 'abcdefabcdef'
+SAVE text node enabled= true
+== trial 3: input text abcdefabcdef
+FIELD: 'abcdefabcdef'
+SAVE text node enabled= true
+saved /home/buzz/RyzeWaveWatch/captures/app_fixes_20260905/mac_field_lowercase_typed.png (140407 bytes)
+== type the real MAC in lower case: Save must stay disabled (normalised value equals the stored one)
+FIELD: '78:02:B7:37:91:e5'
+SAVE text node enabled= true
+saved /home/buzz/RyzeWaveWatch/captures/app_fixes_20260905/mac_field_lowercase_real_mac.png (137005 bytes)
+== type aa:bb:cc:dd:ee:ff, Save -> stored upper-cased, field re-seeded
+FIELD: 'AA:bb:CC:dd:EE:ff'
+SAVE text node enabled= true
+tapping 135,438 ('Save')
+FIELD: 'AA:BB:CC:DD:EE:FF'
+SAVE text node enabled= true
+saved /home/buzz/RyzeWaveWatch/captures/app_fixes_20260905/mac_field_after_save_upper.png (131380 bytes)
+== restore the default MAC (typed lower case), Save
+tapping 135,438 ('Save')
+FIELD: '78:02:B7:37:91:E5'
+SAVE text node enabled= true
+saved /home/buzz/RyzeWaveWatch/captures/app_fixes_20260905/mac_field_restored.png (134132 bytes)
+== stored watch_mac in DataStore:
+	watch_mac
+78:02:B7:37:91:E5
+09-05 10:50:08.848 11221 11423 I WatchService: watch address changed 78:02:B7:37:91:E5 -> AA:BB:CC:DD:EE:FF; disconnecting
+09-05 10:50:20.367 11221 11422 I WatchService: watch address changed AA:BB:CC:DD:EE:FF -> 78:02:B7:37:91:E5; disconnecting

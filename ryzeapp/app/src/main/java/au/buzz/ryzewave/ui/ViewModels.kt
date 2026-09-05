@@ -217,6 +217,9 @@ class HistoryViewModel(private val graph: Graph = App.graph) : RyzeViewModel() {
         _day.flatMapLatest { graph.repo.stepsForDay(it) }.stateIn(viewModelScope, started(), emptyList())
     val summary: StateFlow<DailySummary?> =
         _day.flatMapLatest { graph.repo.dailySummary(it) }.stateIn(viewModelScope, started(), null)
+    /** Stages of the night that ended on the morning of the selected day (previous noon .. noon). */
+    val sleep: StateFlow<List<SleepStage>> =
+        _day.flatMapLatest { graph.repo.sleepForNight(it) }.stateIn(viewModelScope, started(), emptyList())
     val profile: StateFlow<UserProfile> = graph.settings.profile.stateIn(viewModelScope, started(), UserProfile())
 
     /** Last 7 / 30 days ending today, zero-filled; reloaded after every sync and on profile / stride changes. */
@@ -312,6 +315,8 @@ data class WorkoutDetail(
     val pointCount: Int = 0,
     val acceptedCount: Int = 0,
     val gpsDistanceMeters: Double = 0.0,
+    /** Every stored GPS fix of the workout (accepted and rejected), oldest first, for the track plot. */
+    val points: List<TrackPoint> = emptyList(),
 )
 
 class WorkoutDetailViewModel(private val graph: Graph = App.graph) : RyzeViewModel() {
@@ -336,6 +341,7 @@ class WorkoutDetailViewModel(private val graph: Graph = App.graph) : RyzeViewMod
             pointCount = pts.size,
             acceptedCount = pts.count { it.accepted },
             gpsDistanceMeters = cum.lastOrNull()?.value ?: 0.0,
+            points = pts,
         )
     }.stateIn(viewModelScope, started(), WorkoutDetail())
 
@@ -394,8 +400,8 @@ class SettingsViewModel(
     private var scanJob: Job? = null
 
     fun saveMac(value: String) {
-        val mac = value.trim().uppercase(Locale.ROOT)
-        if (!MAC_RE.matches(mac)) {
+        val mac = MacText.normalise(value)
+        if (!MacText.isValid(mac)) {
             _message.value = "MAC must look like 78:02:B7:37:91:E5"
             return
         }
@@ -496,11 +502,7 @@ class SettingsViewModel(
 
     fun exportNow() = task("Export") {
         val r = graph.health.exportAll()
-        if (!r.ok) {
-            "Health Connect export failed: ${r.message ?: r.status.name}"
-        } else {
-            "Exported ${r.inserted} records to Health Connect" + (if (r.failed > 0) ", ${r.failed} rejected" else "")
-        }
+        exportMessage(r)
     }
 
     fun findWatch() = task("Find watch") {
@@ -577,10 +579,20 @@ class SettingsViewModel(
     }
 
     companion object {
-        private val MAC_RE = Regex("^([0-9A-F]{2}:){5}[0-9A-F]{2}$")
         const val SCAN_MS = 15_000L
         const val MIN_CALIBRATION_M = 200.0
         const val MIN_CALIBRATION_STEPS = 200
         const val RUN_SPEED_MPS = 2.0
     }
+}
+
+/**
+ * The snackbar after "Export now": a no-op export (everything already in Health Connect, the ledger) says so
+ * instead of "Exported 0 records" — [ExportResult.skipped] is the number of unchanged candidates.
+ */
+fun exportMessage(r: ExportResult): String = when {
+    !r.ok -> "Health Connect export failed: ${r.message ?: r.status.name}"
+    r.status == ExportResult.Status.NOTHING_TO_EXPORT ->
+        if (r.skipped > 0) "Nothing new to export: ${r.skipped} records already in Health Connect" else "Nothing to export yet"
+    else -> "Exported ${r.inserted} records to Health Connect" + (if (r.failed > 0) ", ${r.failed} rejected" else "")
 }

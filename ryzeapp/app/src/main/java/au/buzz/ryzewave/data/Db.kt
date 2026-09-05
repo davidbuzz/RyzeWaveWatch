@@ -33,11 +33,14 @@ import kotlinx.coroutines.flow.Flow
  *   workout     (id auto)               phone-side workouts
  *   track_point (workoutId, time PK)    raw GPS fixes of a workout
  *   sync_cursor (kind PK)               last sync / export times per kind
+ *   hc_export   (clientRecordId PK)     Health Connect export ledger: content fingerprint of every record written
  *
  * Every table that feeds the Health Connect export carries `updatedAt`: the phone time at which the row was
  * inserted or last *changed* (the repository skips rows that are re-delivered unchanged, which the watch does
  * on every sync). `xxxSince(time)` in the repository filters on this column, so an export cursor never misses
- * late-arriving history or the hour-in-progress step row that keeps growing.
+ * late-arriving history or the hour-in-progress step row that keeps growing. The ledger (`hc_export`, schema
+ * version 3) is what makes the cursor's lookback idempotent: a record whose fingerprint equals the ledger's is
+ * not written again (see `health.HealthConnectExportPlanner`).
  *
  * Single-column primary keys are already unique-indexed by SQLite; explicit indices are declared where the
  * time column is not the sole PK (composite keys and the workout start) and on `updatedAt`.
@@ -121,6 +124,17 @@ data class TrackPointEntity(
 data class SyncCursorEntity(
     @PrimaryKey val kind: String,
     val time: Long,
+)
+
+/**
+ * One row per Health Connect record (or planner marker) ever written: the content fingerprint it was written
+ * with (`HealthConnectMapping.fingerprint`) and when. Added in schema version 3 (see [Db.MIGRATION_2_3]).
+ */
+@Entity(tableName = "hc_export")
+data class HcExportEntity(
+    @PrimaryKey val clientRecordId: String,
+    val fingerprint: Long,
+    val exportedAt: Long,
 )
 
 // ---------------------------------------------------------------- aggregate projections
@@ -297,6 +311,9 @@ interface TrackPointDao {
 
     @Query("SELECT * FROM track_point WHERE workoutId = :workoutId ORDER BY time")
     fun forWorkout(workoutId: Long): Flow<List<TrackPointEntity>>
+
+    @Query("SELECT * FROM track_point WHERE workoutId = :workoutId ORDER BY time")
+    suspend fun forWorkoutOnce(workoutId: Long): List<TrackPointEntity>
 }
 
 @Dao
@@ -306,6 +323,22 @@ interface SyncCursorDao {
 
     @Query("SELECT time FROM sync_cursor WHERE kind = :kind")
     suspend fun get(kind: String): Long?
+}
+
+@Dao
+interface HcExportDao {
+    @Upsert
+    suspend fun upsert(rows: List<HcExportEntity>)
+
+    /** Callers chunk [ids] (SQLite allows 999 bound variables per statement). */
+    @Query("SELECT * FROM hc_export WHERE clientRecordId IN (:ids)")
+    suspend fun byIds(ids: List<String>): List<HcExportEntity>
+
+    @Query("SELECT COUNT(*) FROM hc_export")
+    suspend fun count(): Int
+
+    @Query("DELETE FROM hc_export")
+    suspend fun clear()
 }
 
 // ---------------------------------------------------------------- database
@@ -319,8 +352,9 @@ interface SyncCursorDao {
         WorkoutEntity::class,
         TrackPointEntity::class,
         SyncCursorEntity::class,
+        HcExportEntity::class,
     ],
-    version = 2,
+    version = 3,
     exportSchema = false,
 )
 abstract class Db : RoomDatabase() {
@@ -331,6 +365,7 @@ abstract class Db : RoomDatabase() {
     abstract fun workouts(): WorkoutDao
     abstract fun trackPoints(): TrackPointDao
     abstract fun syncCursors(): SyncCursorDao
+    abstract fun hcExport(): HcExportDao
 
     companion object {
         const val NAME = "ryzewave.db"
@@ -342,15 +377,29 @@ abstract class Db : RoomDatabase() {
             }
         }
 
+        /** v2 → v3: the Health Connect export ledger (`hc_export`); starts empty, so the next export's candidates are written once more. */
+        val MIGRATION_2_3: Migration = object : Migration(2, 3) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `hc_export` (`clientRecordId` TEXT NOT NULL, `fingerprint` INTEGER NOT NULL, " +
+                        "`exportedAt` INTEGER NOT NULL, PRIMARY KEY(`clientRecordId`))",
+                )
+            }
+        }
+
         @Volatile
         private var instance: Db? = null
 
-        /** Process-wide singleton bound to the application context. */
+        /**
+         * Process-wide singleton bound to the application context. Every schema step has a real migration and
+         * there is deliberately *no* `fallbackToDestructiveMigration()`: a version this build has no migration
+         * for (a downgrade, or a forgotten `MIGRATION_n_m`) throws `IllegalStateException` at the first query
+         * instead of silently wiping every health table.
+         */
         fun get(context: Context): Db =
             instance ?: synchronized(this) {
                 instance ?: Room.databaseBuilder(context.applicationContext, Db::class.java, NAME)
-                    .addMigrations(MIGRATION_1_2)
-                    .fallbackToDestructiveMigration()
+                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
                     .build()
                     .also { instance = it }
             }

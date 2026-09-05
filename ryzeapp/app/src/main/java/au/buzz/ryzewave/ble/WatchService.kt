@@ -98,6 +98,13 @@ class WatchService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        if (intent?.action == ACTION_FIND_PHONE_STOP) {
+            // The find-my-phone notification's Stop action: handled even when this instance could not go
+            // foreground, so the ring never outlives the user's tap.
+            val stopped = App.graph.findPhone.stop(au.buzz.ryzewave.findphone.FindPhoneRinger.SOURCE_USER)
+            Log.i(TAG, "find phone: stop tapped (${if (stopped) "stopped" else "was not ringing"})")
+            return if (foreground) START_STICKY else START_NOT_STICKY
+        }
         if (!foreground) return START_NOT_STICKY
         when (intent?.action) {
             ACTION_STOP -> {
@@ -348,6 +355,8 @@ class WatchService : Service() {
         const val ACTION_SYNC = "au.buzz.ryzewave.ble.action.SYNC"
         const val ACTION_CONNECT = "au.buzz.ryzewave.ble.action.CONNECT"
         const val ACTION_PAUSE = "au.buzz.ryzewave.ble.action.PAUSE"
+        /** From the find-my-phone notification (Stop action, tap, swipe): silence the ringer. */
+        const val ACTION_FIND_PHONE_STOP = "au.buzz.ryzewave.ble.action.FIND_PHONE_STOP"
         const val SYNC_INTERVAL_MS = 30 * 60_000L
         const val RETRY_MS = 5 * 60_000L
         private val TIME_FMT: DateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm")
@@ -377,6 +386,17 @@ class WatchService : Service() {
 
         /** Asks the running service to apply settings and sync now. */
         fun requestSync(context: Context) = send(context, ACTION_SYNC)
+
+        /**
+         * PendingIntent for the find-my-phone notification: delivers [ACTION_FIND_PHONE_STOP] to this service
+         * (a notification tap lets the app start a foreground service from the background, so it also works
+         * when the service is not running).
+         */
+        fun findPhoneStopIntent(context: Context): PendingIntent = PendingIntent.getForegroundService(
+            context, 1,
+            Intent(context, WatchService::class.java).setAction(ACTION_FIND_PHONE_STOP),
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+        )
 
         private fun send(context: Context, action: String) {
             try {

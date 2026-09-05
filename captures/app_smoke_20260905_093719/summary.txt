@@ -1,0 +1,10 @@
+package: au.buzz.ryzewave   waited: 25s
+pid: 2728
+top activity: topResumedActivity=ActivityRecord{a8644ee u0 au.buzz.ryzewave/.MainActivity t103}
+crashes:
+app log lines:
+09-05 09:37:31.683 I/HealthConnectExporter( 2728): nothing to export: 0 candidate records unchanged since their last export (from 1788564255061)
+09-05 09:37:31.859 I/ActivityManager( 1870): Background started FGS: Allowed [callingPackage: au.buzz.ryzewave; callingUid: 10378; uidState: TOP ; uidBFSL: [BFS
+09-05 09:37:31.914 I/WatchService( 2728): service created
+09-05 09:37:31.923 I/WatchService( 2728): Bluetooth is off; waiting
+09-05 09:37:50.198 W/.apps.wellbeing( 2828): ApkAssets: Deleting an ApkAssets object '<empty> and /apex/com.android.healthfitness/priv-app/HealthConnectControll

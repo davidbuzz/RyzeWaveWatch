@@ -171,6 +171,9 @@ class RoomHealthRepository(
     override fun trackPoints(workoutId: Long): Flow<List<TrackPoint>> =
         db.trackPoints().forWorkout(workoutId).map { rows -> rows.map(TrackPointEntity::toModel) }
 
+    override suspend fun trackPointsOnce(workoutId: Long): List<TrackPoint> =
+        db.trackPoints().forWorkoutOnce(workoutId).map(TrackPointEntity::toModel)
+
     /** The last [days] calendar days, oldest first and today last. */
     override suspend fun dailySummaries(days: Int): List<DailySummary> {
         if (days <= 0) return emptyList()
@@ -214,6 +217,31 @@ class RoomHealthRepository(
 
     override suspend fun workoutsSince(time: Long): List<Workout> =
         db.workouts().finishedChangedSince(time).map(WorkoutEntity::toModel)
+
+    // ---- Health Connect export ledger
+
+    override suspend fun exportedFingerprints(ids: Collection<String>): Map<String, Long> {
+        if (ids.isEmpty()) return emptyMap()
+        val out = HashMap<String, Long>(ids.size)
+        for (chunk in ids.distinct().chunked(LEDGER_QUERY_CHUNK)) {
+            for (row in db.hcExport().byIds(chunk)) out[row.clientRecordId] = row.fingerprint
+        }
+        return out
+    }
+
+    override suspend fun markExported(fingerprints: Map<String, Long>, time: Long) {
+        if (fingerprints.isEmpty()) return
+        db.hcExport().upsert(fingerprints.map { (id, fp) -> HcExportEntity(id, fp, time) })
+    }
+
+    override suspend fun clearExported() {
+        db.hcExport().clear()
+    }
+
+    private companion object {
+        /** Well under SQLite's 999 bound variables per statement. */
+        const val LEDGER_QUERY_CHUNK = 500
+    }
 }
 
 /**

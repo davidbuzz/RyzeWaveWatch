@@ -1,0 +1,36 @@
+total 468
+drwxrwxr-x  2 buzz buzz   4096 Sep  5 10:18 .
+drwx------ 21 buzz buzz   4096 Sep  5 10:17 ..
+-rw-rw-r--  1 buzz buzz 167936 Sep  5 10:18 ryzewave.db
+-rw-rw-r--  1 buzz buzz  32768 Sep  5 10:18 ryzewave.db-shm
+-rw-rw-r--  1 buzz buzz 267832 Sep  5 10:18 ryzewave.db-wal
+before: hc_export rows 231 workout rows in ledger [('wdist-1',), ('workout-1',)]
+after: hc_export rows 229 user_version 3 journal delete
+total 190
+drwxrwx--x 2 u0_a378 u0_a378   3452 2026-09-05 10:18 .
+drwx------ 7 u0_a378 u0_a378   3452 2026-09-04 23:57 ..
+-rw-rw---- 1 u0_a378 u0_a378 188416 2026-09-05 10:18 ryzewave.db
+0b7294cf488a6712a10d647196ecabf0  databases/ryzewave.db
+0b7294cf488a6712a10d647196ecabf0  /tmp/claude-1000/-home-buzz-RyzeWaveWatch/a8cfe5ce-cab3-47da-bf23-26c8acc106be/scratchpad/db2/ryzewave.db
+10:18:46 startup exporter lines:
+09-05 10:18:38.956 I/GraphFactory( 8786): notify: dropped au.buzz.ryzewave: ongoing
+09-05 10:18:38.956 I/GraphFactory( 8786): notify: dropped au.buzz.ryzewave: ongoing
+tapping 635,1478 ('Settings')
+  360,  767          TextView       Export now
+  280,  848          TextView       Last export 10:18: nothing new
+10:19:15 EXPORT 1
+tapping 360,767 ('Export now')
+09-05 10:19:19.309 I/HealthConnectExporter( 8786): exercise route attached to workout-1: 86 locations
+09-05 10:19:19.309 I/HealthConnectExporter( 8786): exported 2 records (ExportCounts(steps=0, heartRate=0, spo2=0, distance=1, sleep=0, workouts=1, routePoints=86)) from 0, 228 unchanged skipped, cursor -> 1788567556559, failed 0
+  360,  767          TextView       Export now
+  255,  848          TextView       Last export 10:19: 2 records
+10:19:29 EXPORT 2
+tapping 360,767 ('Export now')
+09-05 10:19:19.309 I/HealthConnectExporter( 8786): exercise route attached to workout-1: 86 locations
+09-05 10:19:19.309 I/HealthConnectExporter( 8786): exported 2 records (ExportCounts(steps=0, heartRate=0, spo2=0, distance=1, sleep=0, workouts=1, routePoints=86)) from 0, 228 unchanged skipped, cursor -> 1788567556559, failed 0
+09-05 10:19:31.060 I/HealthConnectExporter( 8786): exercise route attached to workout-1: 86 locations
+09-05 10:19:31.061 I/HealthConnectExporter( 8786): exported 2 records (ExportCounts(steps=0, heartRate=0, spo2=0, distance=1, sleep=0, workouts=1, routePoints=86)) from 0, 228 unchanged skipped, cursor -> 1788567570753, failed 0
+  360,  767          TextView       Export now
+  255,  848          TextView       Last export 10:19: 2 records
+10:19:44 DONE
+EXIT=0

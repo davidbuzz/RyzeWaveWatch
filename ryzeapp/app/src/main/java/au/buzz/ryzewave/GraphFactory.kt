@@ -6,6 +6,8 @@ import au.buzz.ryzewave.core.ConnectionState
 import au.buzz.ryzewave.data.DataStoreSettingsStore
 import au.buzz.ryzewave.data.Db
 import au.buzz.ryzewave.data.RoomHealthRepository
+import au.buzz.ryzewave.findphone.AndroidFindPhoneAlerter
+import au.buzz.ryzewave.findphone.FindPhoneRinger
 import au.buzz.ryzewave.health.HealthConnectExporter
 import au.buzz.ryzewave.notify.NotificationForwarder
 import au.buzz.ryzewave.ui.WorkoutBridgeHolder
@@ -17,7 +19,9 @@ import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
@@ -80,12 +84,34 @@ object GraphFactory {
                 }
         }
 
+        // Health Connect: the daily DistanceRecords are steps × stride, so a change of the *effective* stride
+        // (calibration, manual edit, reset — or a profile height change while the strides are derived from it)
+        // re-exports the affected days right away; the planner's stride marker decides which days moved.
+        scope.launch {
+            combine(settings.profile, settings.stride) { profile, s -> stride.walkStrideM(profile, s) to stride.runStrideM(profile, s) }
+                .distinctUntilChanged()
+                .drop(1)                                    // the stored value at start-up is not a change
+                .collect { (walk, run) -> exportNew("stride change (walk $walk m, run $run m)") }
+        }
+
         // Phone -> watch notifications: the listener service hands posted notifications to this forwarder.
         val notifications = NotificationForwarder(
             settings, watch, scope, ownPackage = app.packageName,
             log = { m, t -> if (t == null) Log.i(TAG, "notify: $m") else Log.w(TAG, "notify: $m", t) },
         )
 
-        return Graph(repo = repo, settings = settings, watch = watch, health = health, notifications = notifications)
+        // Find my phone: the watch's `D1 0A 01` rings the phone (alarm ringtone + vibration + Stop notification)
+        // until `D1 0A 00`, the Stop action (through WatchService) or 30 s. Lives in the process the foreground
+        // service keeps alive, so it rings with the screen off.
+        val findPhone = FindPhoneRinger(
+            AndroidFindPhoneAlerter(app), scope,
+            log = { m, t -> if (t == null) Log.i(AndroidFindPhoneAlerter.TAG, m) else Log.w(AndroidFindPhoneAlerter.TAG, m, t) },
+        )
+        scope.launch { watch.events.collect { findPhone.onEvent(it) } }
+
+        return Graph(
+            repo = repo, settings = settings, watch = watch, health = health, notifications = notifications,
+            findPhone = findPhone,
+        )
     }
 }

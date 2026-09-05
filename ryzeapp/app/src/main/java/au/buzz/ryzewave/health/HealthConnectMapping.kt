@@ -1,9 +1,12 @@
 package au.buzz.ryzewave.health
 
 import androidx.health.connect.client.records.DistanceRecord
+import androidx.health.connect.client.records.ExerciseRoute
+import androidx.health.connect.client.records.ExerciseRouteResult
 import androidx.health.connect.client.records.ExerciseSessionRecord
 import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.OxygenSaturationRecord
+import androidx.health.connect.client.records.Record
 import androidx.health.connect.client.records.SleepSessionRecord
 import androidx.health.connect.client.records.StepsRecord
 import androidx.health.connect.client.records.metadata.Device
@@ -16,6 +19,7 @@ import au.buzz.ryzewave.core.Spo2Sample
 import au.buzz.ryzewave.core.StepsHour
 import au.buzz.ryzewave.core.StrideModel
 import au.buzz.ryzewave.core.StrideSettings
+import au.buzz.ryzewave.core.TrackPoint
 import au.buzz.ryzewave.core.UserProfile
 import au.buzz.ryzewave.core.Workout
 import au.buzz.ryzewave.protocol.SportTypes
@@ -46,7 +50,7 @@ import kotlin.math.min
  * | [DistanceRecord] per local day (stride model) | `dist-<dayStart>` |
  * | [DistanceRecord] per workout (GPS) | `wdist-<workoutId>` |
  * | [SleepSessionRecord] per night | `sleep-<morning date>` |
- * | [ExerciseSessionRecord] per workout | `workout-<workoutId>` |
+ * | [ExerciseSessionRecord] per workout (with an [ExerciseRoute] of the accepted GPS fixes) | `workout-<workoutId>` |
  *
  * Times are epoch milliseconds; `now` cuts off anything the watch reports in the future (clock skew) and caps
  * the open-ended intervals of the current hour / day.
@@ -61,6 +65,9 @@ object HealthConnectMapping {
 
     /** Average speed (m/s) at or above which a workout counts as running; below it is walking. */
     const val RUNNING_SPEED_MPS = SportTypes.RUNNING_SPEED_MPS
+
+    /** A session needs at least this many accepted, in-session GPS fixes to get an [ExerciseRoute]. */
+    const val MIN_ROUTE_POINTS = 2
 
     /** Health Connect's own limits, enforced by the record constructors. */
     private const val MAX_STEPS_PER_RECORD = 1_000_000L
@@ -311,10 +318,59 @@ object HealthConnectMapping {
                 )
             }
 
-    /** One [ExerciseSessionRecord] per finished workout, walking or running by [exerciseType]. */
-    fun exerciseSessionRecords(workouts: List<Workout>, now: Long, zone: ZoneId): List<ExerciseSessionRecord> =
+    /**
+     * The route locations of [workout]: its *accepted* GPS fixes (the rejected ones are the jitter the distance
+     * filter threw away) that lie inside the session: at or after [Workout.start] and strictly before
+     * [Workout.end] (`ExerciseSessionRecord` refuses "route can not be out of parent time range" otherwise) —
+     * with valid coordinates, one per instant and oldest first (the `ExerciseRoute` constructor demands strictly
+     * increasing times). Horizontal accuracy and altitude are carried when the fix had them; the phone reports
+     * no vertical accuracy through our tracker.
+     */
+    fun routeLocations(workout: Workout, points: List<TrackPoint>): List<ExerciseRoute.Location> {
+        val end = workout.end ?: return emptyList()
+        return points.asSequence()
+            .filter { it.accepted && it.time >= workout.start && it.time < end }
+            .filter { it.lat.isFinite() && it.lon.isFinite() && it.lat in -90.0..90.0 && it.lon in -180.0..180.0 }
+            .sortedBy { it.time }
+            .distinctBy { it.time }
+            .map { p ->
+                ExerciseRoute.Location(
+                    time = Instant.ofEpochMilli(p.time),
+                    latitude = p.lat,
+                    longitude = p.lon,
+                    horizontalAccuracy = p.accuracyM.takeIf { it.isFinite() && it >= 0f }?.let { Length.meters(it.toDouble()) },
+                    altitude = p.altitudeM?.takeIf { it.isFinite() }?.let { Length.meters(it) },
+                )
+            }
+            .toList()
+    }
+
+    /** The [ExerciseRoute] for [workout], or null with fewer than [MIN_ROUTE_POINTS] usable fixes (see [routeLocations]). */
+    fun exerciseRoute(workout: Workout, points: List<TrackPoint>): ExerciseRoute? {
+        val locations = routeLocations(workout, points)
+        return if (locations.size < MIN_ROUTE_POINTS) null else ExerciseRoute(locations)
+    }
+
+    /** How many locations the route attached to [record] has; 0 without a route. */
+    fun routePointCount(record: ExerciseSessionRecord): Int =
+        (record.exerciseRouteResult as? ExerciseRouteResult.Data)?.exerciseRoute?.route?.size ?: 0
+
+    /**
+     * One [ExerciseSessionRecord] per finished workout, typed by [exerciseType]. [tracks] holds the stored GPS
+     * fixes per workout id; a workout with a track of at least [MIN_ROUTE_POINTS] accepted fixes gets an
+     * [ExerciseRoute] (Health Connect then shows the workout on a map), the others carry
+     * [ExerciseRouteResult.NoData]. Writing a route needs `WRITE_EXERCISE_ROUTE`, so the planner passes an
+     * empty map when that permission is missing.
+     */
+    fun exerciseSessionRecords(
+        workouts: List<Workout>,
+        now: Long,
+        zone: ZoneId,
+        tracks: Map<Long, List<TrackPoint>> = emptyMap(),
+    ): List<ExerciseSessionRecord> =
         exportableWorkouts(workouts, now).map { w ->
             val end = w.end ?: w.start
+            val route = tracks[w.id]?.let { exerciseRoute(w, it) }
             ExerciseSessionRecord(
                 startTime = Instant.ofEpochMilli(w.start),
                 startZoneOffset = offsetAt(w.start, zone),
@@ -324,6 +380,9 @@ object HealthConnectMapping {
                 title = exerciseTitle(w),
                 notes = exerciseNotes(w),
                 metadata = metadata(workoutId(w.id), now, WATCH, Metadata.RECORDING_METHOD_ACTIVELY_RECORDED),
+                segments = emptyList(),
+                laps = emptyList(),
+                exerciseRoute = route,          // null -> ExerciseRouteResult.NoData
             )
         }
 
@@ -372,6 +431,88 @@ object HealthConnectMapping {
                 metadata = metadata(sleepId(night.morning), now),
             )
         }
+
+    // ---- content fingerprints (the export ledger, see HealthConnectExportPlanner)
+
+    /** Ledger key of the planner's stride marker: the effective strides the daily distances were last exported with. */
+    const val STRIDE_MARKER_ID = "stride"
+
+    /** Ledger key of a session's route-less fingerprint (stored with the session, see the planner). */
+    fun sessionBaseMarkerId(workoutId: Long): String = "workout-$workoutId.base"
+
+    /**
+     * Ledger key of a session's route state as last written: [ROUTE_NOT_PERMITTED] (written without
+     * `WRITE_EXERCISE_ROUTE`) or the number of route locations (0 when the track was too short for a route).
+     */
+    fun sessionRouteMarkerId(workoutId: Long): String = "workout-$workoutId.route"
+
+    /** Route-marker value: the session was written while the route permission was missing. */
+    const val ROUTE_NOT_PERMITTED = -1L
+
+    /** Stands in for an end time that is merely the export's `now` (the cap of the hour / day in progress). */
+    private const val OPEN_END = "open"
+
+    /** Fingerprint of the effective walking / running stride (calibrated or derived from the profile's height). */
+    fun strideFingerprint(profile: UserProfile, strideSettings: StrideSettings, stride: StrideModel): Long =
+        fnv1a("stride|${num(stride.walkStrideM(profile, strideSettings))}|${num(stride.runStrideM(profile, strideSettings))}")
+
+    /**
+     * A stable 64-bit hash of the *content* of [record]: everything except the metadata (whose version is the
+     * export clock) and an end time that is only [now], the cap of the current hour / day. Two exports of the
+     * same data give the same fingerprint, so the ledger can tell an unchanged re-candidate (the cursor's
+     * lookback) from a real change. Changing this function re-sends everything once, which is harmless.
+     */
+    fun fingerprint(record: Record, now: Long): Long = fnv1a(content(record, now))
+
+    private fun content(record: Record, now: Long): String = when (record) {
+        is StepsRecord ->
+            "steps|${record.startTime.toEpochMilli()}|${end(record.endTime, now)}|${record.count}"
+        is HeartRateRecord -> buildString {
+            append("hr|").append(record.startTime.toEpochMilli()).append('|').append(end(record.endTime, now))
+            for (s in record.samples) append('|').append(s.time.toEpochMilli()).append(':').append(s.beatsPerMinute)
+        }
+        is OxygenSaturationRecord ->
+            "spo2|${record.time.toEpochMilli()}|${num(record.percentage.value)}"
+        is DistanceRecord ->
+            "dist|${record.startTime.toEpochMilli()}|${end(record.endTime, now)}|${num(record.distance.inMeters)}"
+        is SleepSessionRecord -> buildString {
+            append("sleep|").append(record.startTime.toEpochMilli()).append('|').append(end(record.endTime, now))
+            append('|').append(record.title ?: "").append('|').append(record.notes ?: "")
+            for (s in record.stages) {
+                append('|').append(s.startTime.toEpochMilli()).append(':').append(end(s.endTime, now)).append(':').append(s.stage)
+            }
+        }
+        is ExerciseSessionRecord -> buildString {
+            append("workout|").append(record.startTime.toEpochMilli()).append('|').append(end(record.endTime, now))
+            append('|').append(record.exerciseType).append('|').append(record.title ?: "").append('|').append(record.notes ?: "")
+            val route = (record.exerciseRouteResult as? ExerciseRouteResult.Data)?.exerciseRoute?.route
+            if (route != null) {
+                append("|route").append(route.size)
+                for (p in route) {
+                    append('|').append(p.time.toEpochMilli()).append(':').append(num(p.latitude)).append(':').append(num(p.longitude))
+                        .append(':').append(p.altitude?.inMeters?.let(::num) ?: "").append(':').append(p.horizontalAccuracy?.inMeters?.let(::num) ?: "")
+                }
+            }
+        }
+        else -> record.javaClass.name + "|" + record.toString()
+    }
+
+    private fun end(time: Instant, now: Long): String {
+        val t = time.toEpochMilli()
+        return if (t == now) OPEN_END else t.toString()
+    }
+
+    private fun num(v: Double): String = String.format(Locale.ROOT, "%.4f", v)
+
+    /** FNV-1a, 64-bit: deterministic across processes and app versions (unlike `String.hashCode` on other platforms). */
+    private fun fnv1a(s: String): Long {
+        var h = -3750763034362895579L                     // 0xcbf29ce484222325
+        for (ch in s) {
+            h = h xor ch.code.toLong()
+            h *= 1099511628211L                            // 0x100000001b3
+        }
+        return h
+    }
 
     private fun formatElapsed(seconds: Int): String {
         val s = seconds.coerceAtLeast(0)

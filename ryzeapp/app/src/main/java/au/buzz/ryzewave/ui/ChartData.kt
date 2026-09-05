@@ -333,3 +333,85 @@ object SleepMath {
         )
     }
 }
+
+/** An axis-aligned pixel rectangle; the collision maths behind in-chart label placement. Pure Kotlin, unit-tested. */
+data class Box(val left: Float, val top: Float, val right: Float, val bottom: Float) {
+    val width: Float get() = right - left
+    val height: Float get() = bottom - top
+    fun expand(m: Float): Box = Box(left - m, top - m, right + m, bottom + m)
+    fun intersects(o: Box): Boolean = left < o.right && o.left < right && top < o.bottom && o.top < bottom
+    fun contains(x: Float, y: Float): Boolean = x >= left && x <= right && y >= top && y <= bottom
+
+    /** Liang–Barsky clip test: does the segment (x0, y0)–(x1, y1) touch this box? */
+    fun intersectsSegment(x0: Float, y0: Float, x1: Float, y1: Float): Boolean {
+        var t0 = 0f
+        var t1 = 1f
+        val dx = x1 - x0
+        val dy = y1 - y0
+        val p = floatArrayOf(-dx, dx, -dy, dy)
+        val q = floatArrayOf(x0 - left, right - x0, y0 - top, bottom - y0)
+        for (i in 0..3) {
+            if (p[i] == 0f) {
+                if (q[i] < 0f) return false          // parallel to this edge and outside it
+            } else {
+                val t = q[i] / p[i]
+                if (p[i] < 0f) {
+                    if (t > t1) return false
+                    if (t > t0) t0 = t
+                } else {
+                    if (t < t0) return false
+                    if (t < t1) t1 = t
+                }
+            }
+        }
+        return true
+    }
+}
+
+/**
+ * Picks where a floating chart label (the "avg 81" / "goal 8k" text) goes so it hides as little as possible: every
+ * candidate box is scored by the data it would cover — points within [pointRadius], polyline segments crossing it,
+ * filled blocks (bars) it overlaps — plus a heavy penalty for overlapping another label ([avoid]); the first candidate
+ * with the lowest score wins, so order the candidates by preference (e.g. right edge first).
+ */
+object LabelLayout {
+    const val AVOID_WEIGHT = 100
+
+    fun pick(
+        candidates: List<Box>,
+        points: List<Pair<Float, Float>> = emptyList(),
+        pointRadius: Float = 0f,
+        polylines: List<List<Pair<Float, Float>>> = emptyList(),
+        blocks: List<Box> = emptyList(),
+        avoid: List<Box> = emptyList(),
+    ): Int {
+        require(candidates.isNotEmpty())
+        var best = 0
+        var bestScore = Int.MAX_VALUE
+        candidates.forEachIndexed { i, c ->
+            val score = score(c, points, pointRadius, polylines, blocks, avoid)
+            if (score == 0) return i
+            if (score < bestScore) { bestScore = score; best = i }
+        }
+        return best
+    }
+
+    fun score(
+        c: Box,
+        points: List<Pair<Float, Float>>, pointRadius: Float,
+        polylines: List<List<Pair<Float, Float>>>, blocks: List<Box>, avoid: List<Box>,
+    ): Int {
+        val grown = c.expand(pointRadius)
+        var score = points.count { (x, y) -> grown.contains(x, y) }
+        for (line in polylines) {
+            for (j in 1 until line.size) {
+                val (x0, y0) = line[j - 1]
+                val (x1, y1) = line[j]
+                if (c.intersectsSegment(x0, y0, x1, y1)) score++
+            }
+        }
+        score += blocks.count { c.intersects(it) }
+        score += avoid.count { c.intersects(it) } * AVOID_WEIGHT
+        return score
+    }
+}

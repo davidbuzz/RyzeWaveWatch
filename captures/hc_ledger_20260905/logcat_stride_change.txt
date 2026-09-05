@@ -1,0 +1,2 @@
+09-05 09:28:47.531 I/HealthConnectExporter(32593): exported 3 records (ExportCounts(steps=0, heartRate=0, spo2=0, distance=3, sleep=0, workouts=0, routePoints=0)) from 1788564158820, 0 unchanged skipped, cursor -> 1788564527487, failed 0
+09-05 09:28:47.531 I/GraphFactory(32593): Health Connect export after stride change: ExportResult(status=OK, counts=ExportCounts(steps=0, heartRate=0, spo2=0, distance=3, sleep=0, workouts=0, routePoints=0), inserted=3, failed=0, cursor=1788564527487, message=null, time=1788564527531, skipped=0)

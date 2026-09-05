@@ -1,0 +1,33 @@
+10:16:04.955 STEP1 inject start
+Broadcast completed: result=0
+10:16:08.709 audio players while ringing:
+  AudioPlaybackConfiguration piid:591 deviceId:3 type:android.media.MediaPlayer u/pid:10378/5720 state:started attr:AudioAttributes: usage=USAGE_ALARM content=CONTENT_TYPE_SONIFICATION flags=0x800 tags= bundle=null sessionId:777 mutedState:none  FormatInfo{isSpatialized=false, channelMask=0x1, sampleRate=48000}
+09-05 09:47:24:715 player piid:567 new AudioAttributes:AudioAttributes: usage=USAGE_ALARM content=CONTENT_TYPE_SONIFICATION flags=0x800 tags= bundle=null
+09-05 09:47:39:567 player piid:575 new AudioAttributes:AudioAttributes: usage=USAGE_ALARM content=CONTENT_TYPE_SONIFICATION flags=0x800 tags= bundle=null
+09-05 09:48:15:896 player piid:583 new AudioAttributes:AudioAttributes: usage=USAGE_ALARM content=CONTENT_TYPE_SONIFICATION flags=0x800 tags= bundle=null
+09-05 10:16:03:172 player piid:591 new AudioAttributes:AudioAttributes: usage=USAGE_ALARM content=CONTENT_TYPE_SONIFICATION flags=0x800 tags= bundle=null
+10:16:08.817 vibrator while ringing:
+      ALARM = MEDIUM, default: MEDIUM
+      requestVibrationParamsForUsages = [ALARM, RINGTONE, NOTIFICATION, COMMUNICATION_REQUEST]
+      callerInfo = CallerInfo{ uid=10378, opPkg=au.buzz.ryzewave, deviceId=0, attrs=VibrationAttributes{mUsage=ALARM, mAudioUsage= USAGE_UNKNOWN, mCategory=UNKNOWN, mFlags=0}, reason=null}
+10:16:08.893 notification count:
+1
+10:16:11.621 STEP2 tap Stop
+tapping 162,564 ('Stop')
+10:16:18.195 audio players after stop:
+10:16:18.278 notification count after stop:
+0
+10:16:18.411 STEP3 inject start, then duplicate start, wait for 30 s timeout
+Broadcast completed: result=0
+Broadcast completed: result=0
+10:16:52.119 audio players after timeout:
+10:16:52.213 notification count after timeout:
+0
+10:16:52.344 STEP4 inject start then watch stop (start=false)
+Broadcast completed: result=0
+Broadcast completed: result=0
+10:16:57.625 audio players after watch stop:
+10:16:57.738 notification count after watch stop:
+0
+10:16:57.923 DONE
+EXIT=0

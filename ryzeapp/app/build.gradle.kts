@@ -1,7 +1,16 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application") version "8.6.0"
     id("org.jetbrains.kotlin.android") version "1.9.22"
     id("com.google.devtools.ksp") version "1.9.22-1.0.17"
+}
+
+// Release signing: ryzeapp/keystore.properties (storeFile, storePassword, keyAlias, keyPassword) points at the
+// keystore; both are git-ignored (see docs/APP.md "Release build"). Without the file the release build is unsigned.
+val keystorePropsFile = rootProject.file("keystore.properties")
+val keystoreProps = Properties().apply {
+    if (keystorePropsFile.exists()) keystorePropsFile.inputStream().use { load(it) }
 }
 
 android {
@@ -16,11 +25,22 @@ android {
         versionName = "0.1"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
+    signingConfigs {
+        if (keystorePropsFile.exists()) {
+            create("release") {
+                storeFile = rootProject.file(keystoreProps.getProperty("storeFile"))
+                storePassword = keystoreProps.getProperty("storePassword")
+                keyAlias = keystoreProps.getProperty("keyAlias")
+                keyPassword = keystoreProps.getProperty("keyPassword")
+            }
+        }
+    }
     buildTypes {
         getByName("debug") { applicationIdSuffix = "" }
         getByName("release") {
-            isMinifyEnabled = false
+            isMinifyEnabled = false       // no shrinking yet; turn on together with proguard-rules.pro
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            signingConfig = signingConfigs.findByName("release")
         }
     }
     buildFeatures { compose = true }
@@ -31,6 +51,8 @@ android {
     }
     kotlinOptions { jvmTarget = "17" }
     packaging { resources.excludes += "/META-INF/{AL2.0,LGPL2.1}" }
+    // JVM unit tests run classes that call android.util.Log (the Health Connect exporter): stub it out instead of throwing.
+    testOptions { unitTests.isReturnDefaultValues = true }
 }
 
 dependencies {
@@ -57,6 +79,12 @@ dependencies {
 
     implementation("androidx.health.connect:connect-client:1.1.0-alpha11")
     implementation("com.google.android.gms:play-services-location:21.1.0")
+
+    // The app has no fragments, but play-services-location drags in androidx.fragment 1.0.0, and the release build's
+    // lintVital treats that next to registerForActivityResult as fatal (InvalidFragmentVersionForActivityResult).
+    constraints {
+        implementation("androidx.fragment:fragment:1.6.2") { because("lintVitalRelease: Fragment < 1.3.0 cannot use the activity-result API") }
+    }
 
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")

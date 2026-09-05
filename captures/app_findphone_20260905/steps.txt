@@ -1,0 +1,24 @@
+09:47:26 app pid: 3590
+09:47:26 alarm volume before: 
+09:47:26 inject FindPhone(start=true)
+Broadcasting: Intent { act=au.buzz.ryzewave.debug.FIND_PHONE flg=0x400000 cmp=au.buzz.ryzewave/.debug.DebugEventReceiver (has extras) }
+Broadcast completed: result=0
+09:47:33 audio while ringing: (not logged) AudioPlaybackConfiguration piid:367 deviceId:0 type:android.media.SoundPool u/pid:1000/1870 state:idle attr:AudioAttributes: usage=USAGE_ASSISTANCE_SONIFICATION content=CONTENT_TYPE_SONIFICATION flags=0x800 tags= bundle=null sessionId:0 mutedState:none FormatInfo{isSpatialized=false, channelMask=0x0, sampleRate=0}  AudioPlaybackConfiguration piid:375 deviceId:0 type:android.media.SoundPool u/pid:10193/2270 state:idle attr:AudioAttributes: usage=USAGE_ASSISTANCE_SONIFICATION content=CONTENT_TYPE_SONIFICATION flags=0x800 tags= bundle=null sessionId:0 mutedState:none FormatInfo{isSpatialized=false, channelMask=0x0, sampleRate=0}  AudioPlaybackConfiguration piid:383 deviceId:0 type:android.media.SoundPool u/pid:1027/3730 state:idle attr:AudioAttributes: usage=USAGE_ASSISTANCE_SONIFICATION content=CONTENT_TYPE_SONIFICATION flags=0x800 tags= bundle=null sessionId:0 mutedState:none FormatInfo{isSpatialized=false, channelMask=0x0, sampleRate=0} 
+09:47:33 tap Stop
+tapping 162,564 ('Stop')
+09:47:39 notification id=1002 present after Stop: 0
+09:47:41 inject FindPhone(start=true) again (timeout run)
+Broadcasting: Intent { act=au.buzz.ryzewave.debug.FIND_PHONE flg=0x400000 cmp=au.buzz.ryzewave/.debug.DebugEventReceiver (has extras) }
+Broadcast completed: result=0
+09:47:45 inject a duplicate start while ringing (must be ignored)
+Broadcasting: Intent { act=au.buzz.ryzewave.debug.FIND_PHONE flg=0x400000 cmp=au.buzz.ryzewave/.debug.DebugEventReceiver (has extras) }
+Broadcast completed: result=0
+09:48:17 notification id=1002 present after timeout: 0
+09:48:17 inject FindPhone(start=true) then FindPhone(start=false)
+Broadcasting: Intent { act=au.buzz.ryzewave.debug.FIND_PHONE flg=0x400000 cmp=au.buzz.ryzewave/.debug.DebugEventReceiver (has extras) }
+Broadcast completed: result=0
+Broadcasting: Intent { act=au.buzz.ryzewave.debug.FIND_PHONE flg=0x400000 cmp=au.buzz.ryzewave/.debug.DebugEventReceiver (has extras) }
+Broadcast completed: result=0
+09:48:23 notification id=1002 present after watch stop: 0
+09:48:23 alarm volume after: 09-05 09:47:24:660 setStreamVolume(stream:STREAM_ALARM index:7 flags:0x0 oldIndex:6) from au.buzz.ryzewave
+09:48:23 done -> /home/buzz/RyzeWaveWatch/captures/app_findphone_20260905

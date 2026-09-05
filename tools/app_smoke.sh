@@ -31,6 +31,8 @@ for p in STEPS HEART_RATE OXYGEN_SATURATION DISTANCE SLEEP EXERCISE; do
   adb shell pm grant $PKG android.permission.health.WRITE_$p >/dev/null 2>&1
   adb shell pm grant $PKG android.permission.health.READ_$p >/dev/null 2>&1
 done
+# the workout's GPS track goes into Health Connect as an ExerciseRoute on the session (write-only, no READ_ twin needed)
+adb shell pm grant $PKG android.permission.health.WRITE_EXERCISE_ROUTE >/dev/null 2>&1
 adb logcat -c
 adb shell am start -W -n $PKG/.MainActivity > "$OUT/launch.log" 2>&1
 sleep "$WAIT"

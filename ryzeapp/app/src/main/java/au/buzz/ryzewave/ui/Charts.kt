@@ -196,12 +196,47 @@ private fun DrawScope.drawTooltip(
     drawText(m, text, Offset(left + padX, top + padY), style.copy(color = colors.dotFill))
 }
 
-/** A value label next to a point, kept inside the plot's x range so it never runs into the y-axis label column. */
-private fun DrawScope.drawFloatingLabel(f: ChartFrame, text: String, x: Float, y: Float, above: Boolean, m: TextMeasurer, style: TextStyle) {
+/**
+ * Where a value label next to a point goes: centred on the point, above or below it, kept inside the plot's x range
+ * (with a small inset so it never touches the y-axis label column, e.g. SpO2's "100" tick and a "99" point label).
+ */
+private fun DrawScope.floatingLabelBox(f: ChartFrame, text: String, x: Float, y: Float, above: Boolean, m: TextMeasurer, style: TextStyle): Box {
     val s = m.measure(text, style).size
-    val left = (x - s.width / 2f).coerceIn(f.left, (f.right - s.width).coerceAtLeast(f.left))
+    val inset = 4.dp.toPx()
+    val left = (x - s.width / 2f).coerceIn(f.left + inset, (f.right - s.width).coerceAtLeast(f.left + inset))
     val top = if (above) (y - s.height - 3.dp.toPx()).coerceAtLeast(0f) else (y + 3.dp.toPx()).coerceAtMost(size.height - s.height)
-    drawText(m, text, Offset(left, top), style)
+    return Box(left, top, left + s.width, top + s.height)
+}
+
+private fun DrawScope.drawFloatingLabel(box: Box, text: String, m: TextMeasurer, style: TextStyle) {
+    drawText(m, text, Offset(box.left, box.top), style)
+}
+
+/**
+ * A label that annotates a horizontal reference line (the HR "avg", the steps "goal"): drawn just above or below the
+ * line, at the plot edge or position where it hides the least data ([LabelLayout.pick] over the candidates — right
+ * edge first, then left, centre, quarter points; above before below), on a translucent card-coloured pill so the line
+ * or dots that remain underneath cannot cut through the glyphs. Returns the box it occupied.
+ */
+private fun DrawScope.drawLineLabel(
+    f: ChartFrame, lineY: Float, text: String, m: TextMeasurer, style: TextStyle, fill: Color,
+    points: List<Pair<Float, Float>>, pointRadius: Float, polylines: List<List<Pair<Float, Float>>>,
+    blocks: List<Box> = emptyList(), avoid: List<Box> = emptyList(),
+): Box {
+    val s = m.measure(text, style).size
+    val padX = 3.dp.toPx()
+    val padY = 1.dp.toPx()
+    val w = s.width + 2 * padX
+    val h = s.height + 2 * padY
+    val gap = 2.dp.toPx()
+    val above = (lineY - gap - h).coerceAtLeast(f.top - padY)
+    val below = (lineY + gap).coerceAtMost(f.bottom - h)
+    val xs = listOf(f.right - w, f.left, f.left + (f.width - w) / 2f, f.left + (f.width - w) * 0.25f, f.left + (f.width - w) * 0.75f)
+    val candidates = xs.flatMap { x -> listOf(Box(x, above, x + w, above + h), Box(x, below, x + w, below + h)) }
+    val box = candidates[LabelLayout.pick(candidates, points, pointRadius, polylines, blocks, avoid)]
+    drawRoundRect(fill.copy(alpha = 0.85f), Offset(box.left, box.top), Size(w, h), CornerRadius(3.dp.toPx()))
+    drawText(m, text, Offset(box.left + padX, box.top + padY), style)
+    return box
 }
 
 /** Ticks every [stepHours] hours across a local day (positions in epoch ms). */
@@ -311,17 +346,22 @@ private fun TimeLineChart(
             for (p in series) drawHollowDot(Offset(f.x(p.time.toDouble()), f.y(p.value)), 2.5.dp.toPx(), colors.line, colors.dotFill)
         }
         for (p in samples) drawCircle(colors.accent, 3.dp.toPx(), Offset(f.x(p.time.toDouble()), f.y(p.value)))
+        val extremes = if (all.size > 1 && maxPt != null && minPt != null && maxPt !== minPt) listOf(
+            Fmt.value(maxPt.value) to floatingLabelBox(f, Fmt.value(maxPt.value), f.x(maxPt.time.toDouble()), f.y(maxPt.value), true, measurer, style),
+            Fmt.value(minPt.value) to floatingLabelBox(f, Fmt.value(minPt.value), f.x(minPt.time.toDouble()), f.y(minPt.value), false, measurer, style),
+        ) else emptyList()
         if (showAvg && all.size > 1) {
             val y = f.y(avg)
             drawLine(colors.secondary, Offset(f.left, y), Offset(f.right, y), strokeWidth = 1.dp.toPx(), pathEffect = dash)
-            val label = "avg ${ChartData.meanValue(all)}"
-            val s = measurer.measure(label, style).size
-            drawText(measurer, label, Offset(f.right - s.width, (y - s.height - 2f).coerceAtLeast(f.top)), style.copy(color = colors.secondary))
+            // the label goes where it covers the fewest dots / line segments and never over the min / max labels
+            val px = all.map { f.x(it.time.toDouble()) to f.y(it.value) }
+            val lines = segments.map { seg -> seg.map { f.x(it.time.toDouble()) to f.y(it.value) } }
+            drawLineLabel(
+                f, y, "avg ${ChartData.meanValue(all)}", measurer, style.copy(color = colors.secondary), colors.dotFill,
+                points = px, pointRadius = 3.dp.toPx(), polylines = lines, avoid = extremes.map { it.second },
+            )
         }
-        if (all.size > 1 && maxPt != null && minPt != null && maxPt !== minPt) {
-            drawFloatingLabel(f, Fmt.value(maxPt.value), f.x(maxPt.time.toDouble()), f.y(maxPt.value), true, measurer, style)
-            drawFloatingLabel(f, Fmt.value(minPt.value), f.x(minPt.time.toDouble()), f.y(minPt.value), false, measurer, style)
-        }
+        for ((text, box) in extremes) drawFloatingLabel(box, text, measurer, style)
         selected?.let { p ->
             drawTooltip(f, f.x(p.time.toDouble()), f.y(p.value), "${Fmt.time(p.time)} · ${Fmt.value(p.value)} $unit", measurer, style, colors)
         }
@@ -390,11 +430,16 @@ fun StepsHourChart(
             if (i == selected) drawRect(colors.accent, Offset(x0, yTop), Size(barW, f.bottom - yTop), style = Stroke(width = 2.dp.toPx()))
         }
         // cumulative total on the right axis
+        val cumLine = ArrayList<Pair<Float, Float>>()
         if (lastIdx >= 0) {
             val path = Path()
             path.moveTo(f.left, f.bottom)
+            cumLine += f.left to f.bottom
             for (i in 0..lastIdx) {
-                path.lineTo(f.left + (i + 1) * slotW, f.bottom - (cum[i] / rightTop * f.height).toFloat())
+                val x = f.left + (i + 1) * slotW
+                val y = f.bottom - (cum[i] / rightTop * f.height).toFloat()
+                path.lineTo(x, y)
+                cumLine += x to y
             }
             drawPath(path, colors.secondary, style = Stroke(width = 2.dp.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round))
         }
@@ -402,9 +447,14 @@ fun StepsHourChart(
         if (goal > 0) {
             val gy = f.bottom - (goal / rightTop * f.height).toFloat()
             drawLine(colors.accent, Offset(f.left, gy), Offset(f.right, gy), strokeWidth = 1.dp.toPx(), pathEffect = dash)
-            val label = "goal ${Fmt.compact(goal.toDouble())}"
-            val sz = measurer.measure(label, style).size
-            drawText(measurer, label, Offset(f.right - sz.width, (gy - sz.height - 2f).coerceAtLeast(f.top)), style.copy(color = colors.accent))
+            val bars = (0 until 24).mapNotNull { i ->
+                val s = slots[i] ?: return@mapNotNull null
+                if (s.total <= 0) null else Box(f.left + i * slotW + (slotW - barW) / 2f, f.y(s.total.toDouble()), f.left + i * slotW + (slotW + barW) / 2f, f.bottom)
+            }
+            drawLineLabel(
+                f, gy, "goal ${Fmt.compact(goal.toDouble())}", measurer, style.copy(color = colors.accent), colors.dotFill,
+                points = emptyList(), pointRadius = 0f, polylines = listOf(cumLine), blocks = bars,
+            )
         }
         if (selected in 0..23) {
             val s = slots[selected]
@@ -598,6 +648,90 @@ fun WorkoutChart(
             val pacePart = nearPace?.let { " · ${Fmt.pace(it.value)}" } ?: ""
             val y = if (hrE.isNotEmpty()) f.y(p.value) else paceY(p.value)
             drawTooltip(f, f.x(p.time.toDouble()), y, Fmt.elapsed(p.time.toInt()) + hrPart + pacePart, measurer, style, colors)
+        }
+    }
+}
+
+// ---- 6: sleep hypnogram ------------------------------------------------------------------------------------
+
+/** Block colours by stage, in the strip / card colour language: deep = primary, light = faded primary, REM = tertiary, awake = error. */
+fun sleepStageColor(stage: Int, colors: ChartColors): Color = when (stage) {
+    SleepMath.DEEP -> colors.bar
+    SleepMath.LIGHT -> colors.bar.copy(alpha = 0.45f)
+    SleepMath.REM -> colors.bar2
+    SleepMath.AWAKE -> colors.accent
+    else -> colors.grid
+}
+
+/**
+ * One night as a hypnogram: four lanes (awake, REM, light, deep, top to bottom) with a filled block per stage,
+ * a thin connector where consecutive stages change lane, and ticks at whole hours from bed to rise. Tap a
+ * block to read its times and length.
+ */
+@Composable
+fun SleepHypnogram(
+    chart: SleepChart?,
+    modifier: Modifier = Modifier,
+    colors: ChartColors = chartColors(),
+) {
+    if (chart == null || chart.blocks.isEmpty()) {
+        EmptyChart("No sleep recorded for this night", modifier)
+        return
+    }
+    val measurer = rememberTextMeasurer()
+    val style = MaterialTheme.typography.labelSmall.copy(color = colors.text)
+    val laneLabels = remember { (0 until SleepChartData.LANE_COUNT).map { SleepChartData.laneLabel(it) } }
+    val gutters = rememberGutters(measurer, style, laneLabels, emptyList())
+    val ticks = remember(chart) { SleepChartData.hourTicks(chart.start, chart.end) }
+    val xMin = chart.start.toDouble()
+    val xMax = chart.end.toDouble()
+    val lanes = SleepChartData.LANE_COUNT.toDouble()
+    var selected by remember(chart) { mutableStateOf<SleepBlock?>(null) }
+
+    Canvas(
+        modifier
+            .chartSize()
+            .pointerInput(chart) {
+                detectTapGestures { pos ->
+                    val f = ChartFrame.of(size.width.toFloat(), size.height.toFloat(), gutters, xMin, xMax, 0.0, lanes)
+                    val t = f.xValue(pos.x).toLong()
+                    val hit = if (pos.x in f.left..f.right) chart.blocks.firstOrNull { t >= it.start && t < it.end } else null
+                    selected = if (hit != null && hit != selected) hit else null
+                }
+            },
+    ) {
+        val f = ChartFrame.of(size.width, size.height, gutters, xMin, xMax, 0.0, lanes)
+        val laneH = f.height / SleepChartData.LANE_COUNT
+        val pad = 4.dp.toPx()
+        for (lane in 0 until SleepChartData.LANE_COUNT) {
+            val yTop = f.top + lane * laneH
+            if (lane > 0) drawLine(colors.grid, Offset(f.left, yTop), Offset(f.right, yTop), strokeWidth = 1.dp.toPx(), pathEffect = dash)
+            val label = laneLabels[lane]
+            val s = measurer.measure(label, style).size
+            drawText(measurer, label, Offset(f.left - s.width - pad, yTop + laneH / 2f - s.height / 2f), style)
+        }
+        drawXTicks(f, ticks, measurer, style, colors)
+        val inset = 2.dp.toPx()
+        var prev: SleepBlock? = null
+        for (b in chart.blocks) {
+            val x0 = f.x(b.start.toDouble())
+            val x1 = f.x(b.end.toDouble())
+            val yTop = f.top + b.lane * laneH + inset
+            drawRect(sleepStageColor(b.stage, colors), Offset(x0, yTop), Size((x1 - x0).coerceAtLeast(1f), laneH - 2 * inset))
+            if (prev != null && prev.lane != b.lane) {
+                val yA = f.top + prev.lane * laneH + laneH / 2f
+                val yB = f.top + b.lane * laneH + laneH / 2f
+                drawLine(colors.grid, Offset(x0, yA), Offset(x0, yB), strokeWidth = 1.dp.toPx())
+            }
+            prev = b
+        }
+        selected?.let { b ->
+            val x0 = f.x(b.start.toDouble())
+            val x1 = f.x(b.end.toDouble())
+            val yTop = f.top + b.lane * laneH + inset
+            drawRect(colors.line, Offset(x0, yTop), Size((x1 - x0).coerceAtLeast(1f), laneH - 2 * inset), style = Stroke(width = 2.dp.toPx()))
+            val text = "${Fmt.time(b.start)}–${Fmt.time(b.end)} · ${SleepMath.stageName(b.stage)} ${b.minutes} min"
+            drawTooltip(f, (x0 + x1) / 2f, yTop + (laneH - 2 * inset) / 2f, text, measurer, style, colors)
         }
     }
 }

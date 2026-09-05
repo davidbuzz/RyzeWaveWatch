@@ -17,6 +17,17 @@ object UiDefaults {
     val HISTORY_RANGES = listOf(7, 30)
 }
 
+/** The watch MAC as typed in Settings > Watch: normalised (trimmed, upper-cased) only when compared and saved. */
+object MacText {
+    /** `aa:bb:cc:dd:ee:ff` / ` 78:02:b7:37:91:e5 ` -> `AA:BB:CC:DD:EE:FF` / `78:02:B7:37:91:E5`. */
+    fun normalise(text: String): String = text.trim().uppercase(Locale.ROOT)
+
+    private val MAC_RE = Regex("^([0-9A-F]{2}:){5}[0-9A-F]{2}$")
+
+    /** True when [normalise] of [text] is a colon-separated 48-bit address. */
+    fun isValid(text: String): Boolean = MAC_RE.matches(normalise(text))
+}
+
 /** Time / number formatting helpers. Times are epoch milliseconds in the phone's local zone. */
 object Fmt {
     private val zone: ZoneId get() = ZoneId.systemDefault()

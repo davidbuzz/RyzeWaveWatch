@@ -1,0 +1,25 @@
+rows 229 workout ledger rows []
+journal -> ('wal',)
+header bytes 18,19: 2 2
+total 192
+drwxrwxr-x  2 buzz buzz   4096 Sep  5 10:24 .
+drwx------ 24 buzz buzz   4096 Sep  5 10:24 ..
+-rw-rw-r--  1 buzz buzz 188416 Sep  5 10:24 ryzewave.db
+total 190
+drwxrwx--x 2 u0_a378 u0_a378   3452 2026-09-05 10:24 .
+drwx------ 7 u0_a378 u0_a378   3452 2026-09-04 23:57 ..
+-rw-rw---- 1 u0_a378 u0_a378 188416 2026-09-05 10:24 ryzewave.db
+9b616c311bca5b09654c60289d2d553d  databases/ryzewave.db
+6d2501762db8ea96302129382303d115  /tmp/claude-1000/-home-buzz-RyzeWaveWatch/a8cfe5ce-cab3-47da-bf23-26c8acc106be/scratchpad/db5/ryzewave.db
+10:24:23 journal-mode problems:
+9
+10:24:23 startup exporter lines:
+09-05 10:24:15.310 E/AndroidRuntime( 9361): 	at androidx.room.RoomDatabase.query(RoomDatabase.kt:484)
+09-05 10:24:15.310 E/AndroidRuntime( 9361): 	at androidx.room.CoroutinesRoom$Companion$createFlow$1$1$1.invokeSuspend(CoroutinesRoom.kt:129)
+09-05 10:24:15.318 E/AndroidRuntime( 9361): 		at androidx.room.RoomDatabase.query(RoomDatabase.kt:484)
+09-05 10:24:15.318 E/AndroidRuntime( 9361): 		at androidx.room.RoomDatabase.query(RoomDatabase.kt:484)
+09-05 10:24:15.323 E/AndroidRuntime( 9361): 		at androidx.room.RoomDatabase.query(RoomDatabase.kt:484)
+no node containing 'Settings'
+10:24:57 EXPORT 1
+no node containing 'Export now'
+EXIT=143

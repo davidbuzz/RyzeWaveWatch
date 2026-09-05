@@ -1,0 +1,30 @@
+09-05 10:18:38.956 I/GraphFactory( 8786): notify: dropped au.buzz.ryzewave: ongoing
+09-05 10:18:38.956 I/GraphFactory( 8786): notify: dropped au.buzz.ryzewave: ongoing
+09-05 10:18:45.176 I/AndroidRuntime( 8875): Using default boot image
+09-05 10:18:45.176 I/AndroidRuntime( 8875): Leaving lock profiling enabled
+09-05 10:18:49.660 I/AndroidRuntime( 8897): Using default boot image
+09-05 10:18:49.660 I/AndroidRuntime( 8897): Leaving lock profiling enabled
+09-05 10:18:53.848 I/AndroidRuntime( 8918): Using default boot image
+09-05 10:18:53.848 I/AndroidRuntime( 8918): Leaving lock profiling enabled
+09-05 10:18:57.930 I/AndroidRuntime( 8940): Using default boot image
+09-05 10:18:57.930 I/AndroidRuntime( 8940): Leaving lock profiling enabled
+09-05 10:19:01.899 I/AndroidRuntime( 8961): Using default boot image
+09-05 10:19:01.900 I/AndroidRuntime( 8961): Leaving lock profiling enabled
+09-05 10:19:05.825 I/AndroidRuntime( 8982): Using default boot image
+09-05 10:19:05.825 I/AndroidRuntime( 8982): Leaving lock profiling enabled
+09-05 10:19:08.564 I/AndroidRuntime( 8998): Using default boot image
+09-05 10:19:08.564 I/AndroidRuntime( 8998): Leaving lock profiling enabled
+09-05 10:19:11.268 I/AndroidRuntime( 9014): Using default boot image
+09-05 10:19:11.268 I/AndroidRuntime( 9014): Leaving lock profiling enabled
+09-05 10:19:13.996 I/AndroidRuntime( 9030): Using default boot image
+09-05 10:19:13.996 I/AndroidRuntime( 9030): Leaving lock profiling enabled
+09-05 10:19:19.309 I/HealthConnectExporter( 8786): exercise route attached to workout-1: 86 locations
+09-05 10:19:19.309 I/HealthConnectExporter( 8786): exported 2 records (ExportCounts(steps=0, heartRate=0, spo2=0, distance=1, sleep=0, workouts=1, routePoints=86)) from 0, 228 unchanged skipped, cursor -> 1788567556559, failed 0
+09-05 10:19:25.383 I/AndroidRuntime( 9060): Using default boot image
+09-05 10:19:25.383 I/AndroidRuntime( 9060): Leaving lock profiling enabled
+09-05 10:19:28.149 I/AndroidRuntime( 9076): Using default boot image
+09-05 10:19:28.149 I/AndroidRuntime( 9076): Leaving lock profiling enabled
+09-05 10:19:31.060 I/HealthConnectExporter( 8786): exercise route attached to workout-1: 86 locations
+09-05 10:19:31.061 I/HealthConnectExporter( 8786): exported 2 records (ExportCounts(steps=0, heartRate=0, spo2=0, distance=1, sleep=0, workouts=1, routePoints=86)) from 0, 228 unchanged skipped, cursor -> 1788567570753, failed 0
+09-05 10:19:39.563 I/AndroidRuntime( 9106): Using default boot image
+09-05 10:19:39.563 I/AndroidRuntime( 9106): Leaving lock profiling enabled

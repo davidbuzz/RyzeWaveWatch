@@ -1,0 +1,17 @@
+tapping 635,1478 ('Settings')
+  128,  794          TextView       Height
+  201, 1222          TextView       Save profile
+height field at   201,845
+== set height 183, Save profile
+  201,  845  [click] EditText       183
+tapping 201,1222 ('Save profile')
+09-05 10:58:59.643 12823 12849 I HealthConnectExporter: exported 3 records (ExportCounts(steps=0, heartRate=0, spo2=0, distance=3, sleep=0, workouts=0, routePoints=0)) from 1788567883585, 0 unchanged skipped (0 sessions without reading their tracks), cursor -> 1788569939554, failed 0
+09-05 10:58:59.643 12823 12849 I GraphFactory: Health Connect export after stride change (walk 0.7503 m, run 0.9991800000000001 m): ExportResult(status=OK, counts=ExportCounts(steps=0, heartRate=0, spo2=0, distance=3, sleep=0, workouts=0, routePoints=0), inserted=3, failed=0, cursor=1788569939554, message=null, time=178856993964
+== set height H, Save profile
+  201,  845  [click] EditText       182
+tapping 201,1222 ('Save profile')
+09-05 10:59:13.667 12823 12851 I HealthConnectExporter: exported 3 records (ExportCounts(steps=0, heartRate=0, spo2=0, distance=3, sleep=0, workouts=0, routePoints=0)) from 1788569639554, 0 unchanged skipped (0 sessions without reading their tracks), cursor -> 1788569953613, failed 0
+09-05 10:59:13.667 12823 12851 I GraphFactory: Health Connect export after stride change (walk 0.7461999999999999 m, run 0.9937200000000002 m): ExportResult(status=OK, counts=ExportCounts(steps=0, heartRate=0, spo2=0, distance=3, sleep=0, workouts=0, routePoints=0), inserted=3, failed=0, cursor=1788569953613, message=null, time=
+  360,  288  [click] EditText       78:02:B7:37:91:E5
+  201,  845  [click] EditText       182
+    topResumedActivity=ActivityRecord{1c03894 u0 au.buzz.ryzewave/.MainActivity t116}

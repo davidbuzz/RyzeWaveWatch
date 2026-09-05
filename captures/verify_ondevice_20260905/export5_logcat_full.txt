@@ -1,0 +1,1591 @@
+--------- beginning of main
+09-05 10:28:58.356 I/adbd    ( 1298): adbd service requested 'shell,v2:export ANDROID_LOG_TAGS="''"; exec logcat '-b' 'crash' '-c''
+09-05 10:28:58.432 I/adbd    ( 1298): adbd service requested 'shell,v2,raw:am start -W -n au.buzz.ryzewave/.MainActivity'
+--------- beginning of system
+09-05 10:28:58.500 W/ActivityTaskManager( 1870): callingPackage for (uid=2000, pid=10108) has no WPC
+09-05 10:28:58.506 W/OptProp ( 1870): Cannot read opt property android.window.PROPERTY_COMPAT_ALLOW_ORIENTATION_OVERRIDE
+09-05 10:28:58.508 W/OptProp ( 1870): Cannot read opt property android.window.PROPERTY_COMPAT_ALLOW_RESIZEABLE_ACTIVITY_OVERRIDES
+09-05 10:28:58.508 W/OptProp ( 1870): Cannot read opt property android.window.PROPERTY_COMPAT_ALLOW_MIN_ASPECT_RATIO_OVERRIDE
+09-05 10:28:58.513 I/BufferQueueDebug( 1227): [Task=112#2774](this:0xb400007163808310,id:-1,api:0,p:-1,c:-1) BufferQueue core=(1227:/system/bin/surfaceflinger)
+09-05 10:28:58.518 I/BufferQueueDebug( 1227): [ActivityRecord{cbe295 u0 au.buzz.ryzewave/.MainActivity#2775](this:0xb40000716379bfb0,id:-1,api:0,p:-1,c:-1) BufferQueue core=(1227:/system/bin/surfaceflinger)
+09-05 10:28:58.522 I/mtkpower@impl( 1193): [setMode] type:5, enabled:1
+09-05 10:28:58.524 I/PowerHalWrapper( 1870): amsBoostNotify pid:21356,activity:com.android.launcher3.CustomizationPanelLauncher, package:com.motorola.launcher3, mProcessCreatePackcom.google.android.healthconnect.controller 
+09-05 10:28:58.524 I/PowerHalWrapper( 1870): state: 0 
+09-05 10:28:58.524 I/libPowerHal( 1193): [perfLockAcq] idx:0 hdl:2803 hint:77 pid:1193 tid:1193 duration:30000 lock_user:vendor.mediatek => ret_hdl:2803
+09-05 10:28:58.525 I/libPowerHal( 1193): [PE] LAUNCH update cmd:1408300, param:100, pr:3
+09-05 10:28:58.525 I/libPowerHal( 1193): [PE] LAUNCH update cmd:400000 param:3000000 pr:3
+09-05 10:28:58.525 I/libPowerHal( 1193): [PE] LAUNCH update cmd:400100 param:3000000 pr:3
+09-05 10:28:58.526 I/mtkpower_client( 1870): [PowerHal_Wrap_notifyAppState] com.motorola.launcher3/com.android.launcher3.CustomizationPanelLauncher pid=21356 activityId:124421203 state:0
+09-05 10:28:58.526 I/libPowerHal( 1193): [setDvfsrcDevFreqOpp] opp:0, freq:3600000000
+09-05 10:28:58.526 I/libPowerHal( 1193): [PE] LAUNCH update cmd:1000000 param:0 pr:3
+09-05 10:28:58.526 I/libPowerHal( 1193): [recordCPUFreqInfo] set cluster[0] min(LAUNCH): 1700000 max(-1): -1 cluster[1] min(LAUNCH): 2000000 max(-1): -1
+09-05 10:28:58.526 I/libPowerHal( 1193): [perfLockAcq] Done for hdl : 2803
+09-05 10:28:58.526 I/vendor.mediatek.hardware.mtkpower_applist-service.mediatek( 1184): packName: com.motorola.launcher3 actName: com.android.launcher3.CustomizationPanelLauncher pid: 21356 activityId: 124421203 uid: 10190 state: 0
+09-05 10:28:58.526 I/MTK_APPList( 1184): [notifyAPPstate] com.motorola.launcher3/com.android.launcher3.CustomizationPanelLauncher, pid=21356, activityId=124421203, uid=10190, state:PAUSED, fps:-1, win:0
+09-05 10:28:58.526 I/MTK_APPList( 1184): [notifyAPPstate] multi_resumed_app_count: 0
+09-05 10:28:58.526 I/MTK_APPList( 1184): [getForegroundAPPCount] 1
+09-05 10:28:58.526 I/MTK_APPList( 1184): [notifyNetdUID] 10190
+09-05 10:28:58.527 I/MTK_APPList( 1184): [notifyPID] 21356
+09-05 10:28:58.528 I/libPowerHal( 1193): [perfSetSysInfo] pid type:24, 21356
+09-05 10:28:58.528 I/PowerHalWrapper( 1870): amsBoostNotify AMS_BOOST_PROCESS_CREATE_BOOST:false 
+09-05 10:28:58.529 I/PowerHalWrapper( 1870): <amsBoostResume> last:com.motorola.launcher3, next:au.buzz.ryzewavehasATProcess:false 
+09-05 10:28:58.530 I/libPowerHal( 1193): [perfLockAcq] idx:2 hdl:2804 hint:22 pid:1193 tid:1193 duration:10000 lock_user:vendor.mediatek => ret_hdl:2804
+09-05 10:28:58.530 I/libPowerHal( 1193): [perfLockAcq] Done for hdl : 2804
+09-05 10:28:58.530 I/libPowerHal( 1193): [perfLockRel] hdl:2802, idx:-1
+09-05 10:28:58.531 I/ActivityTaskManager( 1870): START u0 {flg=0x10000000 cmp=au.buzz.ryzewave/.MainActivity} with LAUNCH_SINGLE_TASK from uid 2000 (BAL_ALLOW_PERMISSION) result code=0
+09-05 10:28:58.532 I/hwcomposer( 1163): [HWCDisplay] (0 updateFps():3644), (type:1, mode:2) fps:0.290992,dur:3436.52,max:3436.52,min:3436.52  
+09-05 10:28:58.536 E/ApplicationHelper( 1870): Fail to get PackageManager
+09-05 10:28:58.539 I/netd    ( 1149): tetherGetStats() -> {[]} <1.83ms>
+09-05 10:28:58.543 W/WindowManager( 1870): Changing focus from Window{722cf26 u0 com.motorola.launcher3/com.android.launcher3.CustomizationPanelLauncher} to null displayId=0 Callers=com.android.server.wm.RootWindowContainer.updateFocusedWindowLocked:470 com.android.server.wm.WindowManagerService.updateFocusedWindowLocked:6674 com.android.server.wm.ActivityTaskManagerService.setLastResumedActivityUncheckLocked:5080 com.android.server.wm.ActivityTaskSupervisor.updateTopResumedActivityIfNeeded:2367 
+09-05 10:28:58.544 I/PowerHalWrapper( 1870): amsBoostNotify pid:10066,activity:au.buzz.ryzewave.MainActivity, package:au.buzz.ryzewave, mProcessCreatePackcom.google.android.healthconnect.controller 
+09-05 10:28:58.544 I/PowerHalWrapper( 1870): state: 1 
+09-05 10:28:58.545 I/mtkpower_client( 1870): perf_lock_rel, hdl:2801, tid:1903
+09-05 10:28:58.546 I/mtkpower_client( 1870): perf_lock_acq, hdl:0, dur:0, num:2, pid:1870, tid:1903
+09-05 10:28:58.546 I/libPowerHal( 1193): [perfLockRel] hdl:2801, idx:1
+09-05 10:28:58.546 I/libPowerHal( 1193): [load_thm_api] idx:1, start:0
+09-05 10:28:58.546 I/ScnModule( 1870): [GameDetection] packname: au.buzz.ryzewave, apkSize: 23226921. 
+09-05 10:28:58.546 I/mtkpower_client( 1870): [PowerHal_Wrap_notifyAppState] au.buzz.ryzewave/au.buzz.ryzewave.MainActivity pid=10066 activityId:13361813 state:1
+09-05 10:28:58.546 I/vendor.mediatek.hardware.mtkpower_applist-service.mediatek( 1184): packName: au.buzz.ryzewave actName: au.buzz.ryzewave.MainActivity pid: 10066 activityId: 13361813 uid: 10378 state: 1
+09-05 10:28:58.546 I/MTK_APPList( 1184): [notifyAPPstate] au.buzz.ryzewave/au.buzz.ryzewave.MainActivity, pid=10066, activityId=13361813, uid=10378, state:RESUMED, fps:-1, win:0
+09-05 10:28:58.547 I/MTK_APPList( 1184): [notifyAPPstate] multi_resumed_app_count: 1
+09-05 10:28:58.547 I/MTK_APPList( 1184): [notifyAPPstate] multi_resumed_app_info[0] au.buzz.ryzewave/au.buzz.ryzewave.MainActivity, pid:10066, activityId:13361813, fps:-1, isMultiWindow:0
+09-05 10:28:58.547 I/MTK_APPList( 1184): [getForegroundAPPCount] 1
+09-05 10:28:58.547 I/MTK_APPList( 1184): [notifyAPPstate] foreground:au.buzz.ryzewave, pid:10066, activityId:13361813, uid:10378
+09-05 10:28:58.547 I/MTK_APPList( 1184): [notifyNetdUID] 10378
+09-05 10:28:58.548 I/libMtcLoader( 1193): load_propertydata 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0  active: 4 count: 1
+09-05 10:28:58.548 I/PowerHalWrapper( 1870): amsBoostNotify AMS_BOOST_PROCESS_CREATE_BOOST:false 
+09-05 10:28:58.548 I/libMtcLoader( 1193): disable thermal policy thermal_policy_01.
+09-05 10:28:58.548 I/libMtcLoader( 1193): next_idx -1
+09-05 10:28:58.548 I/libMtcLoader( 1193): store_propertydata 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 active: -1 count: 0
+09-05 10:28:58.548 E/MBrainLocalService( 1870): notifyAppSwitch failed
+09-05 10:28:58.549 I/libMtcLoader( 1193): loadmtc
+09-05 10:28:58.549 I/libMtcLoader( 1193): readPolicy_formatV2
+09-05 10:28:58.550 I/thermal_src( 1442): ta_catm_init_flow
+09-05 10:28:58.550 I/thermal_src( 1442): u_CATM_ON == -1, get catm init val
+09-05 10:28:58.551 I/thermal_src( 1442): TTJ_D 13500,TT_H 500,TT_L 500,TT 4000,MAX_TT 800000,MIN_TT -800000,MIN_TTJ 65000,CATM_ON 2,TTJ 57000,MAX_TARGET_TJ 80000,TRIP_TPCB 42000,STEADY_TARGET_TPCB 44000
+09-05 10:28:58.551 I/thermal_src( 1442): update param 6912,57000,66500,27648,-19456
+09-05 10:28:58.553 I/TopTaskTracker(21356): onTaskMovedToFront: (moved taskInfo to front) taskId=112, baseIntent=Intent { flg=0x10000000 cmp=au.buzz.ryzewave/.MainActivity }
+09-05 10:28:58.555 I/BpBinder( 1227): onLastStrongRef automatically unlinking death recipients: 
+09-05 10:28:58.555 I/BufferQueueDebug( 1227): [cf81ee4 Splash Screen au.buzz.ryzewave#2776](this:0xb4000071637cc640,id:-1,api:0,p:-1,c:-1) BufferQueue core=(1227:/system/bin/surfaceflinger)
+09-05 10:28:58.563 E/ApplicationHelper( 1870): Fail to get PackageManager
+09-05 10:28:58.563 I/BufferQueueDebug( 1227): [Dim Layer for - WindowedMagnification:0:31#2777](this:0xb4000071637825a0,id:-1,api:0,p:-1,c:-1) BufferQueue core=(1227:/system/bin/surfaceflinger)
+09-05 10:28:58.565 W/JobScheduler.JobStatus( 1870): Exempted app com.android.vending considered buggy
+09-05 10:28:58.565 W/JobScheduler.JobStatus( 1870): Exempted app com.android.vending considered buggy
+09-05 10:28:58.565 W/JobScheduler.JobStatus( 1870): Exempted app com.android.vending considered buggy
+09-05 10:28:58.565 W/JobScheduler.JobStatus( 1870): Exempted app com.android.vending considered buggy
+09-05 10:28:58.565 W/JobScheduler.JobStatus( 1870): Exempted app com.android.vending considered buggy
+09-05 10:28:58.565 W/JobScheduler.JobStatus( 1870): Exempted app com.android.vending considered buggy
+09-05 10:28:58.565 W/JobScheduler.JobStatus( 1870): Exempted app com.android.vending considered buggy
+09-05 10:28:58.565 W/JobScheduler.JobStatus( 1870): Exempted app com.android.vending considered buggy
+09-05 10:28:58.565 W/JobScheduler.JobStatus( 1870): Exempted app com.android.vending considered buggy
+09-05 10:28:58.565 W/JobScheduler.JobStatus( 1870): Exempted app com.android.vending considered buggy
+09-05 10:28:58.566 W/JobScheduler.JobStatus( 1870): Exempted app com.android.vending considered buggy
+09-05 10:28:58.566 W/JobScheduler.JobStatus( 1870): Exempted app com.android.vending considered buggy
+09-05 10:28:58.566 W/JobScheduler.JobStatus( 1870): Exempted app com.android.vending considered buggy
+09-05 10:28:58.566 W/JobScheduler.JobStatus( 1870): Exempted app com.android.vending considered buggy
+09-05 10:28:58.566 W/JobScheduler.JobStatus( 1870): Exempted app com.android.vending considered buggy
+09-05 10:28:58.566 W/JobScheduler.JobStatus( 1870): Exempted app com.android.vending considered buggy
+09-05 10:28:58.566 W/JobScheduler.JobStatus( 1870): Exempted app com.android.vending considered buggy
+09-05 10:28:58.566 W/JobScheduler.JobStatus( 1870): Exempted app com.android.vending considered buggy
+09-05 10:28:58.566 W/JobScheduler.JobStatus( 1870): Exempted app com.android.vending considered buggy
+09-05 10:28:58.567 I/BufferQueueDebug( 1227): [Splash Screen au.buzz.ryzewave#2778](this:0xb40000716378ae50,id:-1,api:0,p:-1,c:-1) BufferQueue core=(1227:/system/bin/surfaceflinger)
+09-05 10:28:58.568 E/ApplicationHelper( 1870): Fail to get PackageManager
+09-05 10:28:58.568 E/ApplicationHelper( 1870): Fail to get PackageManager
+09-05 10:28:58.569 E/u.buzz.ryzewave(10066): setpriority success to 100 : mali-cmar-backend
+09-05 10:28:58.572 I/SurfaceFlinger( 1227): onHandleDestroyed: name=Dim Layer for - Task=1#2771, layerId=2771, parentId=0
+09-05 10:28:58.589 I/BufferQueueDebug( 1227): [Dim Layer for - Task=1#2771](this:0xb4000071638027f0,id:-1,api:0,p:-1,c:1227) onDestructor()
+09-05 10:28:58.589 I/BufferQueueDebug( 1227): [Transition Root: Task=112#2779](this:0xb400007163765e00,id:-1,api:0,p:-1,c:-1) BufferQueue core=(1227:/system/bin/surfaceflinger)
+09-05 10:28:58.596 I/BufferQueueDebug( 1227): [993d24c ActivityRecordInputSink au.buzz.ryzewave/.MainActivity#2780](this:0xb4000071637b2c30,id:-1,api:0,p:-1,c:-1) BufferQueue core=(1227:/system/bin/surfaceflinger)
+09-05 10:28:58.600 I/libMtcLoader( 1193): loadmtc loadmtc done
+09-05 10:28:58.600 I/libMtcLoader( 1193): default thermal policy.
+09-05 10:28:58.602 I/libPowerHal( 1193): [PD] system_server update ONESHOT(unset) cmd:3000000 param:1 pr:3
+09-05 10:28:58.602 I/libPowerHal( 1193): [perfLockRel] Done for hdl : 2801
+09-05 10:28:58.603 W/UserManagerService( 1870): Requested status bar icon for non-badged user 0
+09-05 10:28:58.604 I/mtkpower_client( 1870): ret_hdl:2805
+09-05 10:28:58.604 I/libPowerHal( 1193): [perfLockAcq] idx:1 hdl:2805 hint:-1 pid:1870 tid:1903 duration:0 lock_user:system_server => ret_hdl:2805
+09-05 10:28:58.604 I/libPowerHal( 1193): [load_thm_api] idx:1, start:1
+09-05 10:28:58.606 I/libMtcLoader( 1193): load_propertydata 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0  active: -1 count: 0
+09-05 10:28:58.606 I/BufferQueueProducer( 1227): [com.motorola.launcher3/com.android.launcher3.CustomizationPanelLauncher#2763](this:0xb40000716384f620,id:-1,api:0,p:-1,c:1227) queueBuffer: fps=1.29 dur=12370.27 max=12102.39 min=15.68
+09-05 10:28:58.606 I/libMtcLoader( 1193): enable thermal policy thermal_policy_01.
+09-05 10:28:58.606 I/libMtcLoader( 1193): next_idx 4
+09-05 10:28:58.606 I/libMtcLoader( 1193): store_propertydata 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 active: 4 count: 1
+09-05 10:28:58.607 I/libMtcLoader( 1193): loadmtc
+09-05 10:28:58.607 I/libMtcLoader( 1193): readPolicy_formatV2
+09-05 10:28:58.608 I/thermal_src( 1442): ta_catm_init_flow
+09-05 10:28:58.608 I/thermal_src( 1442): u_CATM_ON == -1, get catm init val
+09-05 10:28:58.608 I/thermal_src( 1442): TTJ_D 13500,TT_H 500,TT_L 500,TT 4000,MAX_TT 800000,MIN_TT -800000,MIN_TTJ 65000,CATM_ON 2,TTJ 53000,MAX_TARGET_TJ 80000,TRIP_TPCB 42000,STEADY_TARGET_TPCB 44000
+09-05 10:28:58.608 I/thermal_src( 1442): update param 6912,53000,66500,27648,-27648
+09-05 10:28:58.617 I/libMtcLoader( 1193): loadmtc loadmtc done
+09-05 10:28:58.619 I/libPowerHal( 1193): [PE] system_server update ONESHOT(set) cmd:3000000 param:1 pr:3
+09-05 10:28:58.619 I/libPowerHal( 1193): [perfLockAcq] Done for hdl : 2805
+09-05 10:28:58.619 I/MTK_APPList( 1184): [notifyPID] 10066
+09-05 10:28:58.619 I/libPowerHal( 1193): [perfSetSysInfo] pid type:24, 10066
+09-05 10:28:58.620 I/MTK_APPList( 1184): [notifyAPPstate] pc:0, com.motorola.launcher3 => au.buzz.ryzewave
+09-05 10:28:58.641 I/cgno    (29498): onPause
+09-05 10:28:58.643 I/mtkpower@impl( 1193): [setMode] type:6, enabled:1
+09-05 10:28:58.643 E/mtkpower@impl( 1193): [setMode] unknown type
+09-05 10:28:58.643 I/cgfa    (29498): onPause
+09-05 10:28:58.643 W/dytk    (29498): measuring already stopped.
+09-05 10:28:58.646 I/BufferQueueProducer( 1227): [FramebufferSurface](this:0xb4000072a35d6370,id:-1,api:1,p:1227,c:1227) queueBuffer: fps=0.26 dur=57517.56 max=57285.08 min=14.85
+09-05 10:28:58.668 I/ActivityManager( 1870): Background started FGS: Allowed [callingPackage: au.buzz.ryzewave; callingUid: 10378; uidState: TOP ; uidBFSL: [BFSL]; intent: Intent { cmp=au.buzz.ryzewave/.ble.WatchService }; code:PROC_STATE_TOP; tempAllowListReason:<null>; targetSdkVersion:35; callerTargetSdkVersion:35; startForegroundCount:0; bindFromPackage:null: isBindService:false]
+09-05 10:28:58.687 I/PowerHalWrapper(10066): PowerHalWrapper.getInstance 
+09-05 10:28:58.689 I/SurfaceFactory(10066): [static] sSurfaceFactory = com.mediatek.view.impl.SurfaceFactoryImpl@f88c0c1
+09-05 10:28:58.696 W/HWUI    (10066): Unknown dataspace 0
+09-05 10:28:58.703 I/BufferQueueDebug( 1227): [ab21d2f au.buzz.ryzewave/au.buzz.ryzewave.MainActivity#2781](this:0xb40000716381ef90,id:-1,api:0,p:-1,c:-1) BufferQueue core=(1227:/system/bin/surfaceflinger)
+09-05 10:28:58.730 I/WatchService(10066): service created
+09-05 10:28:58.743 I/WatchService(10066): Bluetooth is off; waiting
+09-05 10:28:58.772 I/WifiHAL ( 2170): feature_set=0x8488341a
+09-05 10:28:58.892 I/mtkpower@impl( 1193): [setMode] type:6, enabled:0
+09-05 10:28:58.892 E/mtkpower@impl( 1193): [setMode] unknown type
+09-05 10:28:58.895 W/UserManagerService( 1870): Requested status bar icon for non-badged user 0
+09-05 10:28:58.897 W/UserManagerService( 1870): Requested status bar icon for non-badged user 0
+09-05 10:28:58.908 I/SurfaceFlinger( 1227): onHandleDestroyed: name=Transition Root: Task=112#2779, layerId=2779, parentId=0
+09-05 10:28:58.911 I/SurfaceFlinger( 1227): NotifyHwcComposition(), id 0, mode 1
+09-05 10:28:58.912 I/hwcomposer( 1163): [DBQ] (q2:0xb400007020094ea0) Buffer queue is created with size(3), m_id(723), q2  
+09-05 10:28:58.912 I/hwcomposer( 1163): [DBQ] (q2:0xb400007020094ea0) Reallocate Slot(0), pool(0 -> 0) size(0 -> 4619520) secure(0 -> 0)  
+09-05 10:28:58.913 I/BufferQueueDebug( 1227): [Surface(name=81bb773 NavigationBar0)/@0xde2b681 - animation-leash of insets_animation#2782](this:0xb4000071638027f0,id:-1,api:0,p:-1,c:-1) BufferQueue core=(1227:/system/bin/surfaceflinger)
+09-05 10:28:58.914 I/hwcomposer( 1163): [DBQ] (q2:0xb400007020094ea0) Alloc Slot(0), handle=0xb4000071100788d0 c=0 w=720 h=1604 p=720 ys=720 vs=1604 f=2 sec=0 sh=0, usage=0x800  
+09-05 10:28:58.915 I/BufferQueueDebug( 1227): [Surface(name=7e0270b StatusBar)/@0xff9fc94 - animation-leash of insets_animation#2783](this:0xb4000071637b59c0,id:-1,api:0,p:-1,c:-1) BufferQueue core=(1227:/system/bin/surfaceflinger)
+09-05 10:28:58.924 I/BufferQueueDebug( 1227): [Transition Root: Task=112#2779](this:0xb400007163765e00,id:-1,api:0,p:-1,c:1227) onDestructor()
+09-05 10:28:58.924 I/SurfaceFlinger( 1227): onHandleDestroyed: name=Dim Layer for - WindowedMagnification:0:31#2777, layerId=2777, parentId=0
+09-05 10:28:58.924 I/SurfaceFlinger( 1227): onHandleDestroyed: name=af10c42 ActivityRecordInputSink com.motorola.launcher3/com.android.launcher3.uioverrides.QuickstepLauncher#2770, layerId=2770, parentId=0
+09-05 10:28:58.932 W/NotificationHistory( 1870): Attempted to add notif for locked/gone/disabled user 0
+09-05 10:28:58.940 I/BufferQueueDebug( 1227): [Dim Layer for - WindowedMagnification:0:31#2777](this:0xb4000071637825a0,id:-1,api:0,p:-1,c:1227) onDestructor()
+09-05 10:28:58.940 I/BufferQueueDebug( 1227): [af10c42 ActivityRecordInputSink com.motorola.launcher3/com.android.launcher3.uioverrides.QuickstepLauncher#2770](this:0xb40000716384c890,id:-1,api:0,p:-1,c:1227) onDestructor()
+09-05 10:28:58.940 I/SurfaceFlinger( 1227): onHandleDestroyed: name=Surface(name=7e0270b StatusBar)/@0xff9fc94 - animation-leash of insets_animation#2765, layerId=2765, parentId=0
+09-05 10:28:58.941 I/SurfaceFlinger( 1227): onHandleDestroyed: name=Surface(name=81bb773 NavigationBar0)/@0xde2b681 - animation-leash of insets_animation#2764, layerId=2764, parentId=0
+09-05 10:28:58.942 I/SurfaceFlinger( 1227): NotifyHwcComposition(), id 0, mode 0
+09-05 10:28:58.943 I/hwcomposer( 1163): [DBQ] (q2:0xb400007020094ea0) Buffer queue is destroyed, m_id(723)  
+09-05 10:28:58.943 I/hwcomposer( 1163): [DBQ] (q2:0xb400007020094ea0) ~DisplayBufferQueue(), m_id(723), release buf  
+09-05 10:28:58.943 I/hwcomposer( 1163): [DBQ] (q2:0xb400007020094ea0) Free Slot(0), handle=0xb4000071100788d0, 4619520 -> 0  
+09-05 10:28:58.943 W/hwcomposer( 1163): [DRMDEV] paramIsSame(), id 722, w 720/720, h 1604/1604, pitch 720/720, format 0x1/0x2, secure 0/0  
+09-05 10:28:58.956 I/BufferQueueDebug( 1227): [Surface(name=81bb773 NavigationBar0)/@0xde2b681 - animation-leash of insets_animation#2764](this:0xb4000071637be270,id:-1,api:0,p:-1,c:1227) onDestructor()
+09-05 10:28:58.957 I/BufferQueueDebug( 1227): [Surface(name=7e0270b StatusBar)/@0xff9fc94 - animation-leash of insets_animation#2765](this:0xb4000071637c1000,id:-1,api:0,p:-1,c:1227) onDestructor()
+09-05 10:28:59.006 I/BufferQueueProducer( 1227): [NavigationBar0#1654](this:0xb40000716378dbe0,id:-1,api:0,p:-1,c:1227) queueBuffer: fps=1.25 dur=12752.70 max=12502.55 min=15.66
+09-05 10:28:59.040 I/BufferQueueProducer( 1227): [StatusBar#82](this:0xb400007163793700,id:-1,api:0,p:-1,c:1227) queueBuffer: fps=0.08 dur=12819.32 max=12819.32 min=12819.32
+09-05 10:28:59.200 I/u.buzz.ryzewave(10066): Compiler allocated 6842KB to compile void android.view.ViewRootImpl.performTraversals()
+09-05 10:28:59.339 W/u.buzz.ryzewave(10066): Method boolean androidx.compose.runtime.snapshots.SnapshotStateList.conditionalUpdate(boolean, kotlin.jvm.functions.Function1) failed lock verification and will run slower.
+09-05 10:28:59.339 W/u.buzz.ryzewave(10066): Common causes for lock verification issues are non-optimized dex code
+09-05 10:28:59.339 W/u.buzz.ryzewave(10066): and incorrect proguard optimizations.
+09-05 10:28:59.339 W/u.buzz.ryzewave(10066): Method boolean androidx.compose.runtime.snapshots.SnapshotStateList.conditionalUpdate$default(androidx.compose.runtime.snapshots.SnapshotStateList, boolean, kotlin.jvm.functions.Function1, int, java.lang.Object) failed lock verification and will run slower.
+09-05 10:28:59.339 W/u.buzz.ryzewave(10066): Method java.lang.Object androidx.compose.runtime.snapshots.SnapshotStateList.mutate(kotlin.jvm.functions.Function1) failed lock verification and will run slower.
+09-05 10:28:59.339 W/u.buzz.ryzewave(10066): Method void androidx.compose.runtime.snapshots.SnapshotStateList.update(boolean, kotlin.jvm.functions.Function1) failed lock verification and will run slower.
+09-05 10:28:59.339 W/u.buzz.ryzewave(10066): Method void androidx.compose.runtime.snapshots.SnapshotStateList.update$default(androidx.compose.runtime.snapshots.SnapshotStateList, boolean, kotlin.jvm.functions.Function1, int, java.lang.Object) failed lock verification and will run slower.
+09-05 10:28:59.542 I/hwcomposer( 1163): [HWCDisplay] (0 updateFps():3644), (type:1, mode:2) fps:57.417854,dur:1010.14,max:49.45,min:13.77  
+09-05 10:28:59.585 I/libPerfCtl( 1184): xgfGetFPS pid:1227 fps:-1
+09-05 10:28:59.585 I/libPerfCtl( 1184): xgfGetFPS pid:2270 fps:-1
+09-05 10:28:59.585 I/libPerfCtl( 1184): xgfGetFPS pid:21356 fps:-1
+09-05 10:28:59.672 I/BufferQueueDebug( 1227): [au.buzz.ryzewave/au.buzz.ryzewave.MainActivity#2784](this:0xb400007163805580,id:-1,api:0,p:-1,c:-1) BufferQueue core=(1227:/system/bin/surfaceflinger)
+09-05 10:28:59.675 W/WindowManager( 1870): Changing focus from null to Window{ab21d2f u0 au.buzz.ryzewave/au.buzz.ryzewave.MainActivity} displayId=0 Callers=com.android.server.wm.RootWindowContainer.updateFocusedWindowLocked:470 com.android.server.wm.WindowManagerService.updateFocusedWindowLocked:6674 com.android.server.wm.WindowManagerService.relayoutWindowInner:2692 com.android.server.wm.WindowManagerService.relayoutWindow:2362 
+09-05 10:28:59.675 I/BufferQueueDebug( 1227): [Surface(name=81bb773 NavigationBar0)/@0xde2b681 - animation-leash of insets_animation#2785](this:0xb400007163765e00,id:-1,api:0,p:-1,c:-1) BufferQueue core=(1227:/system/bin/surfaceflinger)
+09-05 10:28:59.677 I/BufferQueueDebug( 1227): [Surface(name=7e0270b StatusBar)/@0xff9fc94 - animation-leash of insets_animation#2786](this:0xb4000071637825a0,id:-1,api:0,p:-1,c:-1) BufferQueue core=(1227:/system/bin/surfaceflinger)
+09-05 10:28:59.678 I/WindowManager( 1870): Relayout Window{ab21d2f u0 au.buzz.ryzewave/au.buzz.ryzewave.MainActivity}: oldVis=4 newVis=0 focusMayChange = true requestedWidth = 720 requestedHeight = 1604 outFrames = ClientWindowFrames{frame=[0,0][720,1604] display=[0,0][720,1604] parentFrame=[0,0][0,0]} outSurfaceControl = Surface(name=au.buzz.ryzewave/au.buzz.ryzewave.MainActivity)/@0xb197022
+09-05 10:28:59.684 E/FBI     (10066): Can't load library: dlopen failed: library "libmagtsync.so" not found
+09-05 10:28:59.709 I/SurfaceFlinger( 1227): onHandleDestroyed: name=Surface(name=7e0270b StatusBar)/@0xff9fc94 - animation-leash of insets_animation#2783, layerId=2783, parentId=0
+09-05 10:28:59.709 I/SurfaceFlinger( 1227): onHandleDestroyed: name=Surface(name=81bb773 NavigationBar0)/@0xde2b681 - animation-leash of insets_animation#2782, layerId=2782, parentId=0
+09-05 10:28:59.726 I/BufferQueueDebug( 1227): [Surface(name=7e0270b StatusBar)/@0xff9fc94 - animation-leash of insets_animation#2783](this:0xb4000071637b59c0,id:-1,api:0,p:-1,c:1227) onDestructor()
+09-05 10:28:59.726 I/BufferQueueDebug( 1227): [Surface(name=81bb773 NavigationBar0)/@0xde2b681 - animation-leash of insets_animation#2782](this:0xb4000071638027f0,id:-1,api:0,p:-1,c:1227) onDestructor()
+09-05 10:28:59.811 I/GrallocExtra(10066): gralloc_extra_query:is_SW3D 0
+09-05 10:28:59.849 I/GrallocExtra(10066): gralloc_extra_query:is_SW3D 0
+09-05 10:28:59.857 I/PowerHalWrapper( 1870): amsBoostNotify pid:21356,activity:com.android.launcher3.CustomizationPanelLauncher, package:com.motorola.launcher3, mProcessCreatePackcom.google.android.healthconnect.controller 
+09-05 10:28:59.857 I/PowerHalWrapper( 1870): state: 0 
+09-05 10:28:59.859 I/mtkpower_client( 1870): [PowerHal_Wrap_notifyAppState] com.motorola.launcher3/com.android.launcher3.CustomizationPanelLauncher pid=21356 activityId:124421203 state:0
+09-05 10:28:59.860 I/vendor.mediatek.hardware.mtkpower_applist-service.mediatek( 1184): packName: com.motorola.launcher3 actName: com.android.launcher3.CustomizationPanelLauncher pid: 21356 activityId: 124421203 uid: 10190 state: 0
+09-05 10:28:59.860 I/MTK_APPList( 1184): [notifyAPPstate] com.motorola.launcher3/com.android.launcher3.CustomizationPanelLauncher, pid=21356, activityId=124421203, uid=10190, state:PAUSED, fps:-1, win:0
+09-05 10:28:59.860 I/MTK_APPList( 1184): [notifyAPPstate] multi_resumed_app_count: 1
+09-05 10:28:59.860 I/MTK_APPList( 1184): [notifyAPPstate] multi_resumed_app_info[0] au.buzz.ryzewave/au.buzz.ryzewave.MainActivity, pid:10066, activityId:13361813, fps:-1, isMultiWindow:0
+09-05 10:28:59.860 I/MTK_APPList( 1184): [getForegroundAPPCount] 1
+09-05 10:28:59.860 I/MTK_APPList( 1184): [notifyNetdUID] 10378
+09-05 10:28:59.862 I/ActivityTaskManager( 1870): Displayed au.buzz.ryzewave/.MainActivity for user 0: +1s355ms WARM
+09-05 10:28:59.862 E/ApplicationHelper( 1870): Fail to get PackageManager
+09-05 10:28:59.862 I/MTK_APPList( 1184): [notifyPID] 10066
+09-05 10:28:59.863 I/libPowerHal( 1193): [perfSetSysInfo] pid type:24, 10066
+09-05 10:28:59.864 I/netd    ( 1149): tetherGetStats() -> {[]} <1.68ms>
+09-05 10:28:59.864 I/PowerHalWrapper( 1870): amsBoostNotify AMS_BOOST_PROCESS_CREATE_BOOST:false 
+09-05 10:28:59.870 E/ApplicationHelper( 1870): Fail to get PackageManager
+09-05 10:28:59.870 E/ApplicationHelper( 1870): Fail to get PackageManager
+09-05 10:28:59.870 E/ApplicationHelper( 1870): Fail to get PackageManager
+09-05 10:28:59.872 I/cgno    (29498): onStop
+09-05 10:28:59.876 I/BufferQueueDebug( 1227): [Surface(name=cf81ee4 Splash Screen au.buzz.ryzewave)/@0x5a5df0f - animation-leash of window_animation#2787](this:0xb4000071637c1000,id:-1,api:0,p:-1,c:-1) BufferQueue core=(1227:/system/bin/surfaceflinger)
+09-05 10:28:59.876 I/SurfaceFlinger( 1227): onHandleDestroyed: name=com.motorola.launcher3/com.android.launcher3.CustomizationPanelLauncher#2763, layerId=2763, parentId=0
+09-05 10:28:59.876 I/SurfaceFlinger( 1227): onHandleDestroyed: name=GoogleDiscoverWindow#2762, layerId=2762, parentId=0
+09-05 10:28:59.878 E/ApplicationHelper( 1870): Fail to get PackageManager
+09-05 10:28:59.878 E/ApplicationHelper( 1870): Fail to get PackageManager
+09-05 10:28:59.878 E/ApplicationHelper( 1870): Fail to get PackageManager
+09-05 10:28:59.878 E/ApplicationHelper( 1870): Fail to get PackageManager
+09-05 10:28:59.878 E/ApplicationHelper( 1870): Fail to get PackageManager
+09-05 10:28:59.878 E/ApplicationHelper( 1870): Fail to get PackageManager
+09-05 10:28:59.878 E/ApplicationHelper( 1870): Fail to get PackageManager
+09-05 10:28:59.880 W/hwcomposer( 1163): [DRMDEV] paramIsSame(), id 722, w 720/720, h 1604/1604, pitch 720/720, format 0x2/0x1, secure 0/0  
+09-05 10:28:59.880 W/JobScheduler.JobStatus( 1870): Exempted app com.android.vending considered buggy
+09-05 10:28:59.880 W/JobScheduler.JobStatus( 1870): Exempted app com.android.vending considered buggy
+09-05 10:28:59.880 W/JobScheduler.JobStatus( 1870): Exempted app com.android.vending considered buggy
+09-05 10:28:59.880 W/JobScheduler.JobStatus( 1870): Exempted app com.android.vending considered buggy
+09-05 10:28:59.880 W/JobScheduler.JobStatus( 1870): Exempted app com.android.vending considered buggy
+09-05 10:28:59.880 W/JobScheduler.JobStatus( 1870): Exempted app com.android.vending considered buggy
+09-05 10:28:59.880 W/JobScheduler.JobStatus( 1870): Exempted app com.android.vending considered buggy
+09-05 10:28:59.880 W/JobScheduler.JobStatus( 1870): Exempted app com.android.vending considered buggy
+09-05 10:28:59.880 W/JobScheduler.JobStatus( 1870): Exempted app com.android.vending considered buggy
+09-05 10:28:59.880 W/JobScheduler.JobStatus( 1870): Exempted app com.android.vending considered buggy
+09-05 10:28:59.880 W/JobScheduler.JobStatus( 1870): Exempted app com.android.vending considered buggy
+09-05 10:28:59.880 W/JobScheduler.JobStatus( 1870): Exempted app com.android.vending considered buggy
+09-05 10:28:59.880 W/JobScheduler.JobStatus( 1870): Exempted app com.android.vending considered buggy
+09-05 10:28:59.880 W/JobScheduler.JobStatus( 1870): Exempted app com.android.vending considered buggy
+09-05 10:28:59.880 W/JobScheduler.JobStatus( 1870): Exempted app com.android.vending considered buggy
+09-05 10:28:59.880 W/JobScheduler.JobStatus( 1870): Exempted app com.android.vending considered buggy
+09-05 10:28:59.880 W/JobScheduler.JobStatus( 1870): Exempted app com.android.vending considered buggy
+09-05 10:28:59.880 W/JobScheduler.JobStatus( 1870): Exempted app com.android.vending considered buggy
+09-05 10:28:59.880 W/JobScheduler.JobStatus( 1870): Exempted app com.android.vending considered buggy
+09-05 10:28:59.881 W/WindowOnBackDispatcher( 2270): sendCancelIfRunning: isInProgress=false callback=android.view.ViewRootImpl$$ExternalSyntheticLambda11@e4c93ae
+09-05 10:28:59.882 W/InputManager-JNI( 1870): Input channel object 'cf81ee4 Splash Screen au.buzz.ryzewave (client)' was disposed without first being removed with the input manager!
+09-05 10:28:59.886 I/HWUI    (10066): Davey! duration=1149ms; Flags=1, FrameTimelineVsyncId=3889282, IntendedVsync=50332912110707, Vsync=50332928823450, InputEventId=0, HandleInputStart=50332941806306, AnimationStart=50332941811922, PerformTraversalsStart=50332941814076, DrawStart=50333969344153, FrameDeadline=50332932110707, FrameInterval=50332941756537, FrameStartTime=16712743, SyncQueued=50334015273768, SyncStart=50334015398383, IssueDrawCommandsStart=50334017204537, SwapBuffers=50334058811537, FrameCompleted=50334061687922, DequeueBufferDuration=20231, QueueBufferDuration=644923, GpuCompleted=50334061687922, SwapBuffersCompleted=50334060938306, DisplayPresentTime=72904454231359566, CommandSubmissionCompleted=50334058811537, 
+09-05 10:28:59.887 I/cgfa    (29498): onStop
+09-05 10:28:59.893 I/BufferQueueDebug( 1227): [com.motorola.launcher3/com.android.launcher3.CustomizationPanelLauncher#2763](this:0xb40000716384f620,id:-1,api:0,p:-1,c:1227) onDestructor()
+09-05 10:28:59.894 I/BufferQueueDebug( 1227): [GoogleDiscoverWindow#2762](this:0xb400007163857ed0,id:-1,api:0,p:-1,c:1227) onDestructor()
+09-05 10:28:59.894 I/Choreographer(10066): Skipped 67 frames!  The application may be doing too much work on its main thread.
+09-05 10:28:59.963 I/GraphFactory(10066): notify: dropped au.buzz.ryzewave: ongoing
+09-05 10:28:59.963 I/WatchNotify(10066): posted au.buzz.ryzewave 0|au.buzz.ryzewave|1001|null|10378: dropped
+09-05 10:28:59.963 I/GraphFactory(10066): notify: dropped au.buzz.ryzewave: ongoing
+09-05 10:28:59.963 I/WatchNotify(10066): posted au.buzz.ryzewave 0|au.buzz.ryzewave|1001|null|10378: dropped
+09-05 10:28:59.971 I/ImeTracker( 1870): au.buzz.ryzewave:9488c311: onRequestHide at ORIGIN_SERVER reason HIDE_UNSPECIFIED_WINDOW fromUser false
+09-05 10:28:59.972 I/ImeTracker( 1870): au.buzz.ryzewave:9488c311: onCancelled at PHASE_SERVER_SHOULD_HIDE
+09-05 10:28:59.973 I/SubtypeOperator( 8118): SubtypeOperator$1.onUnbindInput():43 
+09-05 10:28:59.976 I/SubtypeOperator( 8118): SubtypeOperator$1.onBindInput():33 
+09-05 10:28:59.977 E/ApplicationHelper( 1870): Fail to get PackageManager
+09-05 10:28:59.979 I/GoogleInputMethodService( 8118): GoogleInputMethodService.onFinishInput():2361 
+09-05 10:28:59.979 E/ApplicationHelper( 1870): Fail to get PackageManager
+09-05 10:28:59.980 I/GoogleInputMethodService( 8118): GoogleInputMethodService.onStartInput():1532 onStartInput(EditorInfo{EditorInfo{packageName=au.buzz.ryzewave, inputType=0, inputTypeString=NULL, enableLearning=false, autoCorrection=false, autoComplete=false, imeOptions=0, privateImeOptions=null, actionName=UNSPECIFIED, actionLabel=null, initialSelStart=-1, initialSelEnd=-1, initialCapsMode=0, label=null, fieldId=0, fieldName=null, extras=null, hintText=null, hintLocales=[]}}, false)
+09-05 10:28:59.980 I/LatinIMEBase( 8118): LatinIMEBase.updateInputViewCoverNavigation():316 Update input view padding, isNavbarOverInputWindow=false, bottom inset=84
+09-05 10:28:59.981 I/FontLog ( 2638): (REDACTED) Received query %s, URI %s
+09-05 10:28:59.981 I/FontLog ( 2638): (REDACTED) Query [%s] resolved to %s
+09-05 10:28:59.981 I/Module  ( 8118): DeviceLockedStatusModuleProvider$Module.updateDeviceLockedStatusInternal():119 repeatCheckTimes = 0, locked = false
+09-05 10:28:59.981 I/BufferQueueDebug( 1227): [Surface(name=55b6a60 InputMethod)/@0x1fab451 - animation-leash of insets_animation#2788](this:0xb4000071638027f0,id:-1,api:0,p:-1,c:-1) BufferQueue core=(1227:/system/bin/surfaceflinger)
+09-05 10:28:59.982 I/HWUI    (10066): Davey! duration=1197ms; Flags=0, FrameTimelineVsyncId=3889333, IntendedVsync=50332978974501, Vsync=50334098753072, InputEventId=0, HandleInputStart=50334105736460, AnimationStart=50334105742922, PerformTraversalsStart=50334168888153, DrawStart=50334169006922, FrameDeadline=50334085289974, FrameInterval=50334104705691, FrameStartTime=16713113, SyncQueued=50334171065153, SyncStart=50334171166076, IssueDrawCommandsStart=50334171282999, SwapBuffers=50334173653383, FrameCompleted=50334176357383, DequeueBufferDuration=20000, QueueBufferDuration=625462, GpuCompleted=50334176357383, SwapBuffersCompleted=50334174660768, DisplayPresentTime=144115222452437076, CommandSubmissionCompleted=50334173653383, 
+09-05 10:28:59.982 I/Module  ( 8118): DeviceLockedStatusModuleProvider$Module.updateDeviceLockedStatusInternal():119 repeatCheckTimes = 1, locked = false
+09-05 10:28:59.982 W/PackageConfigPersister( 1870): App-specific configuration not found for packageName: au.buzz.ryzewave and userId: 0
+09-05 10:28:59.983 I/FontLog ( 2638): (REDACTED) Fetch %s end status %s
+09-05 10:28:59.993 I/FontLog ( 2638): (REDACTED) Pulling font file for id = %d, cache size = %d
+09-05 10:29:00.004 I/FontLog ( 2638): (REDACTED) Pulling font file for id = %d, cache size = %d
+09-05 10:29:00.010 I/BufferQueueProducer( 1227): [NavigationBar0#1654](this:0xb40000716378dbe0,id:-1,api:0,p:-1,c:1227) queueBuffer: fps=59.77 dur=1003.92 max=18.35 min=15.55
+09-05 10:29:00.011 I/SurfaceFlinger( 1227): onHandleDestroyed: name=Surface(name=55b6a60 InputMethod)/@0x1fab451 - animation-leash of insets_animation#2772, layerId=2772, parentId=0
+09-05 10:29:00.027 I/BufferQueueDebug( 1227): [Surface(name=55b6a60 InputMethod)/@0x1fab451 - animation-leash of insets_animation#2772](this:0xb400007163841250,id:-1,api:0,p:-1,c:1227) onDestructor()
+09-05 10:29:00.077 I/SurfaceFlinger( 1227): onHandleDestroyed: name=Splash Screen au.buzz.ryzewave#2778, layerId=2778, parentId=0
+09-05 10:29:00.077 I/SurfaceFlinger( 1227): onHandleDestroyed: name=Surface(name=cf81ee4 Splash Screen au.buzz.ryzewave)/@0x5a5df0f - animation-leash of window_animation#2787, layerId=2787, parentId=0
+09-05 10:29:00.077 I/SurfaceFlinger( 1227): onHandleDestroyed: name=cf81ee4 Splash Screen au.buzz.ryzewave#2776, layerId=2776, parentId=0
+09-05 10:29:00.094 I/BufferQueueDebug( 1227): [Splash Screen au.buzz.ryzewave#2778](this:0xb40000716378ae50,id:-1,api:0,p:-1,c:1227) onDestructor()
+09-05 10:29:00.094 I/BufferQueueDebug( 1227): [Surface(name=cf81ee4 Splash Screen au.buzz.ryzewave)/@0x5a5df0f - animation-leash of window_animation#2787](this:0xb4000071637c1000,id:-1,api:0,p:-1,c:1227) onDestructor()
+09-05 10:29:00.094 I/BufferQueueDebug( 1227): [cf81ee4 Splash Screen au.buzz.ryzewave#2776](this:0xb4000071637cc640,id:-1,api:0,p:-1,c:1227) onDestructor()
+09-05 10:29:00.208 I/mtkpower@impl( 1193): [setMode] type:5, enabled:0
+09-05 10:29:00.209 I/libPowerHal( 1193): [perfLockRel] hdl:2803, idx:0
+09-05 10:29:00.210 I/PowerHalWrapper( 1870): amsBoostStop AMS_BOOST_PACK_SWITCH:true, AMS_BOOST_ACT_SWITCH:false, AMS_BOOST_PROCESS_CREATE:false, AMS_BOOST_PROCESS_CREATE_FOR_GAME:false, AMS_BOOST_HOT_LAUNCH:false 
+09-05 10:29:00.210 I/libPowerHal( 1193): [perfLockRel] Done for hdl : 2803
+09-05 10:29:00.210 I/libPowerHal( 1193): [mtkPowerHint] hint:22, hold:500, ext:0, ext_hold:0
+09-05 10:29:00.211 I/libPowerHal( 1193): [perfLockAcq] idx:0 hdl:2806 hint:22 pid:1193 tid:1193 duration:500 lock_user:vendor.mediatek => ret_hdl:2806
+09-05 10:29:00.211 I/libPowerHal( 1193): [perfLockAcq] Done for hdl : 2806
+09-05 10:29:00.212 I/libPowerHal( 1193): [perfLockRel] hdl:2804, idx:2
+09-05 10:29:00.213 I/libPowerHal( 1193): [perfLockRel] Done for hdl : 2804
+09-05 10:29:00.585 I/libPerfCtl( 1184): xgfGetFPS pid:1227 fps:-1
+09-05 10:29:00.585 I/libPerfCtl( 1184): xgfGetFPS pid:2270 fps:-1
+09-05 10:29:00.585 I/libPerfCtl( 1184): xgfGetFPS pid:10066 fps:-1
+09-05 10:29:00.585 I/libPerfCtl( 1184): xgfGetFPS pid:21356 fps:-1
+09-05 10:29:00.712 I/mtkpower@impl( 1193): [powerd_req] TIMER_MSG_PERF_LOCK_TIMEOUT hdl:2806
+09-05 10:29:00.713 I/libPowerHal( 1193): [perfLockRel] hdl:2806, idx:0
+09-05 10:29:00.713 I/libPowerHal( 1193): [PD] MTKPOWER_HINT_PACK_SWITCH update cmd:1408300 param:0, pr:6
+09-05 10:29:00.714 I/libPowerHal( 1193): [PD] MTKPOWER_HINT_PACK_SWITCH update cmd:400000 param:-1 pr:6
+09-05 10:29:00.714 I/libPowerHal( 1193): [PD] MTKPOWER_HINT_PACK_SWITCH update cmd:400100 param:-1 pr:6
+09-05 10:29:00.714 I/libPowerHal( 1193): [PD] MTKPOWER_HINT_PACK_SWITCH update cmd:1000000 param:-1 pr:6
+09-05 10:29:00.715 I/libPowerHal( 1193): [recordCPUFreqInfo] set cluster[0] min(-1): -1 max(-1): -1 cluster[1] min(-1): -1 max(-1): -1
+09-05 10:29:00.715 I/libPowerHal( 1193): [perfLockRel] Done for hdl : 2806
+09-05 10:29:01.586 I/libPerfCtl( 1184): xgfGetFPS pid:2270 fps:-1
+09-05 10:29:01.587 I/libPerfCtl( 1184): xgfGetFPS pid:10066 fps:-1
+09-05 10:29:01.797 I/WifiHAL ( 2170): feature_set=0x8488341a
+09-05 10:29:02.586 I/libPerfCtl( 1184): xgfGetFPS pid:2270 fps:-1
+09-05 10:29:03.587 I/libPerfCtl( 1184): xgfGetFPS pid:2270 fps:-1
+09-05 10:29:03.858 I/thermal_repeater( 1421): [recvMdThermalInfo] ret=30, strLen=127,  3, 41, -127, -28402, 32767, 0
+09-05 10:29:04.823 I/WifiHAL ( 2170): feature_set=0x8488341a
+09-05 10:29:04.957 I/BufferQueueProducer( 1227): [au.buzz.ryzewave/au.buzz.ryzewave.MainActivity#2784](this:0xb400007163805580,id:-1,api:0,p:-1,c:1227) queueBuffer: fps=0.98 dur=5097.44 max=4580.58 min=17.17
+09-05 10:29:04.961 I/hwcomposer( 1163): [HWCDisplay] (0 updateFps():3644), (type:1, mode:2) fps:10.149596,dur:5418.93,max:4516.54,min:15.13  
+09-05 10:29:05.940 I/libPerfCtl( 1184): xgfGetFPS pid:2270 fps:-1
+09-05 10:29:05.940 I/libPerfCtl( 1184): xgfGetFPS pid:10066 fps:-1
+09-05 10:29:06.039 E/ApplicationHelper( 1870): Fail to get PackageManager
+09-05 10:29:06.039 E/ApplicationHelper( 1870): Fail to get PackageManager
+09-05 10:29:06.045 I/netd    ( 1149): tetherGetStats() -> {[]} <3.86ms>
+09-05 10:29:06.940 I/libPerfCtl( 1184): xgfGetFPS pid:2270 fps:-1
+09-05 10:29:07.850 I/WifiHAL ( 2170): feature_set=0x8488341a
+09-05 10:29:07.886 I/adbd    ( 1298): adbd service requested 'shell,v2:export ANDROID_LOG_TAGS="''"; exec logcat '-d''
+09-05 10:29:07.940 I/libPerfCtl( 1184): xgfGetFPS pid:2270 fps:-1
+09-05 10:29:07.946 I/adbd    ( 1298): adbd service requested 'shell,v2:export ANDROID_LOG_TAGS="''"; exec logcat '-b' 'crash' '-d''
+09-05 10:29:08.005 I/adbd    ( 1298): adbd service requested 'shell,v2:export ANDROID_LOG_TAGS="''"; exec logcat '-d' '-v' 'time''
+09-05 10:29:08.062 I/adbd    ( 1298): adbd service requested 'exec:screencap '-p''
+09-05 10:29:08.271 W/BpBinder(10151): Linking to death on android.gui.ISurfaceComposer but there are no threads (yet?) listening to incoming transactions. See ProcessState::startThreadPool and ProcessState::setThreadPoolMaxThreadCount. Generally you should setup the binder threadpool before other initialization steps.
+09-05 10:29:08.272 W/ProcessState(10151): Extra binder thread started, but 0 threads requested. Do not use *startThreadPool when zero threads are requested.
+09-05 10:29:08.319 I/GrallocExtra(10151): gralloc_extra_query:is_SW3D 0
+09-05 10:29:08.320 I/DMABUFHEAPS(10151): Using DMA-BUF heap named: mtk_mm
+09-05 10:29:08.320 I/DMABUFHEAPS(10151): Using DMA-BUF heap named: mtk_mm-uncached
+09-05 10:29:08.320 I/DMABUFHEAPS(10151): Using DMA-BUF heap named: mtk_svp_region
+09-05 10:29:08.320 I/DMABUFHEAPS(10151): Using DMA-BUF heap named: mtk_prot_region
+09-05 10:29:08.320 I/DMABUFHEAPS(10151): Using DMA-BUF heap named: mtk_wfd_region
+09-05 10:29:08.499 W/RefBase (10151): RefBase: Explicit destruction, weak count = 0 (in 0x71b01fd858). Use sp<> to manage this object.
+09-05 10:29:08.546 I/adbd    ( 1298): adbd service requested 'shell,v2,raw:uiautomator dump /sdcard/ui.xml'
+09-05 10:29:08.772 I/AndroidRuntime(10154): Using default boot image
+09-05 10:29:08.772 I/AndroidRuntime(10154): Leaving lock profiling enabled
+09-05 10:29:08.780 I/app_process(10154): Using generational CollectorTypeCMC GC.
+09-05 10:29:08.939 I/app_process(10154): Priority-to-niceness mapping: 19, 16, 13, 10, 0, -2, -4, -5, -6, -8
+09-05 10:29:08.974 W/libc    (10154): Access denied finding property "ro.vendor.mtk.hbt_binfmt_misc_support"
+09-05 10:29:08.974 W/libc    (10154): Access denied finding property "ro.vendor.mtk.app32_boost_support"
+09-05 10:29:08.974 W/libc    (10154): Access denied finding property "ro.vendor.mtk.hbt_dyn_type"
+09-05 10:29:08.974 W/libc    (10154): Access denied finding property "persist.vendor.mtk.hbt_dyn_type"
+09-05 10:29:09.003 I/UiAutomation(10154): Initialized for user 0 on display 0
+09-05 10:29:09.003 W/UiAutomation(10154): Created with deprecatead constructor, assumes DEFAULT_DISPLAY
+09-05 10:29:09.005 I/UiAutomationManager( 1870): Registering UiTestAutomationService (id=com.android.server.accessibility/UiAutomation, flags=0x0) when called by user 0
+09-05 10:29:09.008 W/MagnificationConnectionManager( 1870): requestConnection duplicated request: connect=false, mConnectionState=DISCONNECTED
+09-05 10:29:09.010 I/BufferQueueDebug( 1227): [WindowToken{cedd9f7 type=2032 android.os.Binder@2e361f6}#2789](this:0xb40000716378ae50,id:-1,api:0,p:-1,c:-1) BufferQueue core=(1227:/system/bin/surfaceflinger)
+09-05 10:29:09.012 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:09.014 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:09.015 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:09.016 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:09.016 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:09.017 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:09.019 W/MagnificationConnectionManager( 1870): requestConnection duplicated request: connect=false, mConnectionState=DISCONNECTED
+09-05 10:29:09.020 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:09.020 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:09.021 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:09.021 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:09.022 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:09.022 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:09.023 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:09.024 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:09.024 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:09.025 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:09.025 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:09.025 I/hwcomposer( 1163): [HWCDisplay] (0 updateFps():3644), (type:1, mode:2) fps:0.246031,dur:4064.53,max:4064.53,min:4064.53  
+09-05 10:29:09.026 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:09.026 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:09.027 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:09.954 I/BufferQueueProducer( 1227): [au.buzz.ryzewave/au.buzz.ryzewave.MainActivity#2784](this:0xb400007163805580,id:-1,api:0,p:-1,c:1227) queueBuffer: fps=0.20 dur=4997.21 max=4997.21 min=4997.21
+09-05 10:29:10.034 W/libc    (10154): Access denied finding property "qemu.sf.lcd_density"
+09-05 10:29:10.034 W/libc    (10154): Access denied finding property "qemu.sf.lcd_density"
+09-05 10:29:10.125 I/hwcomposer( 1163): [HWCDisplay] (0 updateFps():3644), (type:1, mode:2) fps:2.729537,dur:1099.09,max:901.95,min:29.25  
+09-05 10:29:10.356 W/AccessibilityNodeInfoDumper(10154): Fetch time: 319ms
+09-05 10:29:10.362 W/MagnificationConnectionManager( 1870): requestConnection duplicated request: connect=false, mConnectionState=DISCONNECTED
+09-05 10:29:10.363 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:10.363 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:10.365 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:10.365 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:10.366 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:10.366 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:10.368 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:10.369 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:10.372 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:10.372 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:10.374 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:10.374 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:10.391 I/SurfaceFlinger( 1227): onHandleDestroyed: name=WindowToken{cedd9f7 type=2032 android.os.Binder@2e361f6}#2789, layerId=2789, parentId=0
+09-05 10:29:10.407 I/BufferQueueDebug( 1227): [WindowToken{cedd9f7 type=2032 android.os.Binder@2e361f6}#2789](this:0xb40000716378ae50,id:-1,api:0,p:-1,c:1227) onDestructor()
+09-05 10:29:10.876 I/WifiHAL ( 2170): feature_set=0x8488341a
+09-05 10:29:10.945 I/libPerfCtl( 1184): xgfGetFPS pid:2270 fps:-1
+09-05 10:29:10.945 I/libPerfCtl( 1184): xgfGetFPS pid:10066 fps:-1
+09-05 10:29:11.234 W/RefBase (10154): RefBase: Explicit destruction, weak count = 0 (in 0x71887bb858). Use sp<> to manage this object.
+09-05 10:29:11.282 I/adbd    ( 1298): adbd service requested 'shell,v2,raw:cat /sdcard/ui.xml'
+09-05 10:29:11.394 I/adbd    ( 1298): adbd service requested 'shell,v2,raw:uiautomator dump /sdcard/ui.xml'
+09-05 10:29:11.609 I/AndroidRuntime(10170): Using default boot image
+09-05 10:29:11.610 I/AndroidRuntime(10170): Leaving lock profiling enabled
+09-05 10:29:11.617 I/app_process(10170): Using generational CollectorTypeCMC GC.
+09-05 10:29:11.779 I/app_process(10170): Priority-to-niceness mapping: 19, 16, 13, 10, 0, -2, -4, -5, -6, -8
+09-05 10:29:11.815 W/libc    (10170): Access denied finding property "ro.vendor.mtk.hbt_binfmt_misc_support"
+09-05 10:29:11.815 W/libc    (10170): Access denied finding property "ro.vendor.mtk.app32_boost_support"
+09-05 10:29:11.815 W/libc    (10170): Access denied finding property "ro.vendor.mtk.hbt_dyn_type"
+09-05 10:29:11.815 W/libc    (10170): Access denied finding property "persist.vendor.mtk.hbt_dyn_type"
+09-05 10:29:11.844 I/UiAutomation(10170): Initialized for user 0 on display 0
+09-05 10:29:11.844 W/UiAutomation(10170): Created with deprecatead constructor, assumes DEFAULT_DISPLAY
+09-05 10:29:11.846 I/UiAutomationManager( 1870): Registering UiTestAutomationService (id=com.android.server.accessibility/UiAutomation, flags=0x0) when called by user 0
+09-05 10:29:11.847 W/MagnificationConnectionManager( 1870): requestConnection duplicated request: connect=false, mConnectionState=DISCONNECTED
+09-05 10:29:11.850 I/BufferQueueDebug( 1227): [WindowToken{51f8a94 type=2032 android.os.Binder@3132ee7}#2790](this:0xb40000716378ae50,id:-1,api:0,p:-1,c:-1) BufferQueue core=(1227:/system/bin/surfaceflinger)
+09-05 10:29:11.853 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:11.853 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:11.855 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:11.855 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:11.856 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:11.856 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:11.856 I/hwcomposer( 1163): [HWCDisplay] (0 updateFps():3644), (type:1, mode:2) fps:1.732514,dur:1731.59,max:1447.15,min:16.31  
+09-05 10:29:11.857 W/MagnificationConnectionManager( 1870): requestConnection duplicated request: connect=false, mConnectionState=DISCONNECTED
+09-05 10:29:11.860 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:11.860 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:11.862 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:11.862 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:11.863 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:11.863 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:11.865 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:11.865 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:11.865 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:11.866 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:11.866 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:11.866 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:11.867 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:11.867 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:11.945 I/libPerfCtl( 1184): xgfGetFPS pid:2270 fps:-1
+09-05 10:29:12.868 W/libc    (10170): Access denied finding property "qemu.sf.lcd_density"
+09-05 10:29:12.868 W/libc    (10170): Access denied finding property "qemu.sf.lcd_density"
+09-05 10:29:12.945 I/libPerfCtl( 1184): xgfGetFPS pid:2270 fps:-1
+09-05 10:29:13.161 W/AccessibilityNodeInfoDumper(10170): Fetch time: 290ms
+09-05 10:29:13.168 W/MagnificationConnectionManager( 1870): requestConnection duplicated request: connect=false, mConnectionState=DISCONNECTED
+09-05 10:29:13.169 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:13.170 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:13.171 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:13.171 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:13.172 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:13.172 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:13.174 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:13.175 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:13.184 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:13.184 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:13.186 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:13.186 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:13.199 I/SurfaceFlinger( 1227): onHandleDestroyed: name=WindowToken{51f8a94 type=2032 android.os.Binder@3132ee7}#2790, layerId=2790, parentId=0
+09-05 10:29:13.201 I/hwcomposer( 1163): [HWCDisplay] (0 updateFps():3644), (type:1, mode:2) fps:1.487507,dur:1344.53,max:1321.52,min:23.01  
+09-05 10:29:13.216 I/BufferQueueDebug( 1227): [WindowToken{51f8a94 type=2032 android.os.Binder@3132ee7}#2790](this:0xb40000716378ae50,id:-1,api:0,p:-1,c:1227) onDestructor()
+09-05 10:29:13.876 I/thermal_repeater( 1421): [recvMdThermalInfo] ret=30, strLen=127,  3, 41, -127, -28402, 32767, 0
+09-05 10:29:13.900 I/WifiHAL ( 2170): feature_set=0x8488341a
+09-05 10:29:14.046 W/RefBase (10170): RefBase: Explicit destruction, weak count = 0 (in 0x7fae5bd858). Use sp<> to manage this object.
+09-05 10:29:14.093 I/adbd    ( 1298): adbd service requested 'shell,v2,raw:cat /sdcard/ui.xml'
+09-05 10:29:14.177 I/adbd    ( 1298): adbd service requested 'shell,v2,raw:input tap 635 1478'
+09-05 10:29:14.243 I/libPowerHal( 1193): [perfLockAcq] idx:0 hdl:2807 hint:25 pid:1193 tid:1193 duration:10000 lock_user:vendor.mediatek => ret_hdl:2807
+09-05 10:29:14.243 I/ThreeFingerPointerEventListener( 1870): onPointDown... pointIndex = 0, pointId = 0 currentX = 635.0, currentY = 1478.0 mTouchRegion:Rect(43, 96 - 676, 1507)
+09-05 10:29:14.243 I/libPowerHal( 1193): [PE] MTKPOWER_HINT_APP_TOUCH update cmd:410000, param:1, pr:3
+09-05 10:29:14.244 I/libPowerHal( 1193): [PE] MTKPOWER_HINT_APP_TOUCH update cmd:400000 param:3000000 pr:3
+09-05 10:29:14.244 I/libPowerHal( 1193): [PE] MTKPOWER_HINT_APP_TOUCH update cmd:400100 param:3000000 pr:3
+09-05 10:29:14.244 I/libPowerHal( 1193): value: 1
+09-05 10:29:14.244 I/libPowerHal( 1193): [PE] MTKPOWER_HINT_APP_TOUCH update cmd:410000 param:1 pr:3
+09-05 10:29:14.245 I/libPowerHal( 1193): [setDvfsrcDevFreqOpp] opp:0, freq:3600000000
+09-05 10:29:14.245 I/libPowerHal( 1193): [PE] MTKPOWER_HINT_APP_TOUCH update cmd:1000000 param:0 pr:3
+09-05 10:29:14.245 I/libPowerHal( 1193): [recordCPUFreqInfo] set cluster[0] min(MTKPOWER_HINT_APP_TOUCH): 1700000 max(-1): -1 cluster[1] min(MTKPOWER_HINT_APP_TOUCH): 2000000 max(-1): -1
+09-05 10:29:14.245 I/libPowerHal( 1193): [perfLockAcq] Done for hdl : 2807
+09-05 10:29:14.261 I/libPowerHal( 1193): [perfLockRel] hdl:2807, idx:0
+09-05 10:29:14.261 I/libPowerHal( 1193): [PD] MTKPOWER_HINT_APP_TOUCH update cmd:410000 param:0, pr:6
+09-05 10:29:14.261 I/ThreeFingerPointerEventListener( 1870): onPointUp
+09-05 10:29:14.261 I/libPowerHal( 1193): [PD] MTKPOWER_HINT_APP_TOUCH update cmd:400000 param:-1 pr:6
+09-05 10:29:14.262 I/libPowerHal( 1193): [PD] MTKPOWER_HINT_APP_TOUCH update cmd:400100 param:-1 pr:6
+09-05 10:29:14.262 I/libPowerHal( 1193): value: 0
+09-05 10:29:14.262 I/libPowerHal( 1193): [PD] MTKPOWER_HINT_APP_TOUCH update cmd:410000 param:0 pr:6
+09-05 10:29:14.262 I/libPowerHal( 1193): [PD] MTKPOWER_HINT_APP_TOUCH update cmd:1000000 param:-1 pr:6
+09-05 10:29:14.263 I/libPowerHal( 1193): [recordCPUFreqInfo] set cluster[0] min(-1): -1 max(-1): -1 cluster[1] min(-1): -1 max(-1): -1
+09-05 10:29:14.263 I/libPowerHal( 1193): [perfLockRel] Done for hdl : 2807
+09-05 10:29:14.398 W/WindowOnBackDispatcher(10066): OnBackInvokedCallback is not enabled for the application.
+09-05 10:29:14.398 W/WindowOnBackDispatcher(10066): Set 'android:enableOnBackInvokedCallback="true"' in the application manifest.
+09-05 10:29:15.618 I/BufferQueueProducer( 1227): [au.buzz.ryzewave/au.buzz.ryzewave.MainActivity#2784](this:0xb400007163805580,id:-1,api:0,p:-1,c:1227) queueBuffer: fps=0.35 dur=5663.42 max=5495.74 min=167.68
+09-05 10:29:15.620 I/hwcomposer( 1163): [HWCDisplay] (0 updateFps():3644), (type:1, mode:2) fps:0.826544,dur:2419.71,max:2402.67,min:17.04  
+09-05 10:29:15.624 I/HWUI    (10066): Davey! duration=1349ms; Flags=0, FrameTimelineVsyncId=3890497, IntendedVsync=50348471284021, Vsync=50348487950688, InputEventId=-872235519, HandleInputStart=50348493387230, AnimationStart=50348493391000, PerformTraversalsStart=50348610218307, DrawStart=50349731295538, FrameDeadline=50348491284021, FrameInterval=50348493366307, FrameStartTime=16666667, SyncQueued=50349800715230, SyncStart=50349801304769, IssueDrawCommandsStart=50349803186615, SwapBuffers=50349818578692, FrameCompleted=50349821687538, DequeueBufferDuration=103692, QueueBufferDuration=959000, GpuCompleted=50349821687538, SwapBuffersCompleted=50349820367000, DisplayPresentTime=0, CommandSubmissionCompleted=50349818578692, 
+09-05 10:29:15.673 I/Choreographer(10066): Skipped 76 frames!  The application may be doing too much work on its main thread.
+09-05 10:29:15.818 I/adbd    ( 1298): adbd service requested 'shell,v2,raw:uiautomator dump /sdcard/ui.xml'
+09-05 10:29:16.045 I/AndroidRuntime(10196): Using default boot image
+09-05 10:29:16.045 I/AndroidRuntime(10196): Leaving lock profiling enabled
+09-05 10:29:16.051 I/app_process(10196): Using generational CollectorTypeCMC GC.
+09-05 10:29:16.219 I/app_process(10196): Priority-to-niceness mapping: 19, 16, 13, 10, 0, -2, -4, -5, -6, -8
+09-05 10:29:16.258 W/libc    (10196): Access denied finding property "ro.vendor.mtk.hbt_binfmt_misc_support"
+09-05 10:29:16.259 W/libc    (10196): Access denied finding property "ro.vendor.mtk.app32_boost_support"
+09-05 10:29:16.259 W/libc    (10196): Access denied finding property "ro.vendor.mtk.hbt_dyn_type"
+09-05 10:29:16.259 W/libc    (10196): Access denied finding property "persist.vendor.mtk.hbt_dyn_type"
+09-05 10:29:16.293 I/UiAutomation(10196): Initialized for user 0 on display 0
+09-05 10:29:16.293 W/UiAutomation(10196): Created with deprecatead constructor, assumes DEFAULT_DISPLAY
+09-05 10:29:16.296 I/UiAutomationManager( 1870): Registering UiTestAutomationService (id=com.android.server.accessibility/UiAutomation, flags=0x0) when called by user 0
+09-05 10:29:16.299 W/MagnificationConnectionManager( 1870): requestConnection duplicated request: connect=false, mConnectionState=DISCONNECTED
+09-05 10:29:16.301 I/BufferQueueDebug( 1227): [WindowToken{89b1356 type=2032 android.os.Binder@98c3971}#2791](this:0xb4000071637cc640,id:-1,api:0,p:-1,c:-1) BufferQueue core=(1227:/system/bin/surfaceflinger)
+09-05 10:29:16.303 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:16.303 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:16.304 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:16.304 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:16.304 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:16.304 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:16.306 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:16.307 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:16.308 W/MagnificationConnectionManager( 1870): requestConnection duplicated request: connect=false, mConnectionState=DISCONNECTED
+09-05 10:29:16.309 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:16.311 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:16.312 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:16.312 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:16.313 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:16.313 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:16.314 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:16.314 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:16.315 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:16.315 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:16.315 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:16.316 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:16.610 I/libPerfCtl( 1184): xgfGetFPS pid:2270 fps:-1
+09-05 10:29:16.611 I/libPerfCtl( 1184): xgfGetFPS pid:10066 fps:-1
+09-05 10:29:16.927 I/WifiHAL ( 2170): feature_set=0x8488341a
+09-05 10:29:17.611 I/libPerfCtl( 1184): xgfGetFPS pid:2270 fps:-1
+09-05 10:29:17.611 I/libPerfCtl( 1184): xgfGetFPS pid:10066 fps:-1
+09-05 10:29:18.126 W/u.buzz.ryzewave(10066): ApkAssets: Deleting an ApkAssets object '<empty> and /system_ext/priv-app/MtkSettings/MtkSettings.apk' with 1 weak references
+09-05 10:29:18.127 W/u.buzz.ryzewave(10066): ApkAssets: Deleting an ApkAssets object '/vendor/overlay/MtkSettingsResOverlay/MtkSettingsResOverlay.apk' with 1 weak references
+09-05 10:29:18.130 W/u.buzz.ryzewave(10066): ApkAssets: Deleting an ApkAssets object '<empty> and /system/app/ApeSoundRecorder/ApeSoundRecorder.apk' with 1 weak references
+09-05 10:29:18.152 W/u.buzz.ryzewave(10066): ApkAssets: Deleting an ApkAssets object '<empty> and /system/priv-app/ApeCamera2_Lamu/ApeCamera2_Lamu.apk' with 1 weak references
+09-05 10:29:18.163 W/u.buzz.ryzewave(10066): ApkAssets: Deleting an ApkAssets object '<empty> and /system/operator-app/priv-app/ApeFMRadio_MTK/ApeFMRadio_MTK.apk' with 1 weak references
+09-05 10:29:18.611 I/libPerfCtl( 1184): xgfGetFPS pid:2270 fps:-1
+09-05 10:29:19.300 I/BufferQueueProducer( 1227): [au.buzz.ryzewave/au.buzz.ryzewave.MainActivity#2784](this:0xb400007163805580,id:-1,api:0,p:-1,c:1227) queueBuffer: fps=11.68 dur=3682.06 max=2943.07 min=15.71
+09-05 10:29:19.301 I/Choreographer(10066): Skipped 176 frames!  The application may be doing too much work on its main thread.
+09-05 10:29:19.303 I/hwcomposer( 1163): [HWCDisplay] (0 updateFps():3644), (type:1, mode:2) fps:11.678204,dur:3682.07,max:2943.29,min:14.61  
+09-05 10:29:19.306 I/HWUI    (10066): Davey! duration=2958ms; Flags=0, FrameTimelineVsyncId=3890893, IntendedVsync=50350546855589, Vsync=50350546855589, InputEventId=0, HandleInputStart=50350547435230, AnimationStart=50350547438077, PerformTraversalsStart=50351839480538, DrawStart=50353237643000, FrameDeadline=50350583501116, FrameInterval=50350547422077, FrameStartTime=16718959, SyncQueued=50353484407846, SyncStart=50353484683231, IssueDrawCommandsStart=50353488645769, SwapBuffers=50353501269692, FrameCompleted=50353505687923, DequeueBufferDuration=84616, QueueBufferDuration=702846, GpuCompleted=50353505687923, SwapBuffersCompleted=50353502626692, DisplayPresentTime=72057628414510453, CommandSubmissionCompleted=50353501269692, 
+09-05 10:29:19.390 W/libc    (10196): Access denied finding property "qemu.sf.lcd_density"
+09-05 10:29:19.390 W/libc    (10196): Access denied finding property "qemu.sf.lcd_density"
+09-05 10:29:19.405 I/HWUI    (10066): Davey! duration=3045ms; Flags=0, FrameTimelineVsyncId=3890901, IntendedVsync=50350563565641, Vsync=50353506012841, InputEventId=0, HandleInputStart=50353513004846, AnimationStart=50353513009384, PerformTraversalsStart=50353561715615, DrawStart=50353586657154, FrameDeadline=50353526111332, FrameInterval=50353511981769, FrameStartTime=16718450, SyncQueued=50353587198692, SyncStart=50353587843000, IssueDrawCommandsStart=50353595845461, SwapBuffers=50353606355538, FrameCompleted=50353609604154, DequeueBufferDuration=157923, QueueBufferDuration=872615, GpuCompleted=50353609604154, SwapBuffersCompleted=50353607951308, DisplayPresentTime=0, CommandSubmissionCompleted=50353606355538, 
+09-05 10:29:19.611 I/libPerfCtl( 1184): xgfGetFPS pid:2270 fps:-1
+09-05 10:29:19.611 I/libPerfCtl( 1184): xgfGetFPS pid:10066 fps:-1
+09-05 10:29:19.785 W/AccessibilityNodeInfoDumper(10196): Fetch time: 394ms
+09-05 10:29:19.792 W/MagnificationConnectionManager( 1870): requestConnection duplicated request: connect=false, mConnectionState=DISCONNECTED
+09-05 10:29:19.793 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:19.793 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:19.794 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:19.795 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:19.795 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:19.795 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:19.797 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:19.797 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:19.798 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:19.799 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:19.800 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:19.800 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:19.819 I/SurfaceFlinger( 1227): onHandleDestroyed: name=WindowToken{89b1356 type=2032 android.os.Binder@98c3971}#2791, layerId=2791, parentId=0
+09-05 10:29:19.835 I/BufferQueueDebug( 1227): [WindowToken{89b1356 type=2032 android.os.Binder@98c3971}#2791](this:0xb4000071637cc640,id:-1,api:0,p:-1,c:1227) onDestructor()
+09-05 10:29:19.952 I/WifiHAL ( 2170): feature_set=0x8488341a
+09-05 10:29:20.613 I/libPerfCtl( 1184): xgfGetFPS pid:2270 fps:-1
+09-05 10:29:20.613 I/libPerfCtl( 1184): xgfGetFPS pid:10066 fps:-1
+09-05 10:29:20.664 W/RefBase (10196): RefBase: Explicit destruction, weak count = 0 (in 0x77b597c858). Use sp<> to manage this object.
+09-05 10:29:20.717 I/adbd    ( 1298): adbd service requested 'shell,v2,raw:cat /sdcard/ui.xml'
+09-05 10:29:20.802 I/adbd    ( 1298): adbd service requested 'shell,v2,raw:input swipe 360 1200 360 500 400'
+09-05 10:29:20.866 I/libPowerHal( 1193): [perfLockAcq] idx:0 hdl:2808 hint:25 pid:1193 tid:1193 duration:10000 lock_user:vendor.mediatek => ret_hdl:2808
+09-05 10:29:20.867 I/libPowerHal( 1193): [PE] MTKPOWER_HINT_APP_TOUCH update cmd:410000, param:1, pr:3
+09-05 10:29:20.867 I/ThreeFingerPointerEventListener( 1870): onPointDown... pointIndex = 0, pointId = 0 currentX = 360.0, currentY = 1200.0 mTouchRegion:Rect(43, 96 - 676, 1507)
+09-05 10:29:20.868 I/libPowerHal( 1193): [PE] MTKPOWER_HINT_APP_TOUCH update cmd:400000 param:3000000 pr:3
+09-05 10:29:20.868 I/libPowerHal( 1193): [PE] MTKPOWER_HINT_APP_TOUCH update cmd:400100 param:3000000 pr:3
+09-05 10:29:20.868 I/libPowerHal( 1193): value: 1
+09-05 10:29:20.868 I/libPowerHal( 1193): [PE] MTKPOWER_HINT_APP_TOUCH update cmd:410000 param:1 pr:3
+09-05 10:29:20.869 I/libPowerHal( 1193): [setDvfsrcDevFreqOpp] opp:0, freq:3600000000
+09-05 10:29:20.869 I/libPowerHal( 1193): [PE] MTKPOWER_HINT_APP_TOUCH update cmd:1000000 param:0 pr:3
+09-05 10:29:20.869 I/libPowerHal( 1193): [recordCPUFreqInfo] set cluster[0] min(MTKPOWER_HINT_APP_TOUCH): 1700000 max(-1): -1 cluster[1] min(MTKPOWER_HINT_APP_TOUCH): 2000000 max(-1): -1
+09-05 10:29:20.869 I/libPowerHal( 1193): [perfLockAcq] Done for hdl : 2808
+09-05 10:29:20.879 I/ThreeFingerPointerEventListener( 1870): has move
+09-05 10:29:20.914 I/mtkpower_client( 1870): perf_lock_acq, hdl:0, dur:3000, num:2, pid:1870, tid:4236
+09-05 10:29:20.915 I/libPowerHal( 1193): [perfLockAcq] idx:2 hdl:2809 hint:49 pid:1193 tid:1193 duration:3000 lock_user:vendor.mediatek => ret_hdl:2809
+09-05 10:29:20.915 I/libPowerHal( 1193): [PE] MTKPOWER_HINT_UX_SCROLLING_COMMON update cmd:1468000 param:0 pr:3
+09-05 10:29:20.915 I/libPowerHal( 1193): [perfLockAcq] Done for hdl : 2809
+09-05 10:29:20.916 I/mtkpower_client( 1870): ret_hdl:2810
+09-05 10:29:20.916 I/libPowerHal( 1193): [perfLockAcq] idx:3 hdl:2810 hint:-1 pid:1870 tid:4236 duration:3000 lock_user:system_server => ret_hdl:2810
+09-05 10:29:20.916 I/libPowerHal( 1193): [fpsgo_ctrl_render_thread] 10111, 0xb40000723f1c9b70
+09-05 10:29:20.916 I/libPowerHal( 1193): [PE] system_server update ONESHOT(set) cmd:2000300 param:10111 pr:3
+09-05 10:29:20.916 I/libPowerHal( 1193): [perfLockAcq] Done for hdl : 2810
+09-05 10:29:20.916 I/mtkpower_client( 1870): perf_lock_rel, hdl:2810, tid:4236
+09-05 10:29:20.917 I/mtkpower_client( 1870): perf_lock_acq, hdl:2810, dur:3000, num:2, pid:1870, tid:1887
+09-05 10:29:20.917 I/libPowerHal( 1193): [perfLockRel] hdl:2810, idx:3
+09-05 10:29:20.918 I/libPowerHal( 1193): [fpsgo_ctrl_render_thread] 10111, 0xb40000723f1c9b70
+09-05 10:29:20.918 I/libPowerHal( 1193): [PD] system_server update ONESHOT(unset) cmd:2000300 param:10111 pr:3
+09-05 10:29:20.918 I/libPowerHal( 1193): [perfLockRel] Done for hdl : 2810
+09-05 10:29:20.919 I/mtkpower_client( 1870): ret_hdl:2811
+09-05 10:29:20.919 I/libPowerHal( 1193): [perfLockAcq] idx:3 hdl:2811 hint:-1 pid:1870 tid:1887 duration:3000 lock_user:system_server => ret_hdl:2811
+09-05 10:29:20.919 I/libPowerHal( 1193): [PE] system_server update cmd:3408500, param:0, pr:3
+09-05 10:29:20.919 I/libPowerHal( 1193): [touch_boost_enabled] value:0
+09-05 10:29:20.919 I/libPowerHal( 1193): [PE] system_server update cmd:3408500 param:0 pr:3
+09-05 10:29:20.919 I/libPowerHal( 1193): [force_stop_touch_boost] force stop touch boost,
+09-05 10:29:20.919 I/libPowerHal( 1193): [perfLockAcq] Done for hdl : 2811
+09-05 10:29:20.919 I/mtkpower_client( 1870): perf_lock_rel, hdl:2811, tid:1887
+09-05 10:29:20.920 I/libPowerHal( 1193): [perfLockRel] hdl:2811, idx:3
+09-05 10:29:20.920 I/libPowerHal( 1193): [PD] system_server update cmd:3408500 param:1, pr:6
+09-05 10:29:20.920 I/libPowerHal( 1193): [touch_boost_enabled] value:-1
+09-05 10:29:20.920 I/libPowerHal( 1193): [PD] system_server update cmd:3408500 param:-1 pr:6
+09-05 10:29:20.921 I/libPowerHal( 1193): [perfLockRel] Done for hdl : 2811
+09-05 10:29:20.936 I/BufferQueueProducer( 1227): [au.buzz.ryzewave/au.buzz.ryzewave.MainActivity#2784](this:0xb400007163805580,id:-1,api:0,p:-1,c:1227) queueBuffer: fps=1.83 dur=1636.17 max=1419.42 min=99.46
+09-05 10:29:20.938 I/hwcomposer( 1163): [HWCDisplay] (0 updateFps():3644), (type:1, mode:2) fps:3.057873,dur:1635.12,max:1100.94,min:15.95  
+09-05 10:29:21.272 I/libPowerHal( 1193): [perfLockRel] hdl:2808, idx:0
+09-05 10:29:21.272 I/libPowerHal( 1193): [PD] MTKPOWER_HINT_APP_TOUCH update cmd:410000 param:0, pr:6
+09-05 10:29:21.272 I/libPowerHal( 1193): [PD] MTKPOWER_HINT_APP_TOUCH update cmd:400000 param:-1 pr:6
+09-05 10:29:21.272 I/libPowerHal( 1193): [PD] MTKPOWER_HINT_APP_TOUCH update cmd:400100 param:-1 pr:6
+09-05 10:29:21.272 I/libPowerHal( 1193): value: 0
+09-05 10:29:21.272 I/libPowerHal( 1193): [PD] MTKPOWER_HINT_APP_TOUCH update cmd:410000 param:0 pr:6
+09-05 10:29:21.273 I/libPowerHal( 1193): [PD] MTKPOWER_HINT_APP_TOUCH update cmd:1000000 param:-1 pr:6
+09-05 10:29:21.273 I/libPowerHal( 1193): [recordCPUFreqInfo] set cluster[0] min(-1): -1 max(-1): -1 cluster[1] min(-1): -1 max(-1): -1
+09-05 10:29:21.274 I/libPowerHal( 1193): [perfLockRel] Done for hdl : 2808
+09-05 10:29:21.284 I/ScrollIdentify(10066): on fling
+09-05 10:29:21.285 I/mtkpower_client( 1870): perf_lock_acq, hdl:2811, dur:3000, num:4, pid:1870, tid:1887
+09-05 10:29:21.286 I/libPowerHal( 1193): [perfLockAcq] idx:0 hdl:2812 hint:43 pid:1193 tid:1193 duration:3000 lock_user:vendor.mediatek => ret_hdl:2812
+09-05 10:29:21.286 I/libPowerHal( 1193): [PE] MTKPOWER_HINT_UX_SCROLLING update cmd:1408300, param:60, pr:3
+09-05 10:29:21.287 I/libPowerHal( 1193): [PE] MTKPOWER_HINT_UX_SCROLLING update cmd:400000 param:1075000 pr:3
+09-05 10:29:21.287 I/libPowerHal( 1193): [PE] MTKPOWER_HINT_UX_SCROLLING update cmd:404000 param:3000000 pr:3
+09-05 10:29:21.287 I/libPowerHal( 1193): [PE] MTKPOWER_HINT_UX_SCROLLING update cmd:400100 param:1162000 pr:3
+09-05 10:29:21.287 I/libPowerHal( 1193): [PE] MTKPOWER_HINT_UX_SCROLLING update cmd:404100 param:3000000 pr:3
+09-05 10:29:21.287 I/libPowerHal( 1193): [recordCPUFreqInfo] set cluster[0] min(MTKPOWER_HINT_UX_SCROLLING): 1075000 max(MTKPOWER_HINT_UX_SCROLLING): -1 cluster[1] min(MTKPOWER_HINT_UX_SCROLLING): 1162000 max(MTKPOWER_HINT_UX_SCROLLING): -1
+09-05 10:29:21.287 I/libPowerHal( 1193): [perfLockAcq] Done for hdl : 2812
+09-05 10:29:21.288 I/libPowerHal( 1193): [perfLockRel] hdl:2796, idx:-1
+09-05 10:29:21.288 I/mtkpower_client( 1870): ret_hdl:2813
+09-05 10:29:21.289 I/libPowerHal( 1193): cmdSetting - unknown cmd:2000400, scmd:(null) ,param_1:-10111
+09-05 10:29:21.289 I/libPowerHal( 1193): [perfLockAcq] idx:3 hdl:2813 hint:-1 pid:1870 tid:1887 duration:3000 lock_user:system_server => ret_hdl:2813
+09-05 10:29:21.289 I/mtkpower_client( 1870): perf_lock_rel, hdl:2813, tid:4928
+09-05 10:29:21.289 I/libPowerHal( 1193): [fpsgo_ctrl_render_thread] 10111, 0xb40000723f1c9b70
+09-05 10:29:21.289 I/libPowerHal( 1193): [PE] system_server update ONESHOT(set) cmd:2000300 param:10111 pr:3
+09-05 10:29:21.289 I/libPowerHal( 1193): [perfLockAcq] Done for hdl : 2813
+09-05 10:29:21.290 I/libPowerHal( 1193): [perfLockRel] hdl:2813, idx:3
+09-05 10:29:21.291 I/libPowerHal( 1193): [fpsgo_ctrl_render_thread] 10111, 0xb40000723f1c9b70
+09-05 10:29:21.291 I/libPowerHal( 1193): [PD] system_server update ONESHOT(unset) cmd:2000300 param:10111 pr:3
+09-05 10:29:21.291 I/libPowerHal( 1193): [perfLockRel] Done for hdl : 2813
+09-05 10:29:21.612 I/libPerfCtl( 1184): xgfGetFPS pid:2270 fps:-1
+09-05 10:29:21.612 I/libPerfCtl( 1184): xgfGetFPS pid:10066 fps:-1
+09-05 10:29:22.106 I/adbd    ( 1298): adbd service requested 'shell,v2,raw:uiautomator dump /sdcard/ui.xml'
+09-05 10:29:22.316 I/AndroidRuntime(10218): Using default boot image
+09-05 10:29:22.316 I/AndroidRuntime(10218): Leaving lock profiling enabled
+09-05 10:29:22.322 I/app_process(10218): Using generational CollectorTypeCMC GC.
+09-05 10:29:22.472 I/app_process(10218): Priority-to-niceness mapping: 19, 16, 13, 10, 0, -2, -4, -5, -6, -8
+09-05 10:29:22.505 W/libc    (10218): Access denied finding property "ro.vendor.mtk.hbt_binfmt_misc_support"
+09-05 10:29:22.506 W/libc    (10218): Access denied finding property "ro.vendor.mtk.app32_boost_support"
+09-05 10:29:22.506 W/libc    (10218): Access denied finding property "ro.vendor.mtk.hbt_dyn_type"
+09-05 10:29:22.506 W/libc    (10218): Access denied finding property "persist.vendor.mtk.hbt_dyn_type"
+09-05 10:29:22.533 I/UiAutomation(10218): Initialized for user 0 on display 0
+09-05 10:29:22.533 W/UiAutomation(10218): Created with deprecatead constructor, assumes DEFAULT_DISPLAY
+09-05 10:29:22.535 I/UiAutomationManager( 1870): Registering UiTestAutomationService (id=com.android.server.accessibility/UiAutomation, flags=0x0) when called by user 0
+09-05 10:29:22.537 W/MagnificationConnectionManager( 1870): requestConnection duplicated request: connect=false, mConnectionState=DISCONNECTED
+09-05 10:29:22.539 I/BufferQueueDebug( 1227): [WindowToken{d1d983a type=2032 android.os.Binder@1cbf365}#2792](this:0xb4000071637cc640,id:-1,api:0,p:-1,c:-1) BufferQueue core=(1227:/system/bin/surfaceflinger)
+09-05 10:29:22.540 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:22.541 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:22.542 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:22.542 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:22.542 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:22.543 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:22.542 I/hwcomposer( 1163): [HWCDisplay] (0 updateFps():3644), (type:1, mode:2) fps:31.777523,dur:1604.91,max:701.36,min:15.85  
+09-05 10:29:22.543 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:22.544 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:22.544 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:22.544 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:22.545 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:22.545 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:22.550 W/MagnificationConnectionManager( 1870): requestConnection duplicated request: connect=false, mConnectionState=DISCONNECTED
+09-05 10:29:22.552 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:22.552 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:22.553 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:22.553 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:22.553 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:22.554 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:22.554 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:22.555 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:22.613 I/libPerfCtl( 1184): xgfGetFPS pid:2270 fps:-1
+09-05 10:29:22.613 I/libPerfCtl( 1184): xgfGetFPS pid:10066 fps:-1
+09-05 10:29:22.973 I/WifiHAL ( 2170): feature_set=0x8488341a
+09-05 10:29:23.556 W/libc    (10218): Access denied finding property "qemu.sf.lcd_density"
+09-05 10:29:23.557 W/libc    (10218): Access denied finding property "qemu.sf.lcd_density"
+09-05 10:29:23.613 I/libPerfCtl( 1184): xgfGetFPS pid:2270 fps:-1
+09-05 10:29:23.613 I/libPerfCtl( 1184): xgfGetFPS pid:10066 fps:-1
+09-05 10:29:23.705 W/AccessibilityNodeInfoDumper(10218): Fetch time: 147ms
+09-05 10:29:23.709 W/MagnificationConnectionManager( 1870): requestConnection duplicated request: connect=false, mConnectionState=DISCONNECTED
+09-05 10:29:23.710 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:23.710 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:23.711 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:23.711 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:23.712 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:23.712 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:23.713 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:23.713 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:23.714 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:23.714 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:23.715 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:23.715 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:23.746 I/SurfaceFlinger( 1227): onHandleDestroyed: name=WindowToken{d1d983a type=2032 android.os.Binder@1cbf365}#2792, layerId=2792, parentId=0
+09-05 10:29:23.748 I/hwcomposer( 1163): [HWCDisplay] (0 updateFps():3644), (type:1, mode:2) fps:1.659733,dur:1205.01,max:1187.40,min:17.61  
+09-05 10:29:23.762 I/BufferQueueDebug( 1227): [WindowToken{d1d983a type=2032 android.os.Binder@1cbf365}#2792](this:0xb4000071637cc640,id:-1,api:0,p:-1,c:1227) onDestructor()
+09-05 10:29:23.894 I/thermal_repeater( 1421): [recvMdThermalInfo] ret=30, strLen=127,  3, 41, -127, -28402, 32767, 0
+09-05 10:29:23.918 I/mtkpower@impl( 1193): [powerd_req] TIMER_MSG_PERF_LOCK_TIMEOUT hdl:2809
+09-05 10:29:23.918 I/libPowerHal( 1193): [perfLockRel] hdl:2809, idx:2
+09-05 10:29:23.919 I/libPowerHal( 1193): [PD] MTKPOWER_HINT_UX_SCROLLING_COMMON update cmd:1468000 param:1 pr:6
+09-05 10:29:23.920 I/libPowerHal( 1193): [perfLockRel] Done for hdl : 2809
+09-05 10:29:23.933 I/libPowerHal( 1193): [perfLockAcq] idx:2 hdl:2814 hint:49 pid:1193 tid:1193 duration:3000 lock_user:vendor.mediatek => ret_hdl:2814
+09-05 10:29:23.934 I/libPowerHal( 1193): [PE] MTKPOWER_HINT_UX_SCROLLING_COMMON update cmd:1468000 param:0 pr:3
+09-05 10:29:23.934 I/libPowerHal( 1193): [perfLockAcq] Done for hdl : 2814
+09-05 10:29:23.934 I/libPowerHal( 1193): [perfLockRel] hdl:2809, idx:-1
+09-05 10:29:24.288 I/mtkpower@impl( 1193): [powerd_req] TIMER_MSG_PERF_LOCK_TIMEOUT hdl:2812
+09-05 10:29:24.288 I/libPowerHal( 1193): [perfLockRel] hdl:2812, idx:0
+09-05 10:29:24.289 I/libPowerHal( 1193): [PD] MTKPOWER_HINT_UX_SCROLLING update cmd:1408300 param:0, pr:6
+09-05 10:29:24.290 I/libPowerHal( 1193): [PD] MTKPOWER_HINT_UX_SCROLLING update cmd:400000 param:-1 pr:6
+09-05 10:29:24.290 I/libPowerHal( 1193): [PD] MTKPOWER_HINT_UX_SCROLLING update cmd:404000 param:-1 pr:6
+09-05 10:29:24.290 I/libPowerHal( 1193): [PD] MTKPOWER_HINT_UX_SCROLLING update cmd:400100 param:-1 pr:6
+09-05 10:29:24.290 I/libPowerHal( 1193): [PD] MTKPOWER_HINT_UX_SCROLLING update cmd:404100 param:-1 pr:6
+09-05 10:29:24.291 I/mtkpower_client( 1870): perf_lock_acq, hdl:2813, dur:3000, num:4, pid:1870, tid:4928
+09-05 10:29:24.291 I/libPowerHal( 1193): [recordCPUFreqInfo] set cluster[0] min(-1): -1 max(-1): -1 cluster[1] min(-1): -1 max(-1): -1
+09-05 10:29:24.291 I/libPowerHal( 1193): [perfLockRel] Done for hdl : 2812
+09-05 10:29:24.292 I/libPowerHal( 1193): [perfLockRel] hdl:2814, idx:2
+09-05 10:29:24.293 I/libPowerHal( 1193): [PD] MTKPOWER_HINT_UX_SCROLLING_COMMON update cmd:1468000 param:1 pr:6
+09-05 10:29:24.294 I/libPowerHal( 1193): [perfLockRel] Done for hdl : 2814
+09-05 10:29:24.295 I/mtkpower_client( 1870): ret_hdl:2815
+09-05 10:29:24.296 I/libPowerHal( 1193): cmdSetting - unknown cmd:2000400, scmd:(null) ,param_1:10111
+09-05 10:29:24.296 I/libPowerHal( 1193): [perfLockAcq] idx:0 hdl:2815 hint:-1 pid:1870 tid:4928 duration:3000 lock_user:system_server => ret_hdl:2815
+09-05 10:29:24.296 I/libPowerHal( 1193): [fpsgo_ctrl_render_thread] -10111, 0xb40000723f1c0000
+09-05 10:29:24.297 I/libPowerHal( 1193): [PE] system_server update ONESHOT(set) cmd:2000300 param:-10111 pr:3
+09-05 10:29:24.297 I/mtkpower_client( 1870): perf_lock_rel, hdl:2815, tid:4928
+09-05 10:29:24.297 I/libPowerHal( 1193): [perfLockAcq] Done for hdl : 2815
+09-05 10:29:24.298 I/libPowerHal( 1193): [perfLockRel] hdl:2815, idx:0
+09-05 10:29:24.300 I/libPowerHal( 1193): [fpsgo_ctrl_render_thread] -10111, 0xb40000723f1c0000
+09-05 10:29:24.300 I/libPowerHal( 1193): [PD] system_server update ONESHOT(unset) cmd:2000300 param:-10111 pr:3
+09-05 10:29:24.300 I/libPowerHal( 1193): [perfLockRel] Done for hdl : 2815
+09-05 10:29:24.570 W/RefBase (10218): RefBase: Explicit destruction, weak count = 0 (in 0x73269b1858). Use sp<> to manage this object.
+09-05 10:29:24.613 I/adbd    ( 1298): adbd service requested 'shell,v2,raw:cat /sdcard/ui.xml'
+09-05 10:29:24.613 I/libPerfCtl( 1184): xgfGetFPS pid:2270 fps:-1
+09-05 10:29:24.701 I/adbd    ( 1298): adbd service requested 'shell,v2,raw:input swipe 360 1200 360 500 400'
+09-05 10:29:24.762 I/libPowerHal( 1193): [perfLockAcq] idx:0 hdl:2816 hint:25 pid:1193 tid:1193 duration:10000 lock_user:vendor.mediatek => ret_hdl:2816
+09-05 10:29:24.762 I/libPowerHal( 1193): [PE] MTKPOWER_HINT_APP_TOUCH update cmd:410000, param:1, pr:3
+09-05 10:29:24.763 I/libPowerHal( 1193): [PE] MTKPOWER_HINT_APP_TOUCH update cmd:400000 param:3000000 pr:3
+09-05 10:29:24.763 I/libPowerHal( 1193): [PE] MTKPOWER_HINT_APP_TOUCH update cmd:400100 param:3000000 pr:3
+09-05 10:29:24.763 I/libPowerHal( 1193): value: 1
+09-05 10:29:24.763 I/libPowerHal( 1193): [PE] MTKPOWER_HINT_APP_TOUCH update cmd:410000 param:1 pr:3
+09-05 10:29:24.763 I/libPowerHal( 1193): [setDvfsrcDevFreqOpp] opp:0, freq:3600000000
+09-05 10:29:24.763 I/libPowerHal( 1193): [PE] MTKPOWER_HINT_APP_TOUCH update cmd:1000000 param:0 pr:3
+09-05 10:29:24.763 I/libPowerHal( 1193): [recordCPUFreqInfo] set cluster[0] min(MTKPOWER_HINT_APP_TOUCH): 1700000 max(-1): -1 cluster[1] min(MTKPOWER_HINT_APP_TOUCH): 2000000 max(-1): -1
+09-05 10:29:24.763 I/libPowerHal( 1193): [perfLockAcq] Done for hdl : 2816
+09-05 10:29:24.763 I/ThreeFingerPointerEventListener( 1870): onPointDown... pointIndex = 0, pointId = 0 currentX = 360.0, currentY = 1200.0 mTouchRegion:Rect(43, 96 - 676, 1507)
+09-05 10:29:24.779 I/mtkpower_client( 1870): perf_lock_acq, hdl:2815, dur:3000, num:2, pid:1870, tid:4183
+09-05 10:29:24.780 I/ThreeFingerPointerEventListener( 1870): has move
+09-05 10:29:24.780 I/libPowerHal( 1193): [perfLockAcq] idx:2 hdl:2817 hint:49 pid:1193 tid:1193 duration:3000 lock_user:vendor.mediatek => ret_hdl:2817
+09-05 10:29:24.780 I/libPowerHal( 1193): [PE] MTKPOWER_HINT_UX_SCROLLING_COMMON update cmd:1468000 param:0 pr:3
+09-05 10:29:24.780 I/libPowerHal( 1193): [perfLockAcq] Done for hdl : 2817
+09-05 10:29:24.780 I/mtkpower_client( 1870): ret_hdl:2818
+09-05 10:29:24.781 I/libPowerHal( 1193): [perfLockAcq] idx:3 hdl:2818 hint:-1 pid:1870 tid:4183 duration:3000 lock_user:system_server => ret_hdl:2818
+09-05 10:29:24.781 I/libPowerHal( 1193): [fpsgo_ctrl_render_thread] 10111, 0xb40000723f1c9b70
+09-05 10:29:24.781 I/libPowerHal( 1193): [PE] system_server update ONESHOT(set) cmd:2000300 param:10111 pr:3
+09-05 10:29:24.781 I/mtkpower_client( 1870): perf_lock_rel, hdl:2818, tid:4183
+09-05 10:29:24.781 I/libPowerHal( 1193): [perfLockAcq] Done for hdl : 2818
+09-05 10:29:24.781 I/mtkpower_client( 1870): perf_lock_acq, hdl:2818, dur:3000, num:2, pid:1870, tid:4928
+09-05 10:29:24.782 I/libPowerHal( 1193): [perfLockRel] hdl:2818, idx:3
+09-05 10:29:24.782 I/libPowerHal( 1193): [fpsgo_ctrl_render_thread] 10111, 0xb40000723f1c9b70
+09-05 10:29:24.783 I/libPowerHal( 1193): [PD] system_server update ONESHOT(unset) cmd:2000300 param:10111 pr:3
+09-05 10:29:24.783 I/libPowerHal( 1193): [perfLockRel] Done for hdl : 2818
+09-05 10:29:24.783 I/mtkpower_client( 1870): ret_hdl:2819
+09-05 10:29:24.784 I/libPowerHal( 1193): [perfLockAcq] idx:3 hdl:2819 hint:-1 pid:1870 tid:4928 duration:3000 lock_user:system_server => ret_hdl:2819
+09-05 10:29:24.784 I/libPowerHal( 1193): [PE] system_server update cmd:3408500, param:0, pr:3
+09-05 10:29:24.784 I/libPowerHal( 1193): [touch_boost_enabled] value:0
+09-05 10:29:24.784 I/libPowerHal( 1193): [PE] system_server update cmd:3408500 param:0 pr:3
+09-05 10:29:24.784 I/libPowerHal( 1193): [force_stop_touch_boost] force stop touch boost,
+09-05 10:29:24.784 I/libPowerHal( 1193): [perfLockAcq] Done for hdl : 2819
+09-05 10:29:24.784 I/mtkpower_client( 1870): perf_lock_rel, hdl:2819, tid:4928
+09-05 10:29:24.785 I/libPowerHal( 1193): [perfLockRel] hdl:2819, idx:3
+09-05 10:29:24.785 I/libPowerHal( 1193): [PD] system_server update cmd:3408500 param:1, pr:6
+09-05 10:29:24.786 I/libPowerHal( 1193): [touch_boost_enabled] value:-1
+09-05 10:29:24.786 I/libPowerHal( 1193): [PD] system_server update cmd:3408500 param:-1 pr:6
+09-05 10:29:24.786 I/libPowerHal( 1193): [perfLockRel] Done for hdl : 2819
+09-05 10:29:24.798 I/BufferQueueProducer( 1227): [au.buzz.ryzewave/au.buzz.ryzewave.MainActivity#2784](this:0xb400007163805580,id:-1,api:0,p:-1,c:1227) queueBuffer: fps=13.21 dur=3861.55 max=2958.28 min=16.34
+09-05 10:29:24.799 I/hwcomposer( 1163): [HWCDisplay] (0 updateFps():3644), (type:1, mode:2) fps:1.902233,dur:1051.40,max:1034.75,min:16.65  
+09-05 10:29:25.166 I/libPowerHal( 1193): [perfLockRel] hdl:2816, idx:0
+09-05 10:29:25.166 I/libPowerHal( 1193): [PD] MTKPOWER_HINT_APP_TOUCH update cmd:410000 param:0, pr:6
+09-05 10:29:25.167 I/libPowerHal( 1193): [PD] MTKPOWER_HINT_APP_TOUCH update cmd:400000 param:-1 pr:6
+09-05 10:29:25.167 I/libPowerHal( 1193): [PD] MTKPOWER_HINT_APP_TOUCH update cmd:400100 param:-1 pr:6
+09-05 10:29:25.167 I/libPowerHal( 1193): value: 0
+09-05 10:29:25.167 I/libPowerHal( 1193): [PD] MTKPOWER_HINT_APP_TOUCH update cmd:410000 param:0 pr:6
+09-05 10:29:25.168 I/libPowerHal( 1193): [PD] MTKPOWER_HINT_APP_TOUCH update cmd:1000000 param:-1 pr:6
+09-05 10:29:25.168 I/libPowerHal( 1193): [recordCPUFreqInfo] set cluster[0] min(-1): -1 max(-1): -1 cluster[1] min(-1): -1 max(-1): -1
+09-05 10:29:25.168 I/libPowerHal( 1193): [perfLockRel] Done for hdl : 2816
+09-05 10:29:25.176 I/ScrollIdentify(10066): on fling
+09-05 10:29:25.178 I/mtkpower_client( 1870): perf_lock_acq, hdl:2819, dur:3000, num:4, pid:1870, tid:2482
+09-05 10:29:25.179 I/libPowerHal( 1193): [perfLockAcq] idx:0 hdl:2820 hint:43 pid:1193 tid:1193 duration:3000 lock_user:vendor.mediatek => ret_hdl:2820
+09-05 10:29:25.179 I/libPowerHal( 1193): [PE] MTKPOWER_HINT_UX_SCROLLING update cmd:1408300, param:60, pr:3
+09-05 10:29:25.179 I/libPowerHal( 1193): [PE] MTKPOWER_HINT_UX_SCROLLING update cmd:400000 param:1075000 pr:3
+09-05 10:29:25.180 I/libPowerHal( 1193): [PE] MTKPOWER_HINT_UX_SCROLLING update cmd:404000 param:3000000 pr:3
+09-05 10:29:25.180 I/libPowerHal( 1193): [PE] MTKPOWER_HINT_UX_SCROLLING update cmd:400100 param:1162000 pr:3
+09-05 10:29:25.180 I/libPowerHal( 1193): [PE] MTKPOWER_HINT_UX_SCROLLING update cmd:404100 param:3000000 pr:3
+09-05 10:29:25.180 I/libPowerHal( 1193): [recordCPUFreqInfo] set cluster[0] min(MTKPOWER_HINT_UX_SCROLLING): 1075000 max(MTKPOWER_HINT_UX_SCROLLING): -1 cluster[1] min(MTKPOWER_HINT_UX_SCROLLING): 1162000 max(MTKPOWER_HINT_UX_SCROLLING): -1
+09-05 10:29:25.181 W/LibMBrainProxy( 1193): MBrain offline
+09-05 10:29:25.181 I/libPowerHal( 1193): [perfLockAcq] Done for hdl : 2820
+09-05 10:29:25.181 I/libPowerHal( 1193): [perfLockRel] hdl:2812, idx:-1
+09-05 10:29:25.182 I/mtkpower_client( 1870): ret_hdl:2821
+09-05 10:29:25.183 I/libPowerHal( 1193): cmdSetting - unknown cmd:2000400, scmd:(null) ,param_1:-10111
+09-05 10:29:25.183 I/libPowerHal( 1193): [perfLockAcq] idx:3 hdl:2821 hint:-1 pid:1870 tid:2482 duration:3000 lock_user:system_server => ret_hdl:2821
+09-05 10:29:25.183 I/libPowerHal( 1193): [fpsgo_ctrl_render_thread] 10111, 0xb40000723f1c9b70
+09-05 10:29:25.183 I/libPowerHal( 1193): [PE] system_server update ONESHOT(set) cmd:2000300 param:10111 pr:3
+09-05 10:29:25.183 I/libPowerHal( 1193): [perfLockAcq] Done for hdl : 2821
+09-05 10:29:25.183 I/mtkpower_client( 1870): perf_lock_rel, hdl:2821, tid:2482
+09-05 10:29:25.184 I/libPowerHal( 1193): [perfLockRel] hdl:2821, idx:3
+09-05 10:29:25.185 I/libPowerHal( 1193): [fpsgo_ctrl_render_thread] 10111, 0xb40000723f1c9b70
+09-05 10:29:25.185 I/libPowerHal( 1193): [PD] system_server update ONESHOT(unset) cmd:2000300 param:10111 pr:3
+09-05 10:29:25.185 I/libPowerHal( 1193): [perfLockRel] Done for hdl : 2821
+09-05 10:29:25.613 I/libPerfCtl( 1184): xgfGetFPS pid:2270 fps:-1
+09-05 10:29:25.613 I/libPerfCtl( 1184): xgfGetFPS pid:10066 fps:-1
+09-05 10:29:25.993 I/adbd    ( 1298): adbd service requested 'shell,v2,raw:uiautomator dump /sdcard/ui.xml'
+09-05 10:29:25.994 I/WifiHAL ( 2170): feature_set=0x8488341a
+09-05 10:29:26.203 I/AndroidRuntime(10242): Using default boot image
+09-05 10:29:26.203 I/AndroidRuntime(10242): Leaving lock profiling enabled
+09-05 10:29:26.210 I/app_process(10242): Using generational CollectorTypeCMC GC.
+09-05 10:29:26.365 I/app_process(10242): Priority-to-niceness mapping: 19, 16, 13, 10, 0, -2, -4, -5, -6, -8
+09-05 10:29:26.401 W/libc    (10242): Access denied finding property "ro.vendor.mtk.hbt_binfmt_misc_support"
+09-05 10:29:26.401 W/libc    (10242): Access denied finding property "ro.vendor.mtk.app32_boost_support"
+09-05 10:29:26.401 W/libc    (10242): Access denied finding property "ro.vendor.mtk.hbt_dyn_type"
+09-05 10:29:26.401 W/libc    (10242): Access denied finding property "persist.vendor.mtk.hbt_dyn_type"
+09-05 10:29:26.431 I/UiAutomation(10242): Initialized for user 0 on display 0
+09-05 10:29:26.431 W/UiAutomation(10242): Created with deprecatead constructor, assumes DEFAULT_DISPLAY
+09-05 10:29:26.434 I/UiAutomationManager( 1870): Registering UiTestAutomationService (id=com.android.server.accessibility/UiAutomation, flags=0x0) when called by user 0
+09-05 10:29:26.435 W/MagnificationConnectionManager( 1870): requestConnection duplicated request: connect=false, mConnectionState=DISCONNECTED
+09-05 10:29:26.437 I/BufferQueueDebug( 1227): [WindowToken{46ace63 type=2032 android.os.Binder@59af492}#2793](this:0xb4000071637c1000,id:-1,api:0,p:-1,c:-1) BufferQueue core=(1227:/system/bin/surfaceflinger)
+09-05 10:29:26.439 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:26.439 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:26.440 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:26.440 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:26.440 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:26.440 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:26.441 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:26.441 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:26.442 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:26.442 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:26.443 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:26.443 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:26.444 W/MagnificationConnectionManager( 1870): requestConnection duplicated request: connect=false, mConnectionState=DISCONNECTED
+09-05 10:29:26.447 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:26.447 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:26.448 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:26.449 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:26.449 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:26.449 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:26.450 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:26.451 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:26.453 I/hwcomposer( 1163): [HWCDisplay] (0 updateFps():3644), (type:1, mode:2) fps:32.046169,dur:1653.86,max:733.96,min:15.88  
+09-05 10:29:26.614 I/libPerfCtl( 1184): xgfGetFPS pid:2270 fps:-1
+09-05 10:29:26.614 I/libPerfCtl( 1184): xgfGetFPS pid:10066 fps:-1
+09-05 10:29:27.454 W/libc    (10242): Access denied finding property "qemu.sf.lcd_density"
+09-05 10:29:27.454 W/libc    (10242): Access denied finding property "qemu.sf.lcd_density"
+09-05 10:29:27.614 I/libPerfCtl( 1184): xgfGetFPS pid:2270 fps:-1
+09-05 10:29:27.614 I/libPerfCtl( 1184): xgfGetFPS pid:10066 fps:-1
+09-05 10:29:27.631 W/AccessibilityNodeInfoDumper(10242): Fetch time: 174ms
+09-05 10:29:27.636 W/MagnificationConnectionManager( 1870): requestConnection duplicated request: connect=false, mConnectionState=DISCONNECTED
+09-05 10:29:27.637 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:27.638 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:27.639 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:27.639 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:27.639 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:27.639 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:27.641 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:27.641 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:27.645 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:27.646 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:27.646 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:27.647 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:27.654 I/SurfaceFlinger( 1227): onHandleDestroyed: name=WindowToken{46ace63 type=2032 android.os.Binder@59af492}#2793, layerId=2793, parentId=0
+09-05 10:29:27.655 I/hwcomposer( 1163): [HWCDisplay] (0 updateFps():3644), (type:1, mode:2) fps:1.663477,dur:1202.30,max:1183.57,min:18.73  
+09-05 10:29:27.674 I/BufferQueueDebug( 1227): [WindowToken{46ace63 type=2032 android.os.Binder@59af492}#2793](this:0xb4000071637c1000,id:-1,api:0,p:-1,c:1227) onDestructor()
+09-05 10:29:27.784 I/mtkpower@impl( 1193): [powerd_req] TIMER_MSG_PERF_LOCK_TIMEOUT hdl:2817
+09-05 10:29:27.784 I/libPowerHal( 1193): [perfLockRel] hdl:2817, idx:2
+09-05 10:29:27.785 I/libPowerHal( 1193): [PD] MTKPOWER_HINT_UX_SCROLLING_COMMON update cmd:1468000 param:1 pr:6
+09-05 10:29:27.785 I/libPowerHal( 1193): [perfLockRel] Done for hdl : 2817
+09-05 10:29:27.800 I/libPowerHal( 1193): [perfLockAcq] idx:2 hdl:2822 hint:49 pid:1193 tid:1193 duration:3000 lock_user:vendor.mediatek => ret_hdl:2822
+09-05 10:29:27.800 I/libPowerHal( 1193): [PE] MTKPOWER_HINT_UX_SCROLLING_COMMON update cmd:1468000 param:0 pr:3
+09-05 10:29:27.800 I/libPowerHal( 1193): [perfLockAcq] Done for hdl : 2822
+09-05 10:29:27.801 I/libPowerHal( 1193): [perfLockRel] hdl:2817, idx:-1
+09-05 10:29:28.181 I/mtkpower@impl( 1193): [powerd_req] TIMER_MSG_PERF_LOCK_TIMEOUT hdl:2820
+09-05 10:29:28.182 I/libPowerHal( 1193): [perfLockRel] hdl:2820, idx:0
+09-05 10:29:28.182 I/libPowerHal( 1193): [PD] MTKPOWER_HINT_UX_SCROLLING update cmd:1408300 param:0, pr:6
+09-05 10:29:28.183 I/libPowerHal( 1193): [PD] MTKPOWER_HINT_UX_SCROLLING update cmd:400000 param:-1 pr:6
+09-05 10:29:28.183 I/libPowerHal( 1193): [PD] MTKPOWER_HINT_UX_SCROLLING update cmd:404000 param:-1 pr:6
+09-05 10:29:28.183 I/libPowerHal( 1193): [PD] MTKPOWER_HINT_UX_SCROLLING update cmd:400100 param:-1 pr:6
+09-05 10:29:28.183 I/libPowerHal( 1193): [PD] MTKPOWER_HINT_UX_SCROLLING update cmd:404100 param:-1 pr:6
+09-05 10:29:28.184 I/mtkpower_client( 1870): perf_lock_acq, hdl:2821, dur:3000, num:4, pid:1870, tid:4236
+09-05 10:29:28.184 I/libPowerHal( 1193): [recordCPUFreqInfo] set cluster[0] min(-1): -1 max(-1): -1 cluster[1] min(-1): -1 max(-1): -1
+09-05 10:29:28.184 I/libPowerHal( 1193): [perfLockRel] Done for hdl : 2820
+09-05 10:29:28.186 I/libPowerHal( 1193): [perfLockRel] hdl:2822, idx:2
+09-05 10:29:28.188 I/libPowerHal( 1193): [PD] MTKPOWER_HINT_UX_SCROLLING_COMMON update cmd:1468000 param:1 pr:6
+09-05 10:29:28.188 I/libPowerHal( 1193): [perfLockRel] Done for hdl : 2822
+09-05 10:29:28.189 I/mtkpower_client( 1870): ret_hdl:2823
+09-05 10:29:28.190 I/libPowerHal( 1193): cmdSetting - unknown cmd:2000400, scmd:(null) ,param_1:10111
+09-05 10:29:28.190 I/libPowerHal( 1193): [perfLockAcq] idx:0 hdl:2823 hint:-1 pid:1870 tid:4236 duration:3000 lock_user:system_server => ret_hdl:2823
+09-05 10:29:28.190 I/libPowerHal( 1193): [fpsgo_ctrl_render_thread] -10111, 0xb40000723f1c0000
+09-05 10:29:28.191 I/libPowerHal( 1193): [PE] system_server update ONESHOT(set) cmd:2000300 param:-10111 pr:3
+09-05 10:29:28.191 I/libPowerHal( 1193): [perfLockAcq] Done for hdl : 2823
+09-05 10:29:28.191 I/mtkpower_client( 1870): perf_lock_rel, hdl:2823, tid:4236
+09-05 10:29:28.192 I/libPowerHal( 1193): [perfLockRel] hdl:2823, idx:0
+09-05 10:29:28.194 I/libPowerHal( 1193): [fpsgo_ctrl_render_thread] -10111, 0xb40000723f1c0000
+09-05 10:29:28.195 I/libPowerHal( 1193): [PD] system_server update ONESHOT(unset) cmd:2000300 param:-10111 pr:3
+09-05 10:29:28.195 I/libPowerHal( 1193): [perfLockRel] Done for hdl : 2823
+09-05 10:29:28.508 W/RefBase (10242): RefBase: Explicit destruction, weak count = 0 (in 0x7c647fc858). Use sp<> to manage this object.
+09-05 10:29:28.548 I/adbd    ( 1298): adbd service requested 'shell,v2,raw:cat /sdcard/ui.xml'
+09-05 10:29:28.614 I/libPerfCtl( 1184): xgfGetFPS pid:2270 fps:-1
+09-05 10:29:28.635 I/adbd    ( 1298): adbd service requested 'shell,v2,raw:input swipe 360 1200 360 500 400'
+09-05 10:29:28.693 I/libPowerHal( 1193): [perfLockAcq] idx:0 hdl:2824 hint:25 pid:1193 tid:1193 duration:10000 lock_user:vendor.mediatek => ret_hdl:2824
+09-05 10:29:28.693 I/libPowerHal( 1193): [PE] MTKPOWER_HINT_APP_TOUCH update cmd:410000, param:1, pr:3
+09-05 10:29:28.694 I/libPowerHal( 1193): [PE] MTKPOWER_HINT_APP_TOUCH update cmd:400000 param:3000000 pr:3
+09-05 10:29:28.694 I/libPowerHal( 1193): [PE] MTKPOWER_HINT_APP_TOUCH update cmd:400100 param:3000000 pr:3
+09-05 10:29:28.694 I/libPowerHal( 1193): value: 1
+09-05 10:29:28.694 I/libPowerHal( 1193): [PE] MTKPOWER_HINT_APP_TOUCH update cmd:410000 param:1 pr:3
+09-05 10:29:28.694 I/ThreeFingerPointerEventListener( 1870): onPointDown... pointIndex = 0, pointId = 0 currentX = 360.0, currentY = 1200.0 mTouchRegion:Rect(43, 96 - 676, 1507)
+09-05 10:29:28.694 I/libPowerHal( 1193): [setDvfsrcDevFreqOpp] opp:0, freq:3600000000
+09-05 10:29:28.694 I/libPowerHal( 1193): [PE] MTKPOWER_HINT_APP_TOUCH update cmd:1000000 param:0 pr:3
+09-05 10:29:28.694 I/libPowerHal( 1193): [recordCPUFreqInfo] set cluster[0] min(MTKPOWER_HINT_APP_TOUCH): 1700000 max(-1): -1 cluster[1] min(MTKPOWER_HINT_APP_TOUCH): 2000000 max(-1): -1
+09-05 10:29:28.694 I/libPowerHal( 1193): [perfLockAcq] Done for hdl : 2824
+09-05 10:29:28.723 I/mtkpower_client( 1870): perf_lock_acq, hdl:2823, dur:3000, num:2, pid:1870, tid:4576
+09-05 10:29:28.724 I/libPowerHal( 1193): [perfLockAcq] idx:2 hdl:2825 hint:49 pid:1193 tid:1193 duration:3000 lock_user:vendor.mediatek => ret_hdl:2825
+09-05 10:29:28.724 I/ThreeFingerPointerEventListener( 1870): has move
+09-05 10:29:28.724 I/libPowerHal( 1193): [PE] MTKPOWER_HINT_UX_SCROLLING_COMMON update cmd:1468000 param:0 pr:3
+09-05 10:29:28.724 I/libPowerHal( 1193): [perfLockAcq] Done for hdl : 2825
+09-05 10:29:28.725 I/mtkpower_client( 1870): ret_hdl:2826
+09-05 10:29:28.725 I/libPowerHal( 1193): [perfLockAcq] idx:3 hdl:2826 hint:-1 pid:1870 tid:4576 duration:3000 lock_user:system_server => ret_hdl:2826
+09-05 10:29:28.725 I/libPowerHal( 1193): [fpsgo_ctrl_render_thread] 10111, 0xb40000723f1c9b70
+09-05 10:29:28.725 I/libPowerHal( 1193): [PE] system_server update ONESHOT(set) cmd:2000300 param:10111 pr:3
+09-05 10:29:28.725 I/libPowerHal( 1193): [perfLockAcq] Done for hdl : 2826
+09-05 10:29:28.726 I/mtkpower_client( 1870): perf_lock_rel, hdl:2826, tid:4576
+09-05 10:29:28.726 I/mtkpower_client( 1870): perf_lock_acq, hdl:2826, dur:3000, num:2, pid:1870, tid:1888
+09-05 10:29:28.726 I/libPowerHal( 1193): [perfLockRel] hdl:2826, idx:3
+09-05 10:29:28.727 I/libPowerHal( 1193): [fpsgo_ctrl_render_thread] 10111, 0xb40000723f1c9b70
+09-05 10:29:28.727 I/libPowerHal( 1193): [PD] system_server update ONESHOT(unset) cmd:2000300 param:10111 pr:3
+09-05 10:29:28.727 I/libPowerHal( 1193): [perfLockRel] Done for hdl : 2826
+09-05 10:29:28.728 I/mtkpower_client( 1870): ret_hdl:2827
+09-05 10:29:28.728 I/libPowerHal( 1193): [perfLockAcq] idx:3 hdl:2827 hint:-1 pid:1870 tid:1888 duration:3000 lock_user:system_server => ret_hdl:2827
+09-05 10:29:28.728 I/libPowerHal( 1193): [PE] system_server update cmd:3408500, param:0, pr:3
+09-05 10:29:28.728 I/libPowerHal( 1193): [touch_boost_enabled] value:0
+09-05 10:29:28.728 I/libPowerHal( 1193): [PE] system_server update cmd:3408500 param:0 pr:3
+09-05 10:29:28.728 I/libPowerHal( 1193): [perfLockAcq] Done for hdl : 2827
+09-05 10:29:28.728 I/libPowerHal( 1193): [force_stop_touch_boost] force stop touch boost,
+09-05 10:29:28.729 I/mtkpower_client( 1870): perf_lock_rel, hdl:2827, tid:1888
+09-05 10:29:28.729 I/libPowerHal( 1193): [perfLockRel] hdl:2827, idx:3
+09-05 10:29:28.729 I/libPowerHal( 1193): [PD] system_server update cmd:3408500 param:1, pr:6
+09-05 10:29:28.730 I/libPowerHal( 1193): [touch_boost_enabled] value:-1
+09-05 10:29:28.730 I/libPowerHal( 1193): [PD] system_server update cmd:3408500 param:-1 pr:6
+09-05 10:29:28.730 I/libPowerHal( 1193): [perfLockRel] Done for hdl : 2827
+09-05 10:29:28.742 I/BufferQueueProducer( 1227): [au.buzz.ryzewave/au.buzz.ryzewave.MainActivity#2784](this:0xb400007163805580,id:-1,api:0,p:-1,c:1227) queueBuffer: fps=13.44 dur=3944.58 max=3025.09 min=16.35
+09-05 10:29:28.743 I/hwcomposer( 1163): [HWCDisplay] (0 updateFps():3644), (type:1, mode:2) fps:1.837587,dur:1088.38,max:1067.86,min:20.53  
+09-05 10:29:29.007 I/WifiHAL ( 2170): feature_set=0x8488341a
+09-05 10:29:29.094 I/libPowerHal( 1193): [perfLockRel] hdl:2824, idx:0
+09-05 10:29:29.094 I/libPowerHal( 1193): [PD] MTKPOWER_HINT_APP_TOUCH update cmd:410000 param:0, pr:6
+09-05 10:29:29.095 I/libPowerHal( 1193): [PD] MTKPOWER_HINT_APP_TOUCH update cmd:400000 param:-1 pr:6
+09-05 10:29:29.095 I/libPowerHal( 1193): [PD] MTKPOWER_HINT_APP_TOUCH update cmd:400100 param:-1 pr:6
+09-05 10:29:29.095 I/libPowerHal( 1193): value: 0
+09-05 10:29:29.095 I/libPowerHal( 1193): [PD] MTKPOWER_HINT_APP_TOUCH update cmd:410000 param:0 pr:6
+09-05 10:29:29.095 I/libPowerHal( 1193): [PD] MTKPOWER_HINT_APP_TOUCH update cmd:1000000 param:-1 pr:6
+09-05 10:29:29.096 I/libPowerHal( 1193): [recordCPUFreqInfo] set cluster[0] min(-1): -1 max(-1): -1 cluster[1] min(-1): -1 max(-1): -1
+09-05 10:29:29.096 I/libPowerHal( 1193): [perfLockRel] Done for hdl : 2824
+09-05 10:29:29.104 I/ScrollIdentify(10066): on fling
+09-05 10:29:29.106 I/mtkpower_client( 1870): perf_lock_acq, hdl:2827, dur:3000, num:4, pid:1870, tid:1888
+09-05 10:29:29.107 I/libPowerHal( 1193): [perfLockAcq] idx:0 hdl:2828 hint:43 pid:1193 tid:1193 duration:3000 lock_user:vendor.mediatek => ret_hdl:2828
+09-05 10:29:29.107 I/libPowerHal( 1193): [PE] MTKPOWER_HINT_UX_SCROLLING update cmd:1408300, param:60, pr:3
+09-05 10:29:29.108 I/libPowerHal( 1193): [PE] MTKPOWER_HINT_UX_SCROLLING update cmd:400000 param:1075000 pr:3
+09-05 10:29:29.108 I/libPowerHal( 1193): [PE] MTKPOWER_HINT_UX_SCROLLING update cmd:404000 param:3000000 pr:3
+09-05 10:29:29.109 I/libPowerHal( 1193): [PE] MTKPOWER_HINT_UX_SCROLLING update cmd:400100 param:1162000 pr:3
+09-05 10:29:29.109 I/libPowerHal( 1193): [PE] MTKPOWER_HINT_UX_SCROLLING update cmd:404100 param:3000000 pr:3
+09-05 10:29:29.109 I/libPowerHal( 1193): [recordCPUFreqInfo] set cluster[0] min(MTKPOWER_HINT_UX_SCROLLING): 1075000 max(MTKPOWER_HINT_UX_SCROLLING): -1 cluster[1] min(MTKPOWER_HINT_UX_SCROLLING): 1162000 max(MTKPOWER_HINT_UX_SCROLLING): -1
+09-05 10:29:29.109 I/libPowerHal( 1193): [perfLockAcq] Done for hdl : 2828
+09-05 10:29:29.109 I/libPowerHal( 1193): [perfLockRel] hdl:2820, idx:-1
+09-05 10:29:29.110 I/mtkpower_client( 1870): ret_hdl:2829
+09-05 10:29:29.111 I/libPowerHal( 1193): cmdSetting - unknown cmd:2000400, scmd:(null) ,param_1:-10111
+09-05 10:29:29.111 I/libPowerHal( 1193): [perfLockAcq] idx:3 hdl:2829 hint:-1 pid:1870 tid:1888 duration:3000 lock_user:system_server => ret_hdl:2829
+09-05 10:29:29.111 I/mtkpower_client( 1870): perf_lock_rel, hdl:2829, tid:1888
+09-05 10:29:29.112 I/libPowerHal( 1193): [fpsgo_ctrl_render_thread] 10111, 0xb40000723f1c9b70
+09-05 10:29:29.112 I/libPowerHal( 1193): [PE] system_server update ONESHOT(set) cmd:2000300 param:10111 pr:3
+09-05 10:29:29.112 I/libPowerHal( 1193): [perfLockAcq] Done for hdl : 2829
+09-05 10:29:29.113 I/libPowerHal( 1193): [perfLockRel] hdl:2829, idx:3
+09-05 10:29:29.114 I/libPowerHal( 1193): [fpsgo_ctrl_render_thread] 10111, 0xb40000723f1c9b70
+09-05 10:29:29.114 I/libPowerHal( 1193): [PD] system_server update ONESHOT(unset) cmd:2000300 param:10111 pr:3
+09-05 10:29:29.115 I/libPowerHal( 1193): [perfLockRel] Done for hdl : 2829
+09-05 10:29:29.614 I/libPerfCtl( 1184): xgfGetFPS pid:2270 fps:-1
+09-05 10:29:29.615 I/libPerfCtl( 1184): xgfGetFPS pid:10066 fps:-1
+09-05 10:29:29.928 I/adbd    ( 1298): adbd service requested 'shell,v2,raw:uiautomator dump /sdcard/ui.xml'
+09-05 10:29:30.127 I/AndroidRuntime(10263): Using default boot image
+09-05 10:29:30.127 I/AndroidRuntime(10263): Leaving lock profiling enabled
+09-05 10:29:30.134 I/app_process(10263): Using generational CollectorTypeCMC GC.
+09-05 10:29:30.280 I/app_process(10263): Priority-to-niceness mapping: 19, 16, 13, 10, 0, -2, -4, -5, -6, -8
+09-05 10:29:30.314 W/libc    (10263): Access denied finding property "ro.vendor.mtk.hbt_binfmt_misc_support"
+09-05 10:29:30.314 W/libc    (10263): Access denied finding property "ro.vendor.mtk.app32_boost_support"
+09-05 10:29:30.314 W/libc    (10263): Access denied finding property "ro.vendor.mtk.hbt_dyn_type"
+09-05 10:29:30.314 W/libc    (10263): Access denied finding property "persist.vendor.mtk.hbt_dyn_type"
+09-05 10:29:30.344 I/UiAutomation(10263): Initialized for user 0 on display 0
+09-05 10:29:30.344 W/UiAutomation(10263): Created with deprecatead constructor, assumes DEFAULT_DISPLAY
+09-05 10:29:30.347 I/UiAutomationManager( 1870): Registering UiTestAutomationService (id=com.android.server.accessibility/UiAutomation, flags=0x0) when called by user 0
+09-05 10:29:30.348 W/MagnificationConnectionManager( 1870): requestConnection duplicated request: connect=false, mConnectionState=DISCONNECTED
+09-05 10:29:30.349 I/BufferQueueDebug( 1227): [WindowToken{346f4b6 type=2032 android.os.Binder@59f4451}#2794](this:0xb40000716378ae50,id:-1,api:0,p:-1,c:-1) BufferQueue core=(1227:/system/bin/surfaceflinger)
+09-05 10:29:30.351 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:30.351 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:30.352 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:30.353 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:30.353 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:30.353 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:30.354 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:30.354 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:30.355 W/MagnificationConnectionManager( 1870): requestConnection duplicated request: connect=false, mConnectionState=DISCONNECTED
+09-05 10:29:30.355 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:30.356 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:30.356 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:30.356 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:30.357 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:30.357 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:30.358 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:30.358 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:30.358 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:30.359 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:30.359 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:30.360 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:30.367 I/hwcomposer( 1163): [HWCDisplay] (0 updateFps():3644), (type:1, mode:2) fps:33.268578,dur:1623.15,max:686.01,min:15.87  
+09-05 10:29:30.615 I/libPerfCtl( 1184): xgfGetFPS pid:2270 fps:-1
+09-05 10:29:30.615 I/libPerfCtl( 1184): xgfGetFPS pid:10066 fps:-1
+09-05 10:29:31.365 W/libc    (10263): Access denied finding property "qemu.sf.lcd_density"
+09-05 10:29:31.366 W/libc    (10263): Access denied finding property "qemu.sf.lcd_density"
+09-05 10:29:31.615 I/libPerfCtl( 1184): xgfGetFPS pid:2270 fps:-1
+09-05 10:29:31.615 I/libPerfCtl( 1184): xgfGetFPS pid:10066 fps:-1
+09-05 10:29:31.617 W/AccessibilityNodeInfoDumper(10263): Fetch time: 249ms
+09-05 10:29:31.623 W/MagnificationConnectionManager( 1870): requestConnection duplicated request: connect=false, mConnectionState=DISCONNECTED
+09-05 10:29:31.623 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:31.624 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:31.624 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:31.625 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:31.625 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:31.625 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:31.626 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:31.626 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:31.632 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:31.632 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:31.633 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:31.633 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:31.652 I/SurfaceFlinger( 1227): onHandleDestroyed: name=WindowToken{346f4b6 type=2032 android.os.Binder@59f4451}#2794, layerId=2794, parentId=0
+09-05 10:29:31.654 I/hwcomposer( 1163): [HWCDisplay] (0 updateFps():3644), (type:1, mode:2) fps:1.553402,dur:1287.50,max:1271.50,min:15.99  
+09-05 10:29:31.669 I/BufferQueueDebug( 1227): [WindowToken{346f4b6 type=2032 android.os.Binder@59f4451}#2794](this:0xb40000716378ae50,id:-1,api:0,p:-1,c:1227) onDestructor()
+09-05 10:29:31.728 I/mtkpower@impl( 1193): [powerd_req] TIMER_MSG_PERF_LOCK_TIMEOUT hdl:2825
+09-05 10:29:31.728 I/libPowerHal( 1193): [perfLockRel] hdl:2825, idx:2
+09-05 10:29:31.729 I/libPowerHal( 1193): [PD] MTKPOWER_HINT_UX_SCROLLING_COMMON update cmd:1468000 param:1 pr:6
+09-05 10:29:31.730 I/libPowerHal( 1193): [perfLockRel] Done for hdl : 2825
+09-05 10:29:31.744 I/libPowerHal( 1193): [perfLockAcq] idx:2 hdl:2830 hint:49 pid:1193 tid:1193 duration:3000 lock_user:vendor.mediatek => ret_hdl:2830
+09-05 10:29:31.745 I/libPowerHal( 1193): [PE] MTKPOWER_HINT_UX_SCROLLING_COMMON update cmd:1468000 param:0 pr:3
+09-05 10:29:31.745 I/libPowerHal( 1193): [perfLockAcq] Done for hdl : 2830
+09-05 10:29:31.745 I/libPowerHal( 1193): [perfLockRel] hdl:2825, idx:-1
+09-05 10:29:32.024 I/WifiHAL ( 2170): feature_set=0x8488341a
+09-05 10:29:32.109 I/mtkpower@impl( 1193): [powerd_req] TIMER_MSG_PERF_LOCK_TIMEOUT hdl:2828
+09-05 10:29:32.110 I/libPowerHal( 1193): [perfLockRel] hdl:2828, idx:0
+09-05 10:29:32.110 I/libPowerHal( 1193): [PD] MTKPOWER_HINT_UX_SCROLLING update cmd:1408300 param:0, pr:6
+09-05 10:29:32.111 I/libPowerHal( 1193): [PD] MTKPOWER_HINT_UX_SCROLLING update cmd:400000 param:-1 pr:6
+09-05 10:29:32.111 I/libPowerHal( 1193): [PD] MTKPOWER_HINT_UX_SCROLLING update cmd:404000 param:-1 pr:6
+09-05 10:29:32.111 I/libPowerHal( 1193): [PD] MTKPOWER_HINT_UX_SCROLLING update cmd:400100 param:-1 pr:6
+09-05 10:29:32.111 I/libPowerHal( 1193): [PD] MTKPOWER_HINT_UX_SCROLLING update cmd:404100 param:-1 pr:6
+09-05 10:29:32.112 I/libPowerHal( 1193): [recordCPUFreqInfo] set cluster[0] min(-1): -1 max(-1): -1 cluster[1] min(-1): -1 max(-1): -1
+09-05 10:29:32.112 I/libPowerHal( 1193): [perfLockRel] Done for hdl : 2828
+09-05 10:29:32.114 I/mtkpower_client( 1870): perf_lock_acq, hdl:2829, dur:3000, num:4, pid:1870, tid:1972
+09-05 10:29:32.114 I/libPowerHal( 1193): [perfLockRel] hdl:2830, idx:2
+09-05 10:29:32.117 I/libPowerHal( 1193): [PD] MTKPOWER_HINT_UX_SCROLLING_COMMON update cmd:1468000 param:1 pr:6
+09-05 10:29:32.117 I/libPowerHal( 1193): [perfLockRel] Done for hdl : 2830
+09-05 10:29:32.119 I/mtkpower_client( 1870): ret_hdl:2831
+09-05 10:29:32.119 I/libPowerHal( 1193): cmdSetting - unknown cmd:2000400, scmd:(null) ,param_1:10111
+09-05 10:29:32.120 I/libPowerHal( 1193): [perfLockAcq] idx:0 hdl:2831 hint:-1 pid:1870 tid:1972 duration:3000 lock_user:system_server => ret_hdl:2831
+09-05 10:29:32.120 I/libPowerHal( 1193): [fpsgo_ctrl_render_thread] -10111, 0xb40000723f1c0000
+09-05 10:29:32.120 I/libPowerHal( 1193): [PE] system_server update ONESHOT(set) cmd:2000300 param:-10111 pr:3
+09-05 10:29:32.120 I/libPowerHal( 1193): [perfLockAcq] Done for hdl : 2831
+09-05 10:29:32.120 I/mtkpower_client( 1870): perf_lock_rel, hdl:2831, tid:1972
+09-05 10:29:32.121 I/libPowerHal( 1193): [perfLockRel] hdl:2831, idx:0
+09-05 10:29:32.123 I/libPowerHal( 1193): [fpsgo_ctrl_render_thread] -10111, 0xb40000723f1c0000
+09-05 10:29:32.124 I/libPowerHal( 1193): [PD] system_server update ONESHOT(unset) cmd:2000300 param:-10111 pr:3
+09-05 10:29:32.124 I/libPowerHal( 1193): [perfLockRel] Done for hdl : 2831
+09-05 10:29:32.496 W/RefBase (10263): RefBase: Explicit destruction, weak count = 0 (in 0x7e4ddec858). Use sp<> to manage this object.
+09-05 10:29:32.543 I/adbd    ( 1298): adbd service requested 'shell,v2,raw:cat /sdcard/ui.xml'
+09-05 10:29:32.615 I/libPerfCtl( 1184): xgfGetFPS pid:2270 fps:-1
+09-05 10:29:32.643 I/adbd    ( 1298): adbd service requested 'shell,v2,raw:uiautomator dump /sdcard/ui.xml'
+09-05 10:29:32.875 I/AndroidRuntime(10279): Using default boot image
+09-05 10:29:32.875 I/AndroidRuntime(10279): Leaving lock profiling enabled
+09-05 10:29:32.883 I/app_process(10279): Using generational CollectorTypeCMC GC.
+09-05 10:29:33.042 I/app_process(10279): Priority-to-niceness mapping: 19, 16, 13, 10, 0, -2, -4, -5, -6, -8
+09-05 10:29:33.079 W/libc    (10279): Access denied finding property "ro.vendor.mtk.hbt_binfmt_misc_support"
+09-05 10:29:33.080 W/libc    (10279): Access denied finding property "ro.vendor.mtk.app32_boost_support"
+09-05 10:29:33.080 W/libc    (10279): Access denied finding property "ro.vendor.mtk.hbt_dyn_type"
+09-05 10:29:33.080 W/libc    (10279): Access denied finding property "persist.vendor.mtk.hbt_dyn_type"
+09-05 10:29:33.111 I/UiAutomation(10279): Initialized for user 0 on display 0
+09-05 10:29:33.111 W/UiAutomation(10279): Created with deprecatead constructor, assumes DEFAULT_DISPLAY
+09-05 10:29:33.113 I/UiAutomationManager( 1870): Registering UiTestAutomationService (id=com.android.server.accessibility/UiAutomation, flags=0x0) when called by user 0
+09-05 10:29:33.115 W/MagnificationConnectionManager( 1870): requestConnection duplicated request: connect=false, mConnectionState=DISCONNECTED
+09-05 10:29:33.116 I/BufferQueueDebug( 1227): [WindowToken{db4fb90 type=2032 android.os.Binder@2dc1653}#2795](this:0xb40000716378ae50,id:-1,api:0,p:-1,c:-1) BufferQueue core=(1227:/system/bin/surfaceflinger)
+09-05 10:29:33.118 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:33.119 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:33.119 I/hwcomposer( 1163): [HWCDisplay] (0 updateFps():3644), (type:1, mode:2) fps:1.365063,dur:1465.13,max:1449.08,min:16.06  
+09-05 10:29:33.120 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:33.120 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:33.120 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:33.121 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:33.121 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:33.122 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:33.122 W/MagnificationConnectionManager( 1870): requestConnection duplicated request: connect=false, mConnectionState=DISCONNECTED
+09-05 10:29:33.122 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:33.123 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:33.123 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:33.123 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:33.124 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:33.124 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:33.125 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:33.125 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:33.125 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:33.125 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:33.126 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:33.126 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:33.616 I/libPerfCtl( 1184): xgfGetFPS pid:2270 fps:-1
+09-05 10:29:33.913 I/thermal_repeater( 1421): [recvMdThermalInfo] ret=30, strLen=127,  3, 41, -127, -28402, 32767, 0
+09-05 10:29:34.133 W/libc    (10279): Access denied finding property "qemu.sf.lcd_density"
+09-05 10:29:34.133 W/libc    (10279): Access denied finding property "qemu.sf.lcd_density"
+09-05 10:29:34.341 W/AccessibilityNodeInfoDumper(10279): Fetch time: 204ms
+09-05 10:29:34.350 W/MagnificationConnectionManager( 1870): requestConnection duplicated request: connect=false, mConnectionState=DISCONNECTED
+09-05 10:29:34.351 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:34.351 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:34.353 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:34.353 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:34.354 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:34.354 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:34.356 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:34.356 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:34.357 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:34.357 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:34.358 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:34.359 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:34.377 I/SurfaceFlinger( 1227): onHandleDestroyed: name=WindowToken{db4fb90 type=2032 android.os.Binder@2dc1653}#2795, layerId=2795, parentId=0
+09-05 10:29:34.379 I/hwcomposer( 1163): [HWCDisplay] (0 updateFps():3644), (type:1, mode:2) fps:1.587434,dur:1259.89,max:1243.07,min:16.82  
+09-05 10:29:34.394 I/BufferQueueDebug( 1227): [WindowToken{db4fb90 type=2032 android.os.Binder@2dc1653}#2795](this:0xb40000716378ae50,id:-1,api:0,p:-1,c:1227) onDestructor()
+09-05 10:29:35.048 I/WifiHAL ( 2170): feature_set=0x8488341a
+09-05 10:29:35.224 W/RefBase (10279): RefBase: Explicit destruction, weak count = 0 (in 0x7dad5fc858). Use sp<> to manage this object.
+09-05 10:29:35.272 I/adbd    ( 1298): adbd service requested 'shell,v2,raw:cat /sdcard/ui.xml'
+09-05 10:29:35.375 I/adbd    ( 1298): adbd service requested 'shell,v2,raw:uiautomator dump /sdcard/ui.xml'
+09-05 10:29:35.603 I/AndroidRuntime(10296): Using default boot image
+09-05 10:29:35.603 I/AndroidRuntime(10296): Leaving lock profiling enabled
+09-05 10:29:35.610 I/app_process(10296): Using generational CollectorTypeCMC GC.
+09-05 10:29:35.770 I/app_process(10296): Priority-to-niceness mapping: 19, 16, 13, 10, 0, -2, -4, -5, -6, -8
+09-05 10:29:35.807 W/libc    (10296): Access denied finding property "ro.vendor.mtk.hbt_binfmt_misc_support"
+09-05 10:29:35.807 W/libc    (10296): Access denied finding property "ro.vendor.mtk.app32_boost_support"
+09-05 10:29:35.808 W/libc    (10296): Access denied finding property "ro.vendor.mtk.hbt_dyn_type"
+09-05 10:29:35.808 W/libc    (10296): Access denied finding property "persist.vendor.mtk.hbt_dyn_type"
+09-05 10:29:35.836 I/UiAutomation(10296): Initialized for user 0 on display 0
+09-05 10:29:35.836 W/UiAutomation(10296): Created with deprecatead constructor, assumes DEFAULT_DISPLAY
+09-05 10:29:35.838 I/UiAutomationManager( 1870): Registering UiTestAutomationService (id=com.android.server.accessibility/UiAutomation, flags=0x0) when called by user 0
+09-05 10:29:35.839 W/MagnificationConnectionManager( 1870): requestConnection duplicated request: connect=false, mConnectionState=DISCONNECTED
+09-05 10:29:35.841 I/BufferQueueDebug( 1227): [WindowToken{865bb9a type=2032 android.os.Binder@e1b0845}#2796](this:0xb40000716378ae50,id:-1,api:0,p:-1,c:-1) BufferQueue core=(1227:/system/bin/surfaceflinger)
+09-05 10:29:35.843 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:35.843 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:35.844 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:35.844 I/hwcomposer( 1163): [HWCDisplay] (0 updateFps():3644), (type:1, mode:2) fps:1.365379,dur:1464.79,max:1448.35,min:16.44  
+09-05 10:29:35.844 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:35.844 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:35.845 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:35.846 W/MagnificationConnectionManager( 1870): requestConnection duplicated request: connect=false, mConnectionState=DISCONNECTED
+09-05 10:29:35.846 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:35.846 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:35.847 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:35.847 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:35.848 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:35.848 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:35.849 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:35.849 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:35.850 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:35.850 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:35.851 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:35.851 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:35.852 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:35.852 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:36.858 W/libc    (10296): Access denied finding property "qemu.sf.lcd_density"
+09-05 10:29:36.858 W/libc    (10296): Access denied finding property "qemu.sf.lcd_density"
+09-05 10:29:37.061 W/AccessibilityNodeInfoDumper(10296): Fetch time: 201ms
+09-05 10:29:37.068 W/MagnificationConnectionManager( 1870): requestConnection duplicated request: connect=false, mConnectionState=DISCONNECTED
+09-05 10:29:37.069 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:37.070 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:37.071 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:37.071 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:37.072 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:37.072 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:37.073 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:37.074 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:37.079 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:37.079 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:37.080 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:37.081 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:37.102 I/SurfaceFlinger( 1227): onHandleDestroyed: name=WindowToken{865bb9a type=2032 android.os.Binder@e1b0845}#2796, layerId=2796, parentId=0
+09-05 10:29:37.104 I/hwcomposer( 1163): [HWCDisplay] (0 updateFps():3644), (type:1, mode:2) fps:1.587113,dur:1260.15,max:1242.73,min:17.42  
+09-05 10:29:37.118 I/BufferQueueDebug( 1227): [WindowToken{865bb9a type=2032 android.os.Binder@e1b0845}#2796](this:0xb40000716378ae50,id:-1,api:0,p:-1,c:1227) onDestructor()
+09-05 10:29:37.943 W/RefBase (10296): RefBase: Explicit destruction, weak count = 0 (in 0x73157f5858). Use sp<> to manage this object.
+09-05 10:29:37.989 I/adbd    ( 1298): adbd service requested 'shell,v2,raw:cat /sdcard/ui.xml'
+09-05 10:29:38.077 I/WifiHAL ( 2170): feature_set=0x8488341a
+09-05 10:29:38.080 I/adbd    ( 1298): adbd service requested 'shell,v2,raw:uiautomator dump /sdcard/ui.xml'
+09-05 10:29:38.296 I/AndroidRuntime(10312): Using default boot image
+09-05 10:29:38.297 I/AndroidRuntime(10312): Leaving lock profiling enabled
+09-05 10:29:38.303 I/app_process(10312): Using generational CollectorTypeCMC GC.
+09-05 10:29:38.465 I/app_process(10312): Priority-to-niceness mapping: 19, 16, 13, 10, 0, -2, -4, -5, -6, -8
+09-05 10:29:38.502 W/libc    (10312): Access denied finding property "ro.vendor.mtk.hbt_binfmt_misc_support"
+09-05 10:29:38.502 W/libc    (10312): Access denied finding property "ro.vendor.mtk.app32_boost_support"
+09-05 10:29:38.503 W/libc    (10312): Access denied finding property "ro.vendor.mtk.hbt_dyn_type"
+09-05 10:29:38.503 W/libc    (10312): Access denied finding property "persist.vendor.mtk.hbt_dyn_type"
+09-05 10:29:38.531 I/UiAutomation(10312): Initialized for user 0 on display 0
+09-05 10:29:38.531 W/UiAutomation(10312): Created with deprecatead constructor, assumes DEFAULT_DISPLAY
+09-05 10:29:38.533 I/UiAutomationManager( 1870): Registering UiTestAutomationService (id=com.android.server.accessibility/UiAutomation, flags=0x0) when called by user 0
+09-05 10:29:38.535 W/MagnificationConnectionManager( 1870): requestConnection duplicated request: connect=false, mConnectionState=DISCONNECTED
+09-05 10:29:38.537 I/BufferQueueDebug( 1227): [WindowToken{50668c0 type=2032 android.os.Binder@ce73a43}#2797](this:0xb40000716378ae50,id:-1,api:0,p:-1,c:-1) BufferQueue core=(1227:/system/bin/surfaceflinger)
+09-05 10:29:38.539 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:38.539 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:38.540 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:38.541 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:38.541 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:38.541 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:38.542 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:38.543 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:38.543 W/MagnificationConnectionManager( 1870): requestConnection duplicated request: connect=false, mConnectionState=DISCONNECTED
+09-05 10:29:38.544 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:38.544 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:38.545 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:38.545 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:38.546 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:38.547 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:38.547 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:38.547 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:38.548 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:38.548 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:38.548 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:38.548 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:38.553 I/hwcomposer( 1163): [HWCDisplay] (0 updateFps():3644), (type:1, mode:2) fps:1.380690,dur:1448.55,max:1432.50,min:16.05  
+09-05 10:29:39.556 W/libc    (10312): Access denied finding property "qemu.sf.lcd_density"
+09-05 10:29:39.556 W/libc    (10312): Access denied finding property "qemu.sf.lcd_density"
+09-05 10:29:39.779 W/AccessibilityNodeInfoDumper(10312): Fetch time: 220ms
+09-05 10:29:39.787 W/MagnificationConnectionManager( 1870): requestConnection duplicated request: connect=false, mConnectionState=DISCONNECTED
+09-05 10:29:39.788 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:39.788 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:39.789 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:39.790 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:39.791 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:39.791 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:39.793 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:39.793 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:39.796 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:39.797 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:39.798 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:39.798 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:39.810 I/SurfaceFlinger( 1227): onHandleDestroyed: name=WindowToken{50668c0 type=2032 android.os.Binder@ce73a43}#2797, layerId=2797, parentId=0
+09-05 10:29:39.812 I/hwcomposer( 1163): [HWCDisplay] (0 updateFps():3644), (type:1, mode:2) fps:1.588625,dur:1258.95,max:1237.97,min:20.98  
+09-05 10:29:39.827 I/BufferQueueDebug( 1227): [WindowToken{50668c0 type=2032 android.os.Binder@ce73a43}#2797](this:0xb40000716378ae50,id:-1,api:0,p:-1,c:1227) onDestructor()
+09-05 10:29:40.666 W/RefBase (10312): RefBase: Explicit destruction, weak count = 0 (in 0x75275fc858). Use sp<> to manage this object.
+09-05 10:29:40.707 I/adbd    ( 1298): adbd service requested 'shell,v2,raw:cat /sdcard/ui.xml'
+09-05 10:29:40.811 I/adbd    ( 1298): adbd service requested 'shell,v2,raw:uiautomator dump /sdcard/ui.xml'
+09-05 10:29:41.040 I/AndroidRuntime(10328): Using default boot image
+09-05 10:29:41.040 I/AndroidRuntime(10328): Leaving lock profiling enabled
+09-05 10:29:41.047 I/app_process(10328): Using generational CollectorTypeCMC GC.
+09-05 10:29:41.108 I/WifiHAL ( 2170): feature_set=0x8488341a
+09-05 10:29:41.208 I/app_process(10328): Priority-to-niceness mapping: 19, 16, 13, 10, 0, -2, -4, -5, -6, -8
+09-05 10:29:41.246 W/libc    (10328): Access denied finding property "ro.vendor.mtk.hbt_binfmt_misc_support"
+09-05 10:29:41.246 W/libc    (10328): Access denied finding property "ro.vendor.mtk.app32_boost_support"
+09-05 10:29:41.246 W/libc    (10328): Access denied finding property "ro.vendor.mtk.hbt_dyn_type"
+09-05 10:29:41.246 W/libc    (10328): Access denied finding property "persist.vendor.mtk.hbt_dyn_type"
+09-05 10:29:41.275 I/UiAutomation(10328): Initialized for user 0 on display 0
+09-05 10:29:41.275 W/UiAutomation(10328): Created with deprecatead constructor, assumes DEFAULT_DISPLAY
+09-05 10:29:41.277 I/UiAutomationManager( 1870): Registering UiTestAutomationService (id=com.android.server.accessibility/UiAutomation, flags=0x0) when called by user 0
+09-05 10:29:41.278 W/MagnificationConnectionManager( 1870): requestConnection duplicated request: connect=false, mConnectionState=DISCONNECTED
+09-05 10:29:41.280 I/BufferQueueDebug( 1227): [WindowToken{b83aebb type=2032 android.os.Binder@7f43f4a}#2798](this:0xb4000071637c1000,id:-1,api:0,p:-1,c:-1) BufferQueue core=(1227:/system/bin/surfaceflinger)
+09-05 10:29:41.283 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:41.283 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:41.284 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:41.284 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:41.285 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:41.285 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:41.285 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:41.286 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:41.287 W/MagnificationConnectionManager( 1870): requestConnection duplicated request: connect=false, mConnectionState=DISCONNECTED
+09-05 10:29:41.288 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:41.288 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:41.289 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:41.289 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:41.289 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:41.289 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:41.290 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:41.290 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:41.291 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:41.291 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:41.292 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:41.292 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:41.294 I/hwcomposer( 1163): [HWCDisplay] (0 updateFps():3644), (type:1, mode:2) fps:1.349244,dur:1482.31,max:1465.00,min:17.31  
+09-05 10:29:42.299 W/libc    (10328): Access denied finding property "qemu.sf.lcd_density"
+09-05 10:29:42.300 W/libc    (10328): Access denied finding property "qemu.sf.lcd_density"
+09-05 10:29:42.508 W/AccessibilityNodeInfoDumper(10328): Fetch time: 205ms
+09-05 10:29:42.514 W/MagnificationConnectionManager( 1870): requestConnection duplicated request: connect=false, mConnectionState=DISCONNECTED
+09-05 10:29:42.516 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:42.516 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:42.517 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:42.518 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:42.518 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:42.519 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:42.520 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:42.520 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:42.524 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:42.524 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:42.525 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:42.525 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:42.530 I/SurfaceFlinger( 1227): onHandleDestroyed: name=WindowToken{b83aebb type=2032 android.os.Binder@7f43f4a}#2798, layerId=2798, parentId=0
+09-05 10:29:42.531 I/hwcomposer( 1163): [HWCDisplay] (0 updateFps():3644), (type:1, mode:2) fps:1.616404,dur:1237.31,max:1216.57,min:20.74  
+09-05 10:29:42.551 I/BufferQueueDebug( 1227): [WindowToken{b83aebb type=2032 android.os.Binder@7f43f4a}#2798](this:0xb4000071637c1000,id:-1,api:0,p:-1,c:1227) onDestructor()
+09-05 10:29:43.384 W/RefBase (10328): RefBase: Explicit destruction, weak count = 0 (in 0x7c91dff858). Use sp<> to manage this object.
+09-05 10:29:43.430 I/adbd    ( 1298): adbd service requested 'shell,v2,raw:cat /sdcard/ui.xml'
+09-05 10:29:43.514 I/adbd    ( 1298): adbd service requested 'shell,v2,raw:input tap 360 592'
+09-05 10:29:43.565 I/libPowerHal( 1193): [perfLockAcq] idx:0 hdl:2832 hint:25 pid:1193 tid:1193 duration:10000 lock_user:vendor.mediatek => ret_hdl:2832
+09-05 10:29:43.565 I/libPowerHal( 1193): [PE] MTKPOWER_HINT_APP_TOUCH update cmd:410000, param:1, pr:3
+09-05 10:29:43.565 I/libPowerHal( 1193): [PE] MTKPOWER_HINT_APP_TOUCH update cmd:400000 param:3000000 pr:3
+09-05 10:29:43.565 I/libPowerHal( 1193): [PE] MTKPOWER_HINT_APP_TOUCH update cmd:400100 param:3000000 pr:3
+09-05 10:29:43.565 I/libPowerHal( 1193): value: 1
+09-05 10:29:43.565 I/libPowerHal( 1193): [PE] MTKPOWER_HINT_APP_TOUCH update cmd:410000 param:1 pr:3
+09-05 10:29:43.566 I/ThreeFingerPointerEventListener( 1870): onPointDown... pointIndex = 0, pointId = 0 currentX = 360.0, currentY = 592.0 mTouchRegion:Rect(43, 96 - 676, 1507)
+09-05 10:29:43.566 I/libPowerHal( 1193): [setDvfsrcDevFreqOpp] opp:0, freq:3600000000
+09-05 10:29:43.566 I/libPowerHal( 1193): [PE] MTKPOWER_HINT_APP_TOUCH update cmd:1000000 param:0 pr:3
+09-05 10:29:43.566 I/libPowerHal( 1193): [recordCPUFreqInfo] set cluster[0] min(MTKPOWER_HINT_APP_TOUCH): 1700000 max(-1): -1 cluster[1] min(MTKPOWER_HINT_APP_TOUCH): 2000000 max(-1): -1
+09-05 10:29:43.566 I/libPowerHal( 1193): [perfLockAcq] Done for hdl : 2832
+09-05 10:29:43.577 I/libPowerHal( 1193): [perfLockRel] hdl:2832, idx:0
+09-05 10:29:43.577 I/libPowerHal( 1193): [PD] MTKPOWER_HINT_APP_TOUCH update cmd:410000 param:0, pr:6
+09-05 10:29:43.577 I/ThreeFingerPointerEventListener( 1870): onPointUp
+09-05 10:29:43.577 I/libPowerHal( 1193): [PD] MTKPOWER_HINT_APP_TOUCH update cmd:400000 param:-1 pr:6
+09-05 10:29:43.578 I/libPowerHal( 1193): [PD] MTKPOWER_HINT_APP_TOUCH update cmd:400100 param:-1 pr:6
+09-05 10:29:43.578 I/libPowerHal( 1193): value: 0
+09-05 10:29:43.578 I/libPowerHal( 1193): [PD] MTKPOWER_HINT_APP_TOUCH update cmd:410000 param:0 pr:6
+09-05 10:29:43.578 I/libPowerHal( 1193): [PD] MTKPOWER_HINT_APP_TOUCH update cmd:1000000 param:-1 pr:6
+09-05 10:29:43.579 I/libPowerHal( 1193): [recordCPUFreqInfo] set cluster[0] min(-1): -1 max(-1): -1 cluster[1] min(-1): -1 max(-1): -1
+09-05 10:29:43.579 I/libPowerHal( 1193): [perfLockRel] Done for hdl : 2832
+09-05 10:29:43.754 I/BufferQueueProducer( 1227): [au.buzz.ryzewave/au.buzz.ryzewave.MainActivity#2784](this:0xb400007163805580,id:-1,api:0,p:-1,c:1227) queueBuffer: fps=3.60 dur=15011.35 max=14074.67 min=16.38
+09-05 10:29:43.756 I/hwcomposer( 1163): [HWCDisplay] (0 updateFps():3644), (type:1, mode:2) fps:1.633276,dur:1224.53,max:1203.14,min:21.39  
+09-05 10:29:43.931 I/thermal_repeater( 1421): [recvMdThermalInfo] ret=30, strLen=127,  3, 41, -127, -28402, 32767, 0
+09-05 10:29:43.946 I/HealthConnectExporter(10066): exercise route attached to workout-1: 86 locations
+09-05 10:29:43.946 I/HealthConnectExporter(10066): exported 2 records (ExportCounts(steps=0, heartRate=0, spo2=0, distance=1, sleep=0, workouts=1, routePoints=86)) from 0, 228 unchanged skipped, cursor -> 1788568183585, failed 0
+09-05 10:29:44.127 I/WifiHAL ( 2170): feature_set=0x8488341a
+09-05 10:29:44.750 I/libPerfCtl( 1184): xgfGetFPS pid:2270 fps:-1
+09-05 10:29:44.751 I/libPerfCtl( 1184): xgfGetFPS pid:10066 fps:-1
+09-05 10:29:45.751 I/libPerfCtl( 1184): xgfGetFPS pid:2270 fps:-1
+09-05 10:29:45.751 I/libPerfCtl( 1184): xgfGetFPS pid:10066 fps:-1
+09-05 10:29:46.751 I/libPerfCtl( 1184): xgfGetFPS pid:2270 fps:-1
+09-05 10:29:47.154 I/WifiHAL ( 2170): feature_set=0x8488341a
+09-05 10:29:47.752 I/libPerfCtl( 1184): xgfGetFPS pid:2270 fps:-1
+09-05 10:29:48.317 I/BufferQueueProducer( 1227): [au.buzz.ryzewave/au.buzz.ryzewave.MainActivity#2784](this:0xb400007163805580,id:-1,api:0,p:-1,c:1227) queueBuffer: fps=9.64 dur=4563.25 max=3811.14 min=16.14
+09-05 10:29:48.319 I/hwcomposer( 1163): [HWCDisplay] (0 updateFps():3644), (type:1, mode:2) fps:9.642962,dur:4562.91,max:3810.75,min:15.36  
+09-05 10:29:49.315 I/libPerfCtl( 1184): xgfGetFPS pid:2270 fps:-1
+09-05 10:29:49.315 I/libPerfCtl( 1184): xgfGetFPS pid:10066 fps:-1
+09-05 10:29:50.181 I/WifiHAL ( 2170): feature_set=0x8488341a
+09-05 10:29:50.316 I/libPerfCtl( 1184): xgfGetFPS pid:2270 fps:-1
+09-05 10:29:51.317 I/libPerfCtl( 1184): xgfGetFPS pid:2270 fps:-1
+09-05 10:29:51.631 I/adbd    ( 1298): adbd service requested 'exec:screencap '-p''
+09-05 10:29:51.846 W/BpBinder(10351): Linking to death on android.gui.ISurfaceComposer but there are no threads (yet?) listening to incoming transactions. See ProcessState::startThreadPool and ProcessState::setThreadPoolMaxThreadCount. Generally you should setup the binder threadpool before other initialization steps.
+09-05 10:29:51.847 W/ProcessState(10351): Extra binder thread started, but 0 threads requested. Do not use *startThreadPool when zero threads are requested.
+09-05 10:29:51.892 I/GrallocExtra(10351): gralloc_extra_query:is_SW3D 0
+09-05 10:29:51.894 I/DMABUFHEAPS(10351): Using DMA-BUF heap named: mtk_mm
+09-05 10:29:51.894 I/DMABUFHEAPS(10351): Using DMA-BUF heap named: mtk_mm-uncached
+09-05 10:29:51.894 I/DMABUFHEAPS(10351): Using DMA-BUF heap named: mtk_svp_region
+09-05 10:29:51.894 I/DMABUFHEAPS(10351): Using DMA-BUF heap named: mtk_prot_region
+09-05 10:29:51.894 I/DMABUFHEAPS(10351): Using DMA-BUF heap named: mtk_wfd_region
+09-05 10:29:52.078 W/RefBase (10351): RefBase: Explicit destruction, weak count = 0 (in 0x76711b3858). Use sp<> to manage this object.
+09-05 10:29:52.127 I/adbd    ( 1298): adbd service requested 'shell,v2:export ANDROID_LOG_TAGS="''"; exec logcat '-d' '-v' 'time''
+09-05 10:29:52.203 I/adbd    ( 1298): adbd service requested 'shell,v2,raw:uiautomator dump /sdcard/ui.xml'
+09-05 10:29:52.416 I/AndroidRuntime(10357): Using default boot image
+09-05 10:29:52.417 I/AndroidRuntime(10357): Leaving lock profiling enabled
+09-05 10:29:52.423 I/app_process(10357): Using generational CollectorTypeCMC GC.
+09-05 10:29:52.585 I/app_process(10357): Priority-to-niceness mapping: 19, 16, 13, 10, 0, -2, -4, -5, -6, -8
+09-05 10:29:52.623 W/libc    (10357): Access denied finding property "ro.vendor.mtk.hbt_binfmt_misc_support"
+09-05 10:29:52.623 W/libc    (10357): Access denied finding property "ro.vendor.mtk.app32_boost_support"
+09-05 10:29:52.623 W/libc    (10357): Access denied finding property "ro.vendor.mtk.hbt_dyn_type"
+09-05 10:29:52.623 W/libc    (10357): Access denied finding property "persist.vendor.mtk.hbt_dyn_type"
+09-05 10:29:52.651 I/UiAutomation(10357): Initialized for user 0 on display 0
+09-05 10:29:52.651 W/UiAutomation(10357): Created with deprecatead constructor, assumes DEFAULT_DISPLAY
+09-05 10:29:52.654 I/UiAutomationManager( 1870): Registering UiTestAutomationService (id=com.android.server.accessibility/UiAutomation, flags=0x0) when called by user 0
+09-05 10:29:52.655 W/MagnificationConnectionManager( 1870): requestConnection duplicated request: connect=false, mConnectionState=DISCONNECTED
+09-05 10:29:52.657 I/BufferQueueDebug( 1227): [WindowToken{2957887 type=2032 android.os.Binder@2a320c6}#2799](this:0xb4000071637cc640,id:-1,api:0,p:-1,c:-1) BufferQueue core=(1227:/system/bin/surfaceflinger)
+09-05 10:29:52.659 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:52.660 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:52.661 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:52.661 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:52.661 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:52.662 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:52.662 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:52.663 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:52.664 W/MagnificationConnectionManager( 1870): requestConnection duplicated request: connect=false, mConnectionState=DISCONNECTED
+09-05 10:29:52.664 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:52.665 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:52.665 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:52.666 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:52.669 I/hwcomposer( 1163): [HWCDisplay] (0 updateFps():3644), (type:1, mode:2) fps:0.459782,dur:4349.89,max:4299.20,min:50.69  
+09-05 10:29:52.673 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:52.673 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:52.674 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:52.674 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:52.674 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:52.675 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:52.676 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:52.676 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:52.711 E/ApplicationHelper( 1870): Fail to get PackageManager
+09-05 10:29:53.209 I/WifiHAL ( 2170): feature_set=0x8488341a
+09-05 10:29:53.675 W/libc    (10357): Access denied finding property "qemu.sf.lcd_density"
+09-05 10:29:53.676 W/libc    (10357): Access denied finding property "qemu.sf.lcd_density"
+09-05 10:29:53.938 W/AccessibilityNodeInfoDumper(10357): Fetch time: 259ms
+09-05 10:29:53.945 W/MagnificationConnectionManager( 1870): requestConnection duplicated request: connect=false, mConnectionState=DISCONNECTED
+09-05 10:29:53.946 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:53.947 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:53.948 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:53.948 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:53.948 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:53.948 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:53.950 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:53.951 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:53.952 I/thermal_repeater( 1421): [recvMdThermalInfo] ret=30, strLen=127,  3, 41, -127, -28402, 32767, 0
+09-05 10:29:53.955 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:53.955 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:53.956 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:53.956 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:53.967 I/SurfaceFlinger( 1227): onHandleDestroyed: name=WindowToken{2957887 type=2032 android.os.Binder@2a320c6}#2799, layerId=2799, parentId=0
+09-05 10:29:53.969 I/hwcomposer( 1163): [HWCDisplay] (0 updateFps():3644), (type:1, mode:2) fps:1.538060,dur:1300.34,max:1284.27,min:16.07  
+09-05 10:29:53.984 I/BufferQueueDebug( 1227): [WindowToken{2957887 type=2032 android.os.Binder@2a320c6}#2799](this:0xb4000071637cc640,id:-1,api:0,p:-1,c:1227) onDestructor()
+09-05 10:29:54.822 W/RefBase (10357): RefBase: Explicit destruction, weak count = 0 (in 0x7c80dfc858). Use sp<> to manage this object.
+09-05 10:29:54.865 I/adbd    ( 1298): adbd service requested 'shell,v2,raw:cat /sdcard/ui.xml'
+09-05 10:29:54.973 I/adbd    ( 1298): adbd service requested 'shell,v2,raw:uiautomator dump /sdcard/ui.xml'
+09-05 10:29:55.187 I/AndroidRuntime(10373): Using default boot image
+09-05 10:29:55.188 I/AndroidRuntime(10373): Leaving lock profiling enabled
+09-05 10:29:55.197 I/app_process(10373): Using generational CollectorTypeCMC GC.
+09-05 10:29:55.357 I/app_process(10373): Priority-to-niceness mapping: 19, 16, 13, 10, 0, -2, -4, -5, -6, -8
+09-05 10:29:55.391 W/libc    (10373): Access denied finding property "ro.vendor.mtk.hbt_binfmt_misc_support"
+09-05 10:29:55.391 W/libc    (10373): Access denied finding property "ro.vendor.mtk.app32_boost_support"
+09-05 10:29:55.391 W/libc    (10373): Access denied finding property "ro.vendor.mtk.hbt_dyn_type"
+09-05 10:29:55.391 W/libc    (10373): Access denied finding property "persist.vendor.mtk.hbt_dyn_type"
+09-05 10:29:55.420 I/UiAutomation(10373): Initialized for user 0 on display 0
+09-05 10:29:55.420 W/UiAutomation(10373): Created with deprecatead constructor, assumes DEFAULT_DISPLAY
+09-05 10:29:55.422 I/UiAutomationManager( 1870): Registering UiTestAutomationService (id=com.android.server.accessibility/UiAutomation, flags=0x0) when called by user 0
+09-05 10:29:55.423 W/MagnificationConnectionManager( 1870): requestConnection duplicated request: connect=false, mConnectionState=DISCONNECTED
+09-05 10:29:55.426 I/BufferQueueDebug( 1227): [WindowToken{a7b38d9 type=2032 android.os.Binder@f154720}#2800](this:0xb4000071637c1000,id:-1,api:0,p:-1,c:-1) BufferQueue core=(1227:/system/bin/surfaceflinger)
+09-05 10:29:55.429 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:55.429 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:55.430 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:55.430 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:55.430 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:55.431 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:55.432 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:55.433 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:55.433 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:55.434 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:55.434 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:55.434 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:55.435 I/hwcomposer( 1163): [HWCDisplay] (0 updateFps():3644), (type:1, mode:2) fps:1.364292,dur:1465.96,max:1448.57,min:17.40  
+09-05 10:29:55.438 W/MagnificationConnectionManager( 1870): requestConnection duplicated request: connect=false, mConnectionState=DISCONNECTED
+09-05 10:29:55.443 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:55.443 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:55.444 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:55.444 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:55.444 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:55.444 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:55.445 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:55.445 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:56.239 I/WifiHAL ( 2170): feature_set=0x8488341a
+09-05 10:29:56.447 W/libc    (10373): Access denied finding property "qemu.sf.lcd_density"
+09-05 10:29:56.447 W/libc    (10373): Access denied finding property "qemu.sf.lcd_density"
+09-05 10:29:56.648 W/AccessibilityNodeInfoDumper(10373): Fetch time: 199ms
+09-05 10:29:56.655 W/MagnificationConnectionManager( 1870): requestConnection duplicated request: connect=false, mConnectionState=DISCONNECTED
+09-05 10:29:56.656 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:56.656 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:56.658 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:56.658 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:56.658 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:56.659 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:56.660 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:56.661 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:56.663 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:56.663 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:56.664 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:56.664 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:29:56.671 I/SurfaceFlinger( 1227): onHandleDestroyed: name=WindowToken{a7b38d9 type=2032 android.os.Binder@f154720}#2800, layerId=2800, parentId=0
+09-05 10:29:56.673 I/hwcomposer( 1163): [HWCDisplay] (0 updateFps():3644), (type:1, mode:2) fps:1.615929,dur:1237.68,max:1216.71,min:20.96  
+09-05 10:29:56.692 I/BufferQueueDebug( 1227): [WindowToken{a7b38d9 type=2032 android.os.Binder@f154720}#2800](this:0xb4000071637c1000,id:-1,api:0,p:-1,c:1227) onDestructor()
+09-05 10:29:57.528 W/RefBase (10373): RefBase: Explicit destruction, weak count = 0 (in 0x72119c1858). Use sp<> to manage this object.
+09-05 10:29:57.575 I/adbd    ( 1298): adbd service requested 'shell,v2,raw:cat /sdcard/ui.xml'
+09-05 10:29:57.655 I/adbd    ( 1298): adbd service requested 'shell,v2,raw:input tap 360 592'
+09-05 10:29:57.704 I/libPowerHal( 1193): [perfLockAcq] idx:0 hdl:2833 hint:25 pid:1193 tid:1193 duration:10000 lock_user:vendor.mediatek => ret_hdl:2833
+09-05 10:29:57.705 I/libPowerHal( 1193): [PE] MTKPOWER_HINT_APP_TOUCH update cmd:410000, param:1, pr:3
+09-05 10:29:57.705 I/ThreeFingerPointerEventListener( 1870): onPointDown... pointIndex = 0, pointId = 0 currentX = 360.0, currentY = 592.0 mTouchRegion:Rect(43, 96 - 676, 1507)
+09-05 10:29:57.705 I/libPowerHal( 1193): [PE] MTKPOWER_HINT_APP_TOUCH update cmd:400000 param:3000000 pr:3
+09-05 10:29:57.705 I/libPowerHal( 1193): [PE] MTKPOWER_HINT_APP_TOUCH update cmd:400100 param:3000000 pr:3
+09-05 10:29:57.705 I/libPowerHal( 1193): value: 1
+09-05 10:29:57.705 I/libPowerHal( 1193): [PE] MTKPOWER_HINT_APP_TOUCH update cmd:410000 param:1 pr:3
+09-05 10:29:57.706 I/libPowerHal( 1193): [setDvfsrcDevFreqOpp] opp:0, freq:3600000000
+09-05 10:29:57.706 I/libPowerHal( 1193): [PE] MTKPOWER_HINT_APP_TOUCH update cmd:1000000 param:0 pr:3
+09-05 10:29:57.706 I/libPowerHal( 1193): [recordCPUFreqInfo] set cluster[0] min(MTKPOWER_HINT_APP_TOUCH): 1700000 max(-1): -1 cluster[1] min(MTKPOWER_HINT_APP_TOUCH): 2000000 max(-1): -1
+09-05 10:29:57.706 I/libPowerHal( 1193): [perfLockAcq] Done for hdl : 2833
+09-05 10:29:57.716 I/libPowerHal( 1193): [perfLockRel] hdl:2833, idx:0
+09-05 10:29:57.716 I/libPowerHal( 1193): [PD] MTKPOWER_HINT_APP_TOUCH update cmd:410000 param:0, pr:6
+09-05 10:29:57.716 I/libPowerHal( 1193): [PD] MTKPOWER_HINT_APP_TOUCH update cmd:400000 param:-1 pr:6
+09-05 10:29:57.716 I/ThreeFingerPointerEventListener( 1870): onPointUp
+09-05 10:29:57.716 I/libPowerHal( 1193): [PD] MTKPOWER_HINT_APP_TOUCH update cmd:400100 param:-1 pr:6
+09-05 10:29:57.716 I/libPowerHal( 1193): value: 0
+09-05 10:29:57.717 I/libPowerHal( 1193): [PD] MTKPOWER_HINT_APP_TOUCH update cmd:410000 param:0 pr:6
+09-05 10:29:57.717 I/libPowerHal( 1193): [PD] MTKPOWER_HINT_APP_TOUCH update cmd:1000000 param:-1 pr:6
+09-05 10:29:57.717 I/libPowerHal( 1193): [recordCPUFreqInfo] set cluster[0] min(-1): -1 max(-1): -1 cluster[1] min(-1): -1 max(-1): -1
+09-05 10:29:57.718 I/libPowerHal( 1193): [perfLockRel] Done for hdl : 2833
+09-05 10:29:57.862 I/BufferQueueProducer( 1227): [au.buzz.ryzewave/au.buzz.ryzewave.MainActivity#2784](this:0xb400007163805580,id:-1,api:0,p:-1,c:1227) queueBuffer: fps=0.21 dur=9544.74 max=9494.36 min=50.38
+09-05 10:29:57.864 I/hwcomposer( 1163): [HWCDisplay] (0 updateFps():3644), (type:1, mode:2) fps:1.678707,dur:1191.39,max:1170.04,min:21.35  
+09-05 10:29:57.965 I/HealthConnectExporter(10066): nothing to export: 230 candidate records unchanged since their last export (from 0)
+09-05 10:29:58.857 I/libPerfCtl( 1184): xgfGetFPS pid:2270 fps:-1
+09-05 10:29:58.857 I/libPerfCtl( 1184): xgfGetFPS pid:10066 fps:-1
+09-05 10:29:59.263 I/WifiHAL ( 2170): feature_set=0x8488341a
+09-05 10:29:59.857 I/libPerfCtl( 1184): xgfGetFPS pid:2270 fps:-1
+09-05 10:29:59.858 I/libPerfCtl( 1184): xgfGetFPS pid:10066 fps:-1
+09-05 10:30:00.051 I/BufferQueueProducer( 1227): [StatusBar#82](this:0xb400007163793700,id:-1,api:0,p:-1,c:1227) queueBuffer: fps=0.05 dur=61010.97 max=60024.25 min=267.39
+09-05 10:30:00.053 I/hwcomposer( 1163): [HWCDisplay] (0 updateFps():3644), (type:1, mode:2) fps:20.555264,dur:2189.22,max:1420.12,min:15.35  
+09-05 10:30:00.858 I/libPerfCtl( 1184): xgfGetFPS pid:2270 fps:-1
+09-05 10:30:01.859 I/libPerfCtl( 1184): xgfGetFPS pid:2270 fps:-1
+09-05 10:30:02.285 I/WifiHAL ( 2170): feature_set=0x8488341a
+09-05 10:30:02.291 I/BufferQueueProducer( 1227): [au.buzz.ryzewave/au.buzz.ryzewave.MainActivity#2784](this:0xb400007163805580,id:-1,api:0,p:-1,c:1227) queueBuffer: fps=10.16 dur=4429.02 max=3659.86 min=16.11
+09-05 10:30:02.292 I/hwcomposer( 1163): [HWCDisplay] (0 updateFps():3644), (type:1, mode:2) fps:0.446604,dur:2239.12,max:2239.12,min:2239.12  
+09-05 10:30:03.282 I/libPerfCtl( 1184): xgfGetFPS pid:2270 fps:-1
+09-05 10:30:03.283 I/libPerfCtl( 1184): xgfGetFPS pid:10066 fps:-1
+09-05 10:30:03.974 I/thermal_repeater( 1421): [recvMdThermalInfo] ret=30, strLen=127,  3, 41, -127, -28402, 32767, 0
+09-05 10:30:04.283 I/libPerfCtl( 1184): xgfGetFPS pid:2270 fps:-1
+09-05 10:30:04.283 I/libPerfCtl( 1184): xgfGetFPS pid:10066 fps:-1
+09-05 10:30:05.284 I/libPerfCtl( 1184): xgfGetFPS pid:2270 fps:-1
+09-05 10:30:05.306 I/WifiHAL ( 2170): feature_set=0x8488341a
+09-05 10:30:05.766 I/adbd    ( 1298): adbd service requested 'exec:screencap '-p''
+09-05 10:30:05.981 W/BpBinder(10396): Linking to death on android.gui.ISurfaceComposer but there are no threads (yet?) listening to incoming transactions. See ProcessState::startThreadPool and ProcessState::setThreadPoolMaxThreadCount. Generally you should setup the binder threadpool before other initialization steps.
+09-05 10:30:05.981 W/ProcessState(10396): Extra binder thread started, but 0 threads requested. Do not use *startThreadPool when zero threads are requested.
+09-05 10:30:06.030 I/GrallocExtra(10396): gralloc_extra_query:is_SW3D 0
+09-05 10:30:06.031 I/DMABUFHEAPS(10396): Using DMA-BUF heap named: mtk_mm
+09-05 10:30:06.032 I/DMABUFHEAPS(10396): Using DMA-BUF heap named: mtk_mm-uncached
+09-05 10:30:06.032 I/DMABUFHEAPS(10396): Using DMA-BUF heap named: mtk_svp_region
+09-05 10:30:06.032 I/DMABUFHEAPS(10396): Using DMA-BUF heap named: mtk_prot_region
+09-05 10:30:06.032 I/DMABUFHEAPS(10396): Using DMA-BUF heap named: mtk_wfd_region
+09-05 10:30:06.218 W/RefBase (10396): RefBase: Explicit destruction, weak count = 0 (in 0x75acfac858). Use sp<> to manage this object.
+09-05 10:30:06.227 W/BatteryExternalStatsWorker( 1870): error reading Bluetooth stats: 9
+09-05 10:30:06.262 I/adbd    ( 1298): adbd service requested 'shell,v2:export ANDROID_LOG_TAGS="''"; exec logcat '-d' '-v' 'time''
+09-05 10:30:06.284 I/libPerfCtl( 1184): xgfGetFPS pid:2270 fps:-1
+09-05 10:30:06.338 I/adbd    ( 1298): adbd service requested 'shell,v2,raw:uiautomator dump /sdcard/ui.xml'
+09-05 10:30:06.380 I/netd    ( 1149): tetherGetStats() -> {[]} <3.89ms>
+09-05 10:30:06.559 I/AndroidRuntime(10402): Using default boot image
+09-05 10:30:06.560 I/AndroidRuntime(10402): Leaving lock profiling enabled
+09-05 10:30:06.567 I/app_process(10402): Using generational CollectorTypeCMC GC.
+09-05 10:30:06.729 I/app_process(10402): Priority-to-niceness mapping: 19, 16, 13, 10, 0, -2, -4, -5, -6, -8
+09-05 10:30:06.766 W/libc    (10402): Access denied finding property "ro.vendor.mtk.hbt_binfmt_misc_support"
+09-05 10:30:06.767 W/libc    (10402): Access denied finding property "ro.vendor.mtk.app32_boost_support"
+09-05 10:30:06.767 W/libc    (10402): Access denied finding property "ro.vendor.mtk.hbt_dyn_type"
+09-05 10:30:06.767 W/libc    (10402): Access denied finding property "persist.vendor.mtk.hbt_dyn_type"
+09-05 10:30:06.798 I/UiAutomation(10402): Initialized for user 0 on display 0
+09-05 10:30:06.798 W/UiAutomation(10402): Created with deprecatead constructor, assumes DEFAULT_DISPLAY
+09-05 10:30:06.801 I/UiAutomationManager( 1870): Registering UiTestAutomationService (id=com.android.server.accessibility/UiAutomation, flags=0x0) when called by user 0
+09-05 10:30:06.803 W/MagnificationConnectionManager( 1870): requestConnection duplicated request: connect=false, mConnectionState=DISCONNECTED
+09-05 10:30:06.805 I/BufferQueueDebug( 1227): [WindowToken{a3f1b5f type=2032 android.os.Binder@f24a7fe}#2801](this:0xb4000071637c1000,id:-1,api:0,p:-1,c:-1) BufferQueue core=(1227:/system/bin/surfaceflinger)
+09-05 10:30:06.808 I/hwcomposer( 1163): [HWCDisplay] (0 updateFps():3644), (type:1, mode:2) fps:0.664290,dur:4516.10,max:4464.60,min:17.90  
+09-05 10:30:06.809 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:30:06.810 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:30:06.811 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:30:06.812 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:30:06.812 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:30:06.812 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:30:06.813 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:30:06.813 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:30:06.814 W/MagnificationConnectionManager( 1870): requestConnection duplicated request: connect=false, mConnectionState=DISCONNECTED
+09-05 10:30:06.816 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:30:06.816 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:30:06.816 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:30:06.817 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:30:06.817 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:30:06.817 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:30:06.818 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:30:06.818 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:30:06.818 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:30:06.819 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:30:06.819 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:30:06.819 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:30:07.824 W/libc    (10402): Access denied finding property "qemu.sf.lcd_density"
+09-05 10:30:07.824 W/libc    (10402): Access denied finding property "qemu.sf.lcd_density"
+09-05 10:30:08.119 W/AccessibilityNodeInfoDumper(10402): Fetch time: 291ms
+09-05 10:30:08.126 W/MagnificationConnectionManager( 1870): requestConnection duplicated request: connect=false, mConnectionState=DISCONNECTED
+09-05 10:30:08.127 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:30:08.128 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:30:08.129 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:30:08.129 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:30:08.130 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:30:08.130 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:30:08.132 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:30:08.132 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:30:08.136 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:30:08.136 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:30:08.137 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:30:08.137 W/IPCThreadState( 1870): Sending oneway calls to frozen process.
+09-05 10:30:08.159 I/SurfaceFlinger( 1227): onHandleDestroyed: name=WindowToken{a3f1b5f type=2032 android.os.Binder@f24a7fe}#2801, layerId=2801, parentId=0
+09-05 10:30:08.162 I/hwcomposer( 1163): [HWCDisplay] (0 updateFps():3644), (type:1, mode:2) fps:1.477908,dur:1353.26,max:1336.48,min:16.78  
+09-05 10:30:08.176 I/BufferQueueDebug( 1227): [WindowToken{a3f1b5f type=2032 android.os.Binder@f24a7fe}#2801](this:0xb4000071637c1000,id:-1,api:0,p:-1,c:1227) onDestructor()
+09-05 10:30:08.335 I/WifiHAL ( 2170): feature_set=0x8488341a
+09-05 10:30:08.998 W/RefBase (10402): RefBase: Explicit destruction, weak count = 0 (in 0x77511fe858). Use sp<> to manage this object.
+09-05 10:30:09.048 I/adbd    ( 1298): adbd service requested 'shell,v2,raw:cat /sdcard/ui.xml'
+09-05 10:30:09.156 I/adbd    ( 1298): adbd service requested 'shell,v2:export ANDROID_LOG_TAGS="''"; exec logcat '-d' '-v' 'time''

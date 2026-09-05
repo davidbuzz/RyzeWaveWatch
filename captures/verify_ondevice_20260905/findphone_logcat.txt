@@ -1,0 +1,45 @@
+09-05 10:16:03.050 I/adbd    ( 1298): adbd service requested 'shell,v2,raw:am broadcast -n au.buzz.ryzewave/.debug.DebugEventReceiver -a au.buzz.ryzewave.debug.FIND_PHONE --ez start true'
+09-05 10:16:03.114 I/ActivityManager( 1870): Broadcasting: Intent { act=au.buzz.ryzewave.debug.FIND_PHONE flg=0x400000 cmp=au.buzz.ryzewave/.debug.DebugEventReceiver (has extras) }
+09-05 10:16:03.115 I/ActivityManager( 1870): Enqueued broadcast Intent { act=au.buzz.ryzewave.debug.FIND_PHONE flg=0x400000 cmp=au.buzz.ryzewave/.debug.DebugEventReceiver (has extras) }: 0
+09-05 10:16:03.126 I/DebugEvent( 5720): injecting WatchEvent.FindPhone(start=true) (debug hook)
+09-05 10:16:03.140 I/FindPhone( 5720): notification posted
+09-05 10:16:03.152 I/FindPhone( 5720): alarm volume raised 6 -> 7 for the ring
+09-05 10:16:03.287 I/FindPhone( 5720): ringtone content://settings/system/alarm_alert playing on the alarm stream
+09-05 10:16:03.293 I/FindPhone( 5720): vibrating
+09-05 10:16:03.295 I/FindPhone( 5720): find phone (watch): ringing for up to 30 s
+09-05 10:16:09.949 I/AndroidRuntime( 8371): Using default boot image
+09-05 10:16:09.950 I/AndroidRuntime( 8371): Leaving lock profiling enabled
+09-05 10:16:12.760 I/FindPhone( 5720): alarm volume restored to 6
+09-05 10:16:12.761 I/FindPhone( 5720): find phone: stopped (user)
+09-05 10:16:12.762 I/WatchService( 5720): find phone: stop tapped (stopped)
+09-05 10:16:16.501 I/adbd    ( 1298): adbd service requested 'shell,v2,raw:am broadcast -n au.buzz.ryzewave/.debug.DebugEventReceiver -a au.buzz.ryzewave.debug.FIND_PHONE --ez start true'
+09-05 10:16:16.556 I/ActivityManager( 1870): Broadcasting: Intent { act=au.buzz.ryzewave.debug.FIND_PHONE flg=0x400000 cmp=au.buzz.ryzewave/.debug.DebugEventReceiver (has extras) }
+09-05 10:16:16.557 I/ActivityManager( 1870): Enqueued broadcast Intent { act=au.buzz.ryzewave.debug.FIND_PHONE flg=0x400000 cmp=au.buzz.ryzewave/.debug.DebugEventReceiver (has extras) }: 0
+09-05 10:16:16.561 I/DebugEvent( 5720): injecting WatchEvent.FindPhone(start=true) (debug hook)
+09-05 10:16:16.568 I/FindPhone( 5720): notification posted
+09-05 10:16:16.573 I/FindPhone( 5720): alarm volume raised 6 -> 7 for the ring
+09-05 10:16:16.620 I/FindPhone( 5720): ringtone content://settings/system/alarm_alert playing on the alarm stream
+09-05 10:16:16.621 I/FindPhone( 5720): vibrating
+09-05 10:16:16.622 I/FindPhone( 5720): find phone (watch): ringing for up to 30 s
+09-05 10:16:20.641 I/adbd    ( 1298): adbd service requested 'shell,v2,raw:am broadcast -n au.buzz.ryzewave/.debug.DebugEventReceiver -a au.buzz.ryzewave.debug.FIND_PHONE --ez start true'
+09-05 10:16:20.700 I/ActivityManager( 1870): Broadcasting: Intent { act=au.buzz.ryzewave.debug.FIND_PHONE flg=0x400000 cmp=au.buzz.ryzewave/.debug.DebugEventReceiver (has extras) }
+09-05 10:16:20.701 I/ActivityManager( 1870): Enqueued broadcast Intent { act=au.buzz.ryzewave.debug.FIND_PHONE flg=0x400000 cmp=au.buzz.ryzewave/.debug.DebugEventReceiver (has extras) }: 0
+09-05 10:16:20.704 I/DebugEvent( 5720): injecting WatchEvent.FindPhone(start=true) (debug hook)
+09-05 10:16:20.704 I/FindPhone( 5720): find phone (watch): already ringing, ignored
+09-05 10:16:46.677 I/FindPhone( 5720): alarm volume restored to 6
+09-05 10:16:46.678 I/FindPhone( 5720): find phone: stopped (timeout)
+09-05 10:16:50.440 I/adbd    ( 1298): adbd service requested 'shell,v2,raw:am broadcast -n au.buzz.ryzewave/.debug.DebugEventReceiver -a au.buzz.ryzewave.debug.FIND_PHONE --ez start true'
+09-05 10:16:50.494 I/ActivityManager( 1870): Broadcasting: Intent { act=au.buzz.ryzewave.debug.FIND_PHONE flg=0x400000 cmp=au.buzz.ryzewave/.debug.DebugEventReceiver (has extras) }
+09-05 10:16:50.495 I/ActivityManager( 1870): Enqueued broadcast Intent { act=au.buzz.ryzewave.debug.FIND_PHONE flg=0x400000 cmp=au.buzz.ryzewave/.debug.DebugEventReceiver (has extras) }: 0
+09-05 10:16:50.498 I/DebugEvent( 5720): injecting WatchEvent.FindPhone(start=true) (debug hook)
+09-05 10:16:50.507 I/FindPhone( 5720): notification posted
+09-05 10:16:50.512 I/FindPhone( 5720): alarm volume raised 6 -> 7 for the ring
+09-05 10:16:50.555 I/FindPhone( 5720): ringtone content://settings/system/alarm_alert playing on the alarm stream
+09-05 10:16:50.557 I/FindPhone( 5720): vibrating
+09-05 10:16:50.558 I/FindPhone( 5720): find phone (watch): ringing for up to 30 s
+09-05 10:16:53.581 I/adbd    ( 1298): adbd service requested 'shell,v2,raw:am broadcast -n au.buzz.ryzewave/.debug.DebugEventReceiver -a au.buzz.ryzewave.debug.FIND_PHONE --ez start false'
+09-05 10:16:53.647 I/ActivityManager( 1870): Broadcasting: Intent { act=au.buzz.ryzewave.debug.FIND_PHONE flg=0x400000 cmp=au.buzz.ryzewave/.debug.DebugEventReceiver (has extras) }
+09-05 10:16:53.649 I/ActivityManager( 1870): Enqueued broadcast Intent { act=au.buzz.ryzewave.debug.FIND_PHONE flg=0x400000 cmp=au.buzz.ryzewave/.debug.DebugEventReceiver (has extras) }: 0
+09-05 10:16:53.651 I/DebugEvent( 5720): injecting WatchEvent.FindPhone(start=false) (debug hook)
+09-05 10:16:53.692 I/FindPhone( 5720): alarm volume restored to 6
+09-05 10:16:53.693 I/FindPhone( 5720): find phone: stopped (watch)

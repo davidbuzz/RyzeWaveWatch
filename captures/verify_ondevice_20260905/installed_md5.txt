@@ -1,0 +1,1 @@
+6e9ce0ace5bb07a64f240ddce28a6277  /home/buzz/RyzeWaveWatch/ryzeapp/app/build/outputs/apk/debug/app-debug.apk

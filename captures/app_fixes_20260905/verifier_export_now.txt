@@ -1,0 +1,11 @@
+# Independent verifier run, 2026-09-05 11:07 (Moto g05, watch absent, Bluetooth untouched)
+Installed base.apk md5 85ca9e59f49c03b34cc5fe32dc69f720 == ryzeapp/app/build/outputs/apk/debug/app-debug.apk
+aapt2 dump of that APK: receiver au.buzz.ryzewave.debug.DebugEventReceiver android:permission="android.permission.DUMP" exported=true
+Unit tests forced re-run (gradlew :app:testDebugUnitTest --rerun): 324 tests, 0 failures, 0 errors, 0 skipped
+Settings > Export now (uiautomator dump right after the tap):
+  Last export 11:07: nothing new (230 records unchanged)
+  Nothing new to export: 230 records already in Health Connect   (snackbar)
+logcat:
+  09-05 11:06:48.564 I HealthPermissions: Health Connect grants: export allowed
+  09-05 11:07:26.301 I HealthConnectExporter: nothing to export: 230 candidate records unchanged since their last export (from 0, 1 sessions unchanged without reading their tracks)
+crash buffer entries for au.buzz.ryzewave: 0; screenshot verifier_export_now_1107.png

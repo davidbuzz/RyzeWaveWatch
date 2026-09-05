@@ -1,0 +1,6 @@
+109-        <receiver
+110:            android:name="au.buzz.ryzewave.debug.DebugEventReceiver"
+111-            android:permission="android.permission.DUMP"
+112-            android:exported="true">
+113-
+114-            <intent-filter>

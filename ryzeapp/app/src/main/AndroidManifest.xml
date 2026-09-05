@@ -15,6 +15,8 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <!-- find-my-phone: vibrate while the watch looks for the phone -->
+    <uses-permission android:name="android.permission.VIBRATE" />
     <!-- Health Connect -->
     <uses-permission android:name="android.permission.health.WRITE_STEPS" />
     <uses-permission android:name="android.permission.health.WRITE_HEART_RATE" />
@@ -22,8 +24,10 @@
     <uses-permission android:name="android.permission.health.WRITE_DISTANCE" />
     <uses-permission android:name="android.permission.health.WRITE_SLEEP" />
     <uses-permission android:name="android.permission.health.WRITE_EXERCISE" />
+    <!-- the GPS track of a workout, attached to its ExerciseSessionRecord as an ExerciseRoute -->
+    <uses-permission android:name="android.permission.health.WRITE_EXERCISE_ROUTE" />
     <!-- The app only writes to Health Connect; no READ_* permissions are requested. Keep this list in sync with
-         HealthConnectExporter.RECORD_TYPES. -->
+         HealthConnectExporter.RECORD_TYPES + ROUTE_PERMISSION. -->
 
     <queries>
         <package android:name="com.google.android.apps.healthdata" />

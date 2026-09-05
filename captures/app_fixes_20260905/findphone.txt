@@ -1,0 +1,79 @@
+== ring 1 from adb (shell holds DUMP), stop from the 'watch' 2 s later
+Broadcasting: Intent { act=au.buzz.ryzewave.debug.FIND_PHONE flg=0x400000 cmp=au.buzz.ryzewave/.debug.DebugEventReceiver (has extras) }
+Broadcast completed: result=0
+saved /home/buzz/RyzeWaveWatch/captures/app_fixes_20260905/findphone_ringing.png (144578 bytes)
+Broadcasting: Intent { act=au.buzz.ryzewave.debug.FIND_PHONE flg=0x400000 cmp=au.buzz.ryzewave/.debug.DebugEventReceiver (has extras) }
+Broadcast completed: result=0
+== ring 2 at once, stopped 1 s later
+Broadcasting: Intent { act=au.buzz.ryzewave.debug.FIND_PHONE flg=0x400000 cmp=au.buzz.ryzewave/.debug.DebugEventReceiver (has extras) }
+Broadcast completed: result=0
+Broadcasting: Intent { act=au.buzz.ryzewave.debug.FIND_PHONE flg=0x400000 cmp=au.buzz.ryzewave/.debug.DebugEventReceiver (has extras) }
+Broadcast completed: result=0
+09-05 10:55:52.801  1298  1298 I adbd    : adbd service requested 'shell,v2,raw:am broadcast -n au.buzz.ryzewave/.debug.DebugEventReceiver -a au.buzz.ryzewave.debug.FIND_PHONE --ez start true'
+09-05 10:55:52.869  1870  2640 I ActivityManager: Broadcasting: Intent { act=au.buzz.ryzewave.debug.FIND_PHONE flg=0x400000 cmp=au.buzz.ryzewave/.debug.DebugEventReceiver (has extras) }
+09-05 10:55:52.870  1870  2640 I ActivityManager: Enqueued broadcast Intent { act=au.buzz.ryzewave.debug.FIND_PHONE flg=0x400000 cmp=au.buzz.ryzewave/.debug.DebugEventReceiver (has extras) }: 0
+09-05 10:55:52.876 12823 12823 I DebugEvent: injecting WatchEvent.FindPhone(start=true) (debug hook)
+09-05 10:55:52.891 12823 12823 I FindPhone: notification posted
+09-05 10:55:52.897 12823 12823 I FindPhone: alarm volume raised 6 -> 7 for the ring
+09-05 10:55:52.990 12823 12823 I FindPhone: ringtone content://settings/system/alarm_alert playing on the alarm stream
+09-05 10:55:52.996 12823 12823 I FindPhone: vibrating
+09-05 10:55:52.996 12823 12823 I FindPhone: find phone (watch): ringing for up to 30 s (ring 1)
+09-05 10:55:55.531  1298  1298 I adbd    : adbd service requested 'shell,v2,raw:am broadcast -n au.buzz.ryzewave/.debug.DebugEventReceiver -a au.buzz.ryzewave.debug.FIND_PHONE --ez start false'
+09-05 10:55:55.588  1870  5587 I ActivityManager: Broadcasting: Intent { act=au.buzz.ryzewave.debug.FIND_PHONE flg=0x400000 cmp=au.buzz.ryzewave/.debug.DebugEventReceiver (has extras) }
+09-05 10:55:55.589  1870  5587 I ActivityManager: Enqueued broadcast Intent { act=au.buzz.ryzewave.debug.FIND_PHONE flg=0x400000 cmp=au.buzz.ryzewave/.debug.DebugEventReceiver (has extras) }: 0
+09-05 10:55:55.591 12823 12823 I DebugEvent: injecting WatchEvent.FindPhone(start=false) (debug hook)
+09-05 10:55:55.651 12823 12823 I FindPhone: alarm volume restored to 6
+09-05 10:55:55.653 12823 12823 I FindPhone: find phone: stopped (watch)
+09-05 10:55:56.681  1298  1298 I adbd    : adbd service requested 'shell,v2,raw:am broadcast -n au.buzz.ryzewave/.debug.DebugEventReceiver -a au.buzz.ryzewave.debug.FIND_PHONE --ez start true'
+09-05 10:55:56.746  1870  4948 I ActivityManager: Broadcasting: Intent { act=au.buzz.ryzewave.debug.FIND_PHONE flg=0x400000 cmp=au.buzz.ryzewave/.debug.DebugEventReceiver (has extras) }
+09-05 10:55:56.748  1870  4948 I ActivityManager: Enqueued broadcast Intent { act=au.buzz.ryzewave.debug.FIND_PHONE flg=0x400000 cmp=au.buzz.ryzewave/.debug.DebugEventReceiver (has extras) }: 0
+09-05 10:55:56.752 12823 12823 I DebugEvent: injecting WatchEvent.FindPhone(start=true) (debug hook)
+09-05 10:55:56.763 12823 12823 I FindPhone: notification posted
+09-05 10:55:56.768 12823 12823 I FindPhone: alarm volume raised 6 -> 7 for the ring
+09-05 10:55:56.808 12823 12823 I FindPhone: ringtone content://settings/system/alarm_alert playing on the alarm stream
+09-05 10:55:56.810 12823 12823 I FindPhone: vibrating
+09-05 10:55:56.810 12823 12823 I FindPhone: find phone (watch): ringing for up to 30 s (ring 2)
+09-05 10:55:57.833  1298  1298 I adbd    : adbd service requested 'shell,v2,raw:am broadcast -n au.buzz.ryzewave/.debug.DebugEventReceiver -a au.buzz.ryzewave.debug.FIND_PHONE --ez start false'
+09-05 10:55:57.887  1870  4948 I ActivityManager: Broadcasting: Intent { act=au.buzz.ryzewave.debug.FIND_PHONE flg=0x400000 cmp=au.buzz.ryzewave/.debug.DebugEventReceiver (has extras) }
+09-05 10:55:57.889  1870  4948 I ActivityManager: Enqueued broadcast Intent { act=au.buzz.ryzewave.debug.FIND_PHONE flg=0x400000 cmp=au.buzz.ryzewave/.debug.DebugEventReceiver (has extras) }: 0
+09-05 10:55:57.893 12823 12823 I DebugEvent: injecting WatchEvent.FindPhone(start=false) (debug hook)
+09-05 10:55:57.928 12823 12823 I FindPhone: alarm volume restored to 6
+09-05 10:55:57.929 12823 12823 I FindPhone: find phone: stopped (watch)
+== negative: the same broadcast as the app's own uid (run-as), which does not hold DUMP
+Broadcasting: Intent { act=au.buzz.ryzewave.debug.FIND_PHONE flg=0x400000 cmp=au.buzz.ryzewave/.debug.DebugEventReceiver (has extras) }
+
+Exception occurred while executing 'broadcast':
+java.lang.SecurityException: Permission Denial: broadcast asks to run as user -2 but is calling from uid u0a378; this requires android.permission.INTERACT_ACROSS_USERS_FULL or android.permission.INTERACT_ACROSS_USERS
+	at com.android.server.am.UserController.handleIncomingUser(UserController.java:2836)
+	at com.android.server.am.ActivityManagerService.broadcastIntentLockedTraced(ActivityManagerService.java:15720)
+	at com.android.server.am.ActivityManagerService.broadcastIntentLocked(ActivityManagerService.java:15600)
+	at com.android.server.am.ActivityManagerService.broadcastIntentWithFeature(ActivityManagerService.java:16626)
+	at com.android.server.am.ActivityManagerShellCommand.runSendBroadcast(ActivityManagerShellCommand.java:1045)
+	at com.android.server.am.ActivityManagerShellCommand.onCommand(ActivityManagerShellCommand.java:282)
+	at com.android.modules.utils.BasicShellCommandHandler.exec(BasicShellCommandHandler.java:97)
+	at android.os.ShellCommand.exec(ShellCommand.java:38)
+	at com.android.server.am.ActivityManagerService.onShellCommand(ActivityManagerService.java:10745)
+	at android.os.Binder.shellCommand(Binder.java:1230)
+	at android.os.Binder.onTransact(Binder.java:1043)
+	at android.app.IActivityManager$Stub.onTransact(IActivityManager.java:5770)
+	at com.android.server.am.ActivityManagerService.onTransact(ActivityManagerService.java:2909)
+	at android.os.Binder.execTransactInternal(Binder.java:1505)
+	at android.os.Binder.execTransact(Binder.java:1444)
+receiver log lines after the run-as broadcast: 2
+09-05 10:55:59.162  1298  1298 I adbd    : adbd service requested 'shell,v2,raw:run-as au.buzz.ryzewave am broadcast -n au.buzz.ryzewave/.debug.DebugEventReceiver -a au.buzz.ryzewave.debug.FIND_PHONE --ez start true'
+09-05 10:55:59.250  1870  4948 I ActivityManager: Broadcasting: Intent { act=au.buzz.ryzewave.debug.FIND_PHONE flg=0x400000 cmp=au.buzz.ryzewave/.debug.DebugEventReceiver (has extras) }
+09-05 10:55:59.260  1870  4948 W ActivityManager: Permission Denial: broadcast asks to run as user -2 but is calling from uid u0a378; this requires android.permission.INTERACT_ACROSS_USERS_FULL or android.permission.INTERACT_ACROSS_USERS
+12823
+== negative test, second attempt: run-as with --user 0 (the first attempt failed on the cross-user check before the receiver's permission was evaluated)
+Broadcasting: Intent { act=au.buzz.ryzewave.debug.FIND_PHONE flg=0x400000 cmp=au.buzz.ryzewave/.debug.DebugEventReceiver (has extras) }
+Broadcast completed: result=0
+DebugEvent receiver lines: 1
+09-05 10:57:16.173 12823 12823 I DebugEvent: injecting WatchEvent.FindPhone(start=true) (debug hook)
+09-05 10:57:16.182 12823 12823 I FindPhone: notification posted
+09-05 10:57:16.189 12823 12823 I FindPhone: alarm volume raised 6 -> 7 for the ring
+09-05 10:57:16.241 12823 12823 I FindPhone: ringtone content://settings/system/alarm_alert playing on the alarm stream
+09-05 10:57:16.244 12823 12823 I FindPhone: vibrating
+09-05 10:57:16.245 12823 12823 I FindPhone: find phone (watch): ringing for up to 30 s (ring 3)
+09-05 10:57:16.245 12823 12823 I FindPhone: find phone (watch): ringing for up to 30 s (ring 3)
+09-05 10:57:39.129 12823 12823 I FindPhone: find phone: stopped (watch)
+NOTE: the run-as attempt is NOT a valid negative test: the sender was the app's own uid, and Android grants a component permission to its own uid unconditionally (ActivityManager.checkComponentPermission). A third-party uid cannot be simulated on this phone without installing another app, which is not approved.

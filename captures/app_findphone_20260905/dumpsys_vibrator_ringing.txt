@@ -1,0 +1,182 @@
+VibratorManagerService:
+  VibrationSettings:
+    vibrateOn = true
+    keyboardVibrationOn = true, default: true
+    vibrateInputDevices = false
+    batterySaverMode = false
+    ringerMode = normal
+    onWirelessCharger = false
+    processStateCache size = 28
+    VibrationIntensities:
+      UNKNOWN = MEDIUM, default: MEDIUM
+      ALARM = MEDIUM, default: MEDIUM
+      TOUCH = MEDIUM, default: MEDIUM
+      MEDIA = MEDIUM, default: MEDIUM
+      RINGTONE = MEDIUM, default: MEDIUM
+      PHYSICAL_EMULATION = MEDIUM, default: MEDIUM
+      NOTIFICATION = MEDIUM, default: MEDIUM
+      HARDWARE_FEEDBACK = MEDIUM, default: MEDIUM
+      COMMUNICATION_REQUEST = MEDIUM, default: MEDIUM
+      ACCESSIBILITY = MEDIUM, default: MEDIUM
+    VibrationConfig:
+      ignoreVibrationsOnWirelessCharger = false
+      hapticChannelMaxAmplitude = 0.0
+      rampStepDurationMs = 5
+      rampDownDurationMs = 0
+      requestVibrationParamsForUsages = [ALARM, RINGTONE, NOTIFICATION, COMMUNICATION_REQUEST]
+      requestVibrationParamsTimeoutMs = 50
+  
+  VibrationScaler:
+    defaultVibrationAmplitude = 255
+    ScaleLevels:
+      VERY_LOW = ScaleLevel{factor=0.6}
+      LOW = ScaleLevel{factor=0.8}
+      NONE = ScaleLevel{factor=1.0}
+      HIGH = ScaleLevel{factor=1.2}
+      VERY_HIGH = ScaleLevel{factor=1.4}
+    AdaptiveHapticsScales:
+  
+  Vibrators:
+    Vibrator (id=1):
+      isVibrating = false
+      isUnderExternalControl = false
+      currentAmplitude = 0.0
+      vibratorInfoLoadSuccessful = true
+      vibratorStateListener size = 1
+      VibratorInfo:
+        id = 1
+        capabilities = []
+        capabilitiesFlags = 0
+        supportedEffects = [CLICK, DOUBLE_CLICK, TICK, HEAVY_CLICK, TEXTURE_TICK]
+        supportedPrimitives = []
+        supportedBraking = []
+        primitiveDelayMax = 1000
+        compositionSizeMax = 256
+        pwlePrimitiveDurationMax = 0
+        pwleSizeMax = 0
+        q-factor = NaN
+        frequencyProfile = FrequencyProfile{mFrequencyRange=null, mMinFrequency=NaN, mResonantFrequency=NaN, mFrequencyResolution=NaN, mMaxAmplitudes count=0}
+  
+  CurrentVibration:
+    Vibration:
+      status = running
+      durationMs = -1
+      createTime = 09-05 09:47:25.073
+      startTime = 09-05 09:47:25.085
+      endTime = null
+      playedEffect = Mono{mEffect=Composed{segments=[Step{amplitude=0.0, frequencyHz=0.0, duration=0}, Step{amplitude=1.0, frequencyHz=0.0, duration=600}, Step{amplitude=0.0, frequencyHz=0.0, duration=300}, Step{amplitude=1.0, frequencyHz=0.0, duration=600}, Step{amplitude=0.0, frequencyHz=0.0, duration=300}, Step{amplitude=1.0, frequencyHz=0.0, duration=600}, Step{amplitude=0.0, frequencyHz=0.0, duration=1200}], repeat=0}}
+      originalEffect = Mono{mEffect=Composed{segments=[Step{amplitude=0.0, frequencyHz=0.0, duration=0}, Step{amplitude=-1.0, frequencyHz=0.0, duration=600}, Step{amplitude=0.0, frequencyHz=0.0, duration=300}, Step{amplitude=-1.0, frequencyHz=0.0, duration=600}, Step{amplitude=0.0, frequencyHz=0.0, duration=300}, Step{amplitude=-1.0, frequencyHz=0.0, duration=600}, Step{amplitude=0.0, frequencyHz=0.0, duration=1200}], repeat=0}}
+      scale = NONE
+      adaptiveScale = 1.00
+      callerInfo = CallerInfo{ uid=10378, opPkg=au.buzz.ryzewave, deviceId=0, attrs=VibrationAttributes{mUsage=ALARM, mAudioUsage= USAGE_UNKNOWN, mCategory=UNKNOWN, mFlags=0}, reason=null}
+  
+  NextVibration:
+    null
+  
+  CurrentExternalVibration:
+    null
+  
+  
+  Recent vibrations:
+    TOUCH:
+      09-04 22:06:52.788 |   effect |             finished | duration:    34ms | start: 22:06:52.789 | end: 22:06:52.821 | scale:     NONE (adaptive=1.00) | flags:    0 | usage: TOUCH | category=KEYBOARD | com.google.android.inputmethod.latin (uid=10162, deviceId=0) | reason: performHapticFeedback(constant=3): View#performHapticFeedback | played: Prebaked=CLICK(MEDIUM, with fallback) | original: null
+      09-04 22:07:50.790 |   effect |             finished | duration:    35ms | start: 22:07:50.792 | end: 22:07:50.824 | scale:     NONE (adaptive=1.00) | flags:    0 | usage: TOUCH | android (uid=1000, deviceId=0) | reason: Virtual Key - Press | played: Prebaked=CLICK(MEDIUM, with fallback) | original: null
+      09-04 22:07:51.104 |   effect |             finished | duration:    35ms | start: 22:07:51.107 | end: 22:07:51.139 | scale:     NONE (adaptive=1.00) | flags:    0 | usage: TOUCH | android (uid=1000, deviceId=0) | reason: Virtual Key - Press | played: Prebaked=CLICK(MEDIUM, with fallback) | original: null
+      09-04 22:08:58.736 |   effect |             finished | duration:    34ms | start: 22:08:58.738 | end: 22:08:58.771 | scale:     NONE (adaptive=1.00) | flags:    0 | usage: TOUCH | android (uid=1000, deviceId=0) | reason: Virtual Key - Press | played: Prebaked=CLICK(MEDIUM, with fallback) | original: null
+      09-04 22:09:19.622 |   effect |             finished | duration:    43ms | start: 22:09:19.630 | end: 22:09:19.665 | scale:     NONE (adaptive=1.00) | flags:    0 | usage: TOUCH | android (uid=1000, deviceId=0) | reason: Virtual Key - Press | played: Prebaked=CLICK(MEDIUM, with fallback) | original: null
+      09-04 22:10:38.681 |   effect |             finished | duration:    35ms | start: 22:10:38.683 | end: 22:10:38.716 | scale:     NONE (adaptive=1.00) | flags:    0 | usage: TOUCH | android (uid=1000, deviceId=0) | reason: Virtual Key - Press | played: Prebaked=CLICK(MEDIUM, with fallback) | original: null
+      09-04 22:11:43.434 |   effect |             finished | duration:    33ms | start: 22:11:43.436 | end: 22:11:43.467 | scale:     NONE (adaptive=1.00) | flags:    0 | usage: TOUCH | android (uid=1000, deviceId=0) | reason: Virtual Key - Press | played: Prebaked=CLICK(MEDIUM, with fallback) | original: null
+      09-04 22:12:05.557 |   effect |             finished | duration:    34ms | start: 22:12:05.558 | end: 22:12:05.590 | scale:     NONE (adaptive=1.00) | flags:    0 | usage: TOUCH | android (uid=1000, deviceId=0) | reason: Virtual Key - Press | played: Prebaked=CLICK(MEDIUM, with fallback) | original: null
+      09-04 23:18:29.058 |   effect |             finished | duration:    44ms | start: 23:18:29.065 | end: 23:18:29.102 | scale:     NONE (adaptive=1.00) | flags:    0 | usage: TOUCH | com.motorola.launcher3 (uid=10190, deviceId=0) | reason: performHapticFeedback(constant=1): View#performHapticFeedback | played: Prebaked=CLICK(MEDIUM, with fallback) | original: null
+      09-04 23:22:21.283 |   effect |             finished | duration:    43ms | start: 23:22:21.285 | end: 23:22:21.326 | scale:     NONE (adaptive=1.00) | flags:    0 | usage: TOUCH | android (uid=1000, deviceId=0) | reason: Virtual Key - Press | played: Prebaked=CLICK(MEDIUM, with fallback) | original: null
+      09-05 00:25:50.458 |   effect |             finished | duration:    59ms | start: 00:25:50.463 | end: 00:25:50.518 | scale:     NONE (adaptive=1.00) | flags:    0 | usage: TOUCH | category=KEYBOARD | com.google.android.inputmethod.latin (uid=10162, deviceId=0) | reason: performHapticFeedback(constant=3): View#performHapticFeedback | played: Prebaked=CLICK(MEDIUM, with fallback) | original: null
+      09-05 00:26:43.580 |   effect |             finished | duration:    36ms | start: 00:26:43.583 | end: 00:26:43.615 | scale:     NONE (adaptive=1.00) | flags:    0 | usage: TOUCH | category=KEYBOARD | com.google.android.inputmethod.latin (uid=10162, deviceId=0) | reason: performHapticFeedback(constant=3): View#performHapticFeedback | played: Prebaked=CLICK(MEDIUM, with fallback) | original: null
+      09-05 00:27:30.697 |   effect |             finished | duration:    35ms | start: 00:27:30.699 | end: 00:27:30.733 | scale:     NONE (adaptive=1.00) | flags:    0 | usage: TOUCH | category=KEYBOARD | com.google.android.inputmethod.latin (uid=10162, deviceId=0) | reason: performHapticFeedback(constant=3): View#performHapticFeedback | played: Prebaked=CLICK(MEDIUM, with fallback) | original: null
+      09-05 06:52:15.017 |   effect |             finished | duration:    51ms | start: 06:52:15.021 | end: 06:52:15.068 | scale:     NONE (adaptive=1.00) | flags:    0 | usage: TOUCH | android (uid=1000, deviceId=0) | reason: Virtual Key - Press | played: Prebaked=CLICK(MEDIUM, with fallback) | original: null
+      09-05 06:52:18.583 |   effect |             finished | duration:    99ms | start: 06:52:18.585 | end: 06:52:18.681 | scale:     NONE (adaptive=1.00) | flags:    0 | usage: TOUCH | com.motorola.launcher3 (uid=10190, deviceId=0) | reason: performHapticFeedback(constant=0): View#performHapticFeedback | played: Prebaked=HEAVY_CLICK(MEDIUM, with fallback) | original: null
+      09-05 06:52:29.252 |   effect |             finished | duration:    33ms | start: 06:52:29.254 | end: 06:52:29.286 | scale:     NONE (adaptive=1.00) | flags:    0 | usage: TOUCH | android (uid=1000, deviceId=0) | reason: Virtual Key - Press | played: Prebaked=CLICK(MEDIUM, with fallback) | original: null
+      09-05 06:52:30.883 |   effect |             finished | duration:    95ms | start: 06:52:30.885 | end: 06:52:30.978 | scale:     NONE (adaptive=1.00) | flags:    0 | usage: TOUCH | com.motorola.launcher3 (uid=10190, deviceId=0) | reason: performHapticFeedback(constant=0): View#performHapticFeedback | played: Prebaked=HEAVY_CLICK(MEDIUM, with fallback) | original: null
+      09-05 06:52:34.889 |   effect |             finished | duration:    33ms | start: 06:52:34.891 | end: 06:52:34.922 | scale:     NONE (adaptive=1.00) | flags:    0 | usage: TOUCH | com.android.systemui (uid=10193, deviceId=0) | reason: performHapticFeedback(constant=1): View#performHapticFeedback | played: Prebaked=CLICK(MEDIUM, with fallback) | original: null
+      09-05 07:15:37.659 |   effect |             finished | duration:    35ms | start: 07:15:37.662 | end: 07:15:37.694 | scale:     NONE (adaptive=1.00) | flags:    0 | usage: TOUCH | android (uid=1000, deviceId=0) | reason: Virtual Key - Press | played: Prebaked=CLICK(MEDIUM, with fallback) | original: null
+      09-05 07:20:36.542 |   effect |             finished | duration:    34ms | start: 07:20:36.544 | end: 07:20:36.576 | scale:     NONE (adaptive=1.00) | flags:    0 | usage: TOUCH | android (uid=1000, deviceId=0) | reason: Virtual Key - Press | played: Prebaked=CLICK(MEDIUM, with fallback) | original: null
+    
+    HARDWARE_FEEDBACK:
+      09-04 22:16:15.325 |   effect |             finished | duration:   652ms | start: 22:16:15.327 | end: 22:16:15.978 | scale:     NONE (adaptive=1.00) | flags:    0 | usage: HARDWARE_FEEDBACK | android (uid=1000, deviceId=0) | reason: Charging started | played: [Step=40ms(amplitude=0.00),Step=40ms(amplitude=0.02),Step=40ms(amplitude=0.04),Step=40ms(amplitude=0.10),Step=40ms(amplitude=0.17),Step=40ms(amplitude=0.26),Step=40ms(amplitude=0.36),Step=40ms(amplitude=0.45),Step=40ms(amplitude=0.48),Step=40ms(amplitude=0.40),Step=40ms(amplitude=0.31),Step=40ms(amplitude=0.22),Step=40ms(amplitude=0.13),Step=40ms(amplitude=0.07),Step=40ms(amplitude=0.03),Step=40ms(amplitude=0.01)] | original: null
+      09-05 08:31:41.682 |   effect |             finished | duration:   667ms | start: 08:31:41.688 | end: 08:31:42.348 | scale:     NONE (adaptive=1.00) | flags:    0 | usage: HARDWARE_FEEDBACK | android (uid=1000, deviceId=0) | reason: Charging started | played: [Step=40ms(amplitude=0.00),Step=40ms(amplitude=0.02),Step=40ms(amplitude=0.04),Step=40ms(amplitude=0.10),Step=40ms(amplitude=0.17),Step=40ms(amplitude=0.26),Step=40ms(amplitude=0.36),Step=40ms(amplitude=0.45),Step=40ms(amplitude=0.48),Step=40ms(amplitude=0.40),Step=40ms(amplitude=0.31),Step=40ms(amplitude=0.22),Step=40ms(amplitude=0.13),Step=40ms(amplitude=0.07),Step=40ms(amplitude=0.03),Step=40ms(amplitude=0.01)] | original: null
+    
+  
+  
+  Aggregated vibration history:
+    TOUCH:
+      09-04 20:31:32.215 |   effect |             finished | duration:    64ms | start: 20:31:32.219 | end: 20:31:32.279 | scale:     NONE (adaptive=1.00) | flags:    0 | usage: TOUCH | android (uid=1000, deviceId=0) | reason: Wake Up | played: Prebaked=CLICK(MEDIUM, with fallback) | original: null
+      09-04 20:35:33.637 |   effect |             finished | duration:    40ms | start: 20:35:33.641 | end: 20:35:33.677 | scale:     NONE (adaptive=1.00) | flags:    0 | usage: TOUCH | android (uid=1000, deviceId=0) | reason: Wake Up | played: Prebaked=CLICK(MEDIUM, with fallback) | original: null
+      09-04 20:35:36.723 |   effect |             finished | duration:    33ms | start: 20:35:36.724 | end: 20:35:36.756 | scale:     NONE (adaptive=1.00) | flags:    0 | usage: TOUCH | com.android.systemui (uid=10193, deviceId=0) | reason: performHapticFeedback(constant=1): View#performHapticFeedback | played: Prebaked=CLICK(MEDIUM, with fallback) | original: null
+      -> Skipping 4 aggregated entries, latest:
+      09-04 20:35:39.345 |   effect |             finished | duration:    34ms | start: 20:35:39.347 | end: 20:35:39.379 | scale:     NONE (adaptive=1.00) | flags:    0 | usage: TOUCH | com.android.systemui (uid=10193, deviceId=0) | reason: performHapticFeedback(constant=1): View#performHapticFeedback | played: Prebaked=CLICK(MEDIUM, with fallback) | original: null
+      09-04 20:35:40.735 |   effect |             finished | duration:    32ms | start: 20:35:40.736 | end: 20:35:40.768 | scale:     NONE (adaptive=1.00) | flags:    0 | usage: TOUCH | com.android.systemui (uid=10193, deviceId=0) | reason: performHapticFeedback(constant=1): View#performHapticFeedback | played: Prebaked=CLICK(MEDIUM, with fallback) | original: null
+      -> Skipping 5 aggregated entries, latest:
+      09-04 20:35:44.100 |   effect |             finished | duration:    32ms | start: 20:35:44.101 | end: 20:35:44.132 | scale:     NONE (adaptive=1.00) | flags:    0 | usage: TOUCH | com.android.systemui (uid=10193, deviceId=0) | reason: performHapticFeedback(constant=1): View#performHapticFeedback | played: Prebaked=CLICK(MEDIUM, with fallback) | original: null
+      09-04 20:37:49.539 |   effect |             finished | duration:    73ms | start: 20:37:49.548 | end: 20:37:49.612 | scale:     NONE (adaptive=1.00) | flags:    0 | usage: TOUCH | com.android.systemui (uid=10193, deviceId=0) | reason: performHapticFeedback(constant=1): View#performHapticFeedback | played: Prebaked=CLICK(MEDIUM, with fallback) | original: null
+      -> Skipping 4 aggregated entries, latest:
+      09-04 20:37:51.189 |   effect |             finished | duration:    47ms | start: 20:37:51.194 | end: 20:37:51.236 | scale:     NONE (adaptive=1.00) | flags:    0 | usage: TOUCH | com.android.systemui (uid=10193, deviceId=0) | reason: performHapticFeedback(constant=1): View#performHapticFeedback | played: Prebaked=CLICK(MEDIUM, with fallback) | original: null
+      09-04 20:37:52.883 |   effect |             finished | duration:    34ms | start: 20:37:52.885 | end: 20:37:52.917 | scale:     NONE (adaptive=1.00) | flags:    0 | usage: TOUCH | com.android.systemui (uid=10193, deviceId=0) | reason: performHapticFeedback(constant=1): View#performHapticFeedback | played: Prebaked=CLICK(MEDIUM, with fallback) | original: null
+      09-04 20:37:57.830 |   effect |             finished | duration:    88ms | start: 20:37:57.873 | end: 20:37:57.917 | scale:     NONE (adaptive=1.00) | flags:    0 | usage: TOUCH | android (uid=1000, deviceId=0) | reason: Virtual Key - Press | played: Prebaked=CLICK(MEDIUM, with fallback) | original: null
+      09-04 20:37:59.129 |   effect |             finished | duration:    37ms | start: 20:37:59.132 | end: 20:37:59.166 | scale:     NONE (adaptive=1.00) | flags:    0 | usage: TOUCH | com.android.systemui (uid=10193, deviceId=0) | reason: performHapticFeedback(constant=1): View#performHapticFeedback | played: Prebaked=CLICK(MEDIUM, with fallback) | original: null
+      09-04 20:38:06.179 |   effect |             finished | duration:    33ms | start: 20:38:06.181 | end: 20:38:06.213 | scale:     NONE (adaptive=1.00) | flags:    0 | usage: TOUCH | android (uid=1000, deviceId=0) | reason: Virtual Key - Press | played: Prebaked=CLICK(MEDIUM, with fallback) | original: null
+      09-04 20:38:26.133 |   effect |             finished | duration:   142ms | start: 20:38:26.143 | end: 20:38:26.274 | scale:     NONE (adaptive=1.00) | flags:    0 | usage: TOUCH | category=KEYBOARD | com.google.android.inputmethod.latin (uid=10162, deviceId=0) | reason: performHapticFeedback(constant=3): View#performHapticFeedback | played: Prebaked=CLICK(MEDIUM, with fallback) | original: null
+      -> Skipping 4 aggregated entries, latest:
+      09-04 20:38:27.954 |   effect |             finished | duration:    32ms | start: 20:38:27.955 | end: 20:38:27.987 | scale:     NONE (adaptive=1.00) | flags:    0 | usage: TOUCH | category=KEYBOARD | com.google.android.inputmethod.latin (uid=10162, deviceId=0) | reason: performHapticFeedback(constant=3): View#performHapticFeedback | played: Prebaked=CLICK(MEDIUM, with fallback) | original: null
+      09-04 20:38:29.477 |   effect |             finished | duration:    34ms | start: 20:38:29.478 | end: 20:38:29.510 | scale:     NONE (adaptive=1.00) | flags:    0 | usage: TOUCH | category=KEYBOARD | com.google.android.inputmethod.latin (uid=10162, deviceId=0) | reason: performHapticFeedback(constant=3): View#performHapticFeedback | played: Prebaked=CLICK(MEDIUM, with fallback) | original: null
+      -> Skipping 3 aggregated entries, latest:
+      09-04 20:38:31.749 |   effect |             finished | duration:    37ms | start: 20:38:31.751 | end: 20:38:31.786 | scale:     NONE (adaptive=1.00) | flags:    0 | usage: TOUCH | category=KEYBOARD | com.google.android.inputmethod.latin (uid=10162, deviceId=0) | reason: performHapticFeedback(constant=3): View#performHapticFeedback | played: Prebaked=CLICK(MEDIUM, with fallback) | original: null
+      09-04 20:38:33.105 |   effect |             finished | duration:    34ms | start: 20:38:33.106 | end: 20:38:33.138 | scale:     NONE (adaptive=1.00) | flags:    0 | usage: TOUCH | category=KEYBOARD | com.google.android.inputmethod.latin (uid=10162, deviceId=0) | reason: performHapticFeedback(constant=3): View#performHapticFeedback | played: Prebaked=CLICK(MEDIUM, with fallback) | original: null
+      09-04 20:38:39.535 |   effect |             finished | duration:    34ms | start: 20:38:39.536 | end: 20:38:39.570 | scale:     NONE (adaptive=1.00) | flags:    0 | usage: TOUCH | category=KEYBOARD | com.google.android.inputmethod.latin (uid=10162, deviceId=0) | reason: performHapticFeedback(constant=3): View#performHapticFeedback | played: Prebaked=CLICK(MEDIUM, with fallback) | original: null
+      09-04 20:38:42.594 |   effect |             finished | duration:    42ms | start: 20:38:42.599 | end: 20:38:42.635 | scale:     NONE (adaptive=1.00) | flags:    0 | usage: TOUCH | category=KEYBOARD | com.google.android.inputmethod.latin (uid=10162, deviceId=0) | reason: performHapticFeedback(constant=3): View#performHapticFeedback | played: Prebaked=CLICK(MEDIUM, with fallback) | original: null
+      09-04 20:38:43.944 |   effect |             finished | duration:    49ms | start: 20:38:43.958 | end: 20:38:43.993 | scale:     NONE (adaptive=1.00) | flags:    0 | usage: TOUCH | category=KEYBOARD | com.google.android.inputmethod.latin (uid=10162, deviceId=0) | reason: performHapticFeedback(constant=3): View#performHapticFeedback | played: Prebaked=CLICK(MEDIUM, with fallback) | original: null
+      09-04 20:38:44.691 |   effect |             finished | duration:    36ms | start: 20:38:44.694 | end: 20:38:44.726 | scale:     NONE (adaptive=1.00) | flags:    0 | usage: TOUCH | category=KEYBOARD | com.google.android.inputmethod.latin (uid=10162, deviceId=0) | reason: performHapticFeedback(constant=3): View#performHapticFeedback | played: Prebaked=CLICK(MEDIUM, with fallback) | original: null
+      09-04 20:38:44.898 |   effect |             finished | duration:    58ms | start: 20:38:44.902 | end: 20:38:44.956 | scale:     NONE (adaptive=1.00) | flags:    0 | usage: TOUCH | category=KEYBOARD | com.google.android.inputmethod.latin (uid=10162, deviceId=0) | reason: performHapticFeedback(constant=7): View#performHapticFeedback | played: Prebaked=TICK(MEDIUM, no fallback) | original: null
+      09-04 20:38:55.752 |   effect |             finished | duration:    39ms | start: 20:38:55.755 | end: 20:38:55.792 | scale:     NONE (adaptive=1.00) | flags:    0 | usage: TOUCH | category=KEYBOARD | com.google.android.inputmethod.latin (uid=10162, deviceId=0) | reason: performHapticFeedback(constant=3): View#performHapticFeedback | played: Prebaked=CLICK(MEDIUM, with fallback) | original: null
+      -> Skipping 4 aggregated entries, latest:
+      09-04 20:38:57.997 |   effect |             finished | duration:    36ms | start: 20:38:58.001 | end: 20:38:58.033 | scale:     NONE (adaptive=1.00) | flags:    0 | usage: TOUCH | category=KEYBOARD | com.google.android.inputmethod.latin (uid=10162, deviceId=0) | reason: performHapticFeedback(constant=3): View#performHapticFeedback | played: Prebaked=CLICK(MEDIUM, with fallback) | original: null
+      09-04 20:39:11.588 |   effect |             finished | duration:    66ms | start: 20:39:11.606 | end: 20:39:11.654 | scale:     NONE (adaptive=1.00) | flags:    0 | usage: TOUCH | category=KEYBOARD | com.google.android.inputmethod.latin (uid=10162, deviceId=0) | reason: performHapticFeedback(constant=3): View#performHapticFeedback | played: Prebaked=CLICK(MEDIUM, with fallback) | original: null
+      -> Skipping 2 aggregated entries, latest:
+      09-04 20:39:13.162 |   effect |             finished | duration:    35ms | start: 20:39:13.164 | end: 20:39:13.196 | scale:     NONE (adaptive=1.00) | flags:    0 | usage: TOUCH | category=KEYBOARD | com.google.android.inputmethod.latin (uid=10162, deviceId=0) | reason: performHapticFeedback(constant=3): View#performHapticFeedback | played: Prebaked=CLICK(MEDIUM, with fallback) | original: null
+      09-04 20:39:14.297 |   effect |             finished | duration:    36ms | start: 20:39:14.299 | end: 20:39:14.333 | scale:     NONE (adaptive=1.00) | flags:    0 | usage: TOUCH | category=KEYBOARD | com.google.android.inputmethod.latin (uid=10162, deviceId=0) | reason: performHapticFeedback(constant=3): View#performHapticFeedback | played: Prebaked=CLICK(MEDIUM, with fallback) | original: null
+      -> Skipping 2 aggregated entries, latest:
+      09-04 20:39:15.615 |   effect |             finished | duration:    38ms | start: 20:39:15.618 | end: 20:39:15.654 | scale:     NONE (adaptive=1.00) | flags:    0 | usage: TOUCH | category=KEYBOARD | com.google.android.inputmethod.latin (uid=10162, deviceId=0) | reason: performHapticFeedback(constant=3): View#performHapticFeedback | played: Prebaked=CLICK(MEDIUM, with fallback) | original: null
+      09-04 20:39:16.944 |   effect |             finished | duration:    33ms | start: 20:39:16.945 | end: 20:39:16.977 | scale:     NONE (adaptive=1.00) | flags:    0 | usage: TOUCH | category=KEYBOARD | com.google.android.inputmethod.latin (uid=10162, deviceId=0) | reason: performHapticFeedback(constant=3): View#performHapticFeedback | played: Prebaked=CLICK(MEDIUM, with fallback) | original: null
+      09-04 20:39:17.886 |   effect |             finished | duration:    34ms | start: 20:39:17.888 | end: 20:39:17.920 | scale:     NONE (adaptive=1.00) | flags:    0 | usage: TOUCH | category=KEYBOARD | com.google.android.inputmethod.latin (uid=10162, deviceId=0) | reason: performHapticFeedback(constant=3): View#performHapticFeedback | played: Prebaked=CLICK(MEDIUM, with fallback) | original: null
+      09-04 20:39:31.712 |   effect |             finished | duration:    54ms | start: 20:39:31.722 | end: 20:39:31.766 | scale:     NONE (adaptive=1.00) | flags:    0 | usage: TOUCH | category=KEYBOARD | com.google.android.inputmethod.latin (uid=10162, deviceId=0) | reason: performHapticFeedback(constant=3): View#performHapticFeedback | played: Prebaked=CLICK(MEDIUM, with fallback) | original: null
+      09-04 20:40:19.976 |   effect |             finished | duration:    86ms | start: 20:40:19.983 | end: 20:40:20.062 | scale:     NONE (adaptive=1.00) | flags:    0 | usage: TOUCH | category=KEYBOARD | com.google.android.inputmethod.latin (uid=10162, deviceId=0) | reason: performHapticFeedback(constant=3): View#performHapticFeedback | played: Prebaked=CLICK(MEDIUM, with fallback) | original: null
+      -> Skipping 5 aggregated entries, latest:
+      09-04 20:40:22.387 |   effect |             finished | duration:    34ms | start: 20:40:22.388 | end: 20:40:22.422 | scale:     NONE (adaptive=1.00) | flags:    0 | usage: TOUCH | category=KEYBOARD | com.google.android.inputmethod.latin (uid=10162, deviceId=0) | reason: performHapticFeedback(constant=3): View#performHapticFeedback | played: Prebaked=CLICK(MEDIUM, with fallback) | original: null
+      09-04 20:40:48.035 |   effect |             finished | duration:    36ms | start: 20:40:48.039 | end: 20:40:48.072 | scale:     NONE (adaptive=1.00) | flags:    0 | usage: TOUCH | android (uid=1000, deviceId=0) | reason: Virtual Key - Press | played: Prebaked=CLICK(MEDIUM, with fallback) | original: null
+      09-04 20:41:03.591 |   effect |             finished | duration:    38ms | start: 20:41:03.593 | end: 20:41:03.628 | scale:     NONE (adaptive=1.00) | flags:    0 | usage: TOUCH | android (uid=1000, deviceId=0) | reason: Virtual Key - Press | played: Prebaked=CLICK(MEDIUM, with fallback) | original: null
+      09-04 20:41:17.472 |   effect |             finished | duration:   113ms | start: 20:41:17.482 | end: 20:41:17.584 | scale:     NONE (adaptive=1.00) | flags:    0 | usage: TOUCH | com.motorola.launcher3 (uid=10190, deviceId=0) | reason: performHapticFeedback(constant=0): View#performHapticFeedback | played: Prebaked=HEAVY_CLICK(MEDIUM, with fallback) | original: null
+      09-04 20:41:31.164 |   effect |             finished | duration:   102ms | start: 20:41:31.166 | end: 20:41:31.266 | scale:     NONE (adaptive=1.00) | flags:    0 | usage: TOUCH | com.motorola.launcher3 (uid=10190, deviceId=0) | reason: performHapticFeedback(constant=0): View#performHapticFeedback | played: Prebaked=HEAVY_CLICK(MEDIUM, with fallback) | original: null
+      09-04 20:41:41.334 |   effect |             finished | duration:    95ms | start: 20:41:41.335 | end: 20:41:41.429 | scale:     NONE (adaptive=1.00) | flags:    0 | usage: TOUCH | com.motorola.launcher3 (uid=10190, deviceId=0) | reason: performHapticFeedback(constant=0): View#performHapticFeedback | played: Prebaked=HEAVY_CLICK(MEDIUM, with fallback) | original: null
+      09-04 20:42:01.933 |   effect |             finished | duration:    55ms | start: 20:42:01.945 | end: 20:42:01.988 | scale:     NONE (adaptive=1.00) | flags:    0 | usage: TOUCH | android (uid=1000, deviceId=0) | reason: Virtual Key - Press | played: Prebaked=CLICK(MEDIUM, with fallback) | original: null
+      09-04 20:42:03.608 |   effect |             finished | duration:    39ms | start: 20:42:03.615 | end: 20:42:03.647 | scale:     NONE (adaptive=1.00) | flags:    0 | usage: TOUCH | android (uid=1000, deviceId=0) | reason: Virtual Key - Press | played: Prebaked=CLICK(MEDIUM, with fallback) | original: null
+      09-04 20:54:12.839 |   effect |             finished | duration:    63ms | start: 20:54:12.843 | end: 20:54:12.901 | scale:     NONE (adaptive=1.00) | flags:    0 | usage: TOUCH | android (uid=1000, deviceId=0) | reason: Virtual Key - Press | played: Prebaked=CLICK(MEDIUM, with fallback) | original: null
+      09-04 20:54:15.516 |   effect |             finished | duration:    36ms | start: 20:54:15.520 | end: 20:54:15.552 | scale:     NONE (adaptive=1.00) | flags:    0 | usage: TOUCH | android (uid=1000, deviceId=0) | reason: Virtual Key - Press | played: Prebaked=CLICK(MEDIUM, with fallback) | original: null
+      09-04 20:54:15.900 |   effect |             finished | duration:    35ms | start: 20:54:15.903 | end: 20:54:15.934 | scale:     NONE (adaptive=1.00) | flags:    0 | usage: TOUCH | android (uid=1000, deviceId=0) | reason: Virtual Key - Press | played: Prebaked=CLICK(MEDIUM, with fallback) | original: null
+      09-04 20:54:16.359 |   effect |             finished | duration:    57ms | start: 20:54:16.363 | end: 20:54:16.416 | scale:     NONE (adaptive=1.00) | flags:    0 | usage: TOUCH | com.android.systemui (uid=10193, deviceId=0) | reason: performHapticFeedback(constant=8): View#performHapticFeedback | played: Prebaked=TICK(MEDIUM, no fallback) | original: null
+      09-04 21:51:56.888 |   effect |             finished | duration:    48ms | start: 21:51:56.892 | end: 21:51:56.937 | scale:     NONE (adaptive=1.00) | flags:    0 | usage: TOUCH | android (uid=1000, deviceId=0) | reason: Virtual Key - Press | played: Prebaked=CLICK(MEDIUM, with fallback) | original: null
+      09-04 21:52:05.029 |   effect |             finished | duration:    33ms | start: 21:52:05.030 | end: 21:52:05.062 | scale:     NONE (adaptive=1.00) | flags:    0 | usage: TOUCH | android (uid=1000, deviceId=0) | reason: Virtual Key - Press | played: Prebaked=CLICK(MEDIUM, with fallback) | original: null
+      09-04 22:06:49.258 |   effect |             finished | duration:    40ms | start: 22:06:49.262 | end: 22:06:49.299 | scale:     NONE (adaptive=1.00) | flags:    0 | usage: TOUCH | category=KEYBOARD | com.google.android.inputmethod.latin (uid=10162, deviceId=0) | reason: performHapticFeedback(constant=3): View#performHapticFeedback | played: Prebaked=CLICK(MEDIUM, with fallback) | original: null
+      -> Skipping 1 aggregated entries, latest:
+      09-04 22:06:49.936 |   effect |             finished | duration:    33ms | start: 22:06:49.938 | end: 22:06:49.969 | scale:     NONE (adaptive=1.00) | flags:    0 | usage: TOUCH | category=KEYBOARD | com.google.android.inputmethod.latin (uid=10162, deviceId=0) | reason: performHapticFeedback(constant=3): View#performHapticFeedback | played: Prebaked=CLICK(MEDIUM, with fallback) | original: null
+      09-04 22:06:49.998 |   effect |             finished | duration:    54ms | start: 22:06:50.000 | end: 22:06:50.053 | scale:     NONE (adaptive=1.00) | flags:    0 | usage: TOUCH | com.android.chrome (uid=10156, deviceId=0) | reason: null | played: Step=50ms(amplitude=1.00) | original: Step=50ms(amplitude=-1.00)
+      09-04 22:06:50.313 |   effect |             finished | duration:    33ms | start: 22:06:50.315 | end: 22:06:50.347 | scale:     NONE (adaptive=1.00) | flags:    0 | usage: TOUCH | category=KEYBOARD | com.google.android.inputmethod.latin (uid=10162, deviceId=0) | reason: performHapticFeedback(constant=3): View#performHapticFeedback | played: Prebaked=CLICK(MEDIUM, with fallback) | original: null
+      09-04 22:06:50.403 |   effect | cancelled_superseded | duration:    26ms | start: 22:06:50.404 | end: 22:06:50.429 | scale:     NONE (adaptive=1.00) | flags:    0 | usage: TOUCH | com.android.chrome (uid=10156, deviceId=0) | reason: null | played: Step=50ms(amplitude=1.00) | original: Step=50ms(amplitude=-1.00)
+      09-04 22:06:50.427 |   effect |             finished | duration:    57ms | start: 22:06:50.431 | end: 22:06:50.484 | scale:     NONE (adaptive=1.00) | flags:    0 | usage: TOUCH | com.android.chrome (uid=10156, deviceId=0) | reason: null | played: Step=50ms(amplitude=1.00) | original: Step=50ms(amplitude=-1.00)
+      09-04 22:06:51.400 |   effect |             finished | duration:    33ms | start: 22:06:51.401 | end: 22:06:51.433 | scale:     NONE (adaptive=1.00) | flags:    0 | usage: TOUCH | category=KEYBOARD | com.google.android.inputmethod.latin (uid=10162, deviceId=0) | reason: performHapticFeedback(constant=3): View#performHapticFeedback | played: Prebaked=CLICK(MEDIUM, with fallback) | original: null
+      09-04 22:06:51.482 |   effect |             finished | duration:    54ms | start: 22:06:51.484 | end: 22:06:51.536 | scale:     NONE (adaptive=1.00) | flags:    0 | usage: TOUCH | com.android.chrome (uid=10156, deviceId=0) | reason: null | played: Step=50ms(amplitude=1.00) | original: Step=50ms(amplitude=-1.00)
+    
+  
+  
+  VibratorControlService:
+    isVibratorControllerRegistered = false
+    hasPendingVibrationParamsRequest = false
+    
+    Vibration parameters update history:

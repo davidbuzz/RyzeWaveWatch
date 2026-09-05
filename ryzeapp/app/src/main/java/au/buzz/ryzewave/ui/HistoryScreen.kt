@@ -45,12 +45,13 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import au.buzz.ryzewave.core.DailySummary
 import au.buzz.ryzewave.core.HrSample
 import au.buzz.ryzewave.core.SampleSource
+import au.buzz.ryzewave.core.SleepStage
 import au.buzz.ryzewave.core.Spo2Sample
 import au.buzz.ryzewave.core.StepsHour
 
 /**
- * History: one shared date navigator, then four chart cards (heart rate, SpO2, steps per hour, daily steps +
- * distance) styled like the vendor app's blood-oxygen card: coloured header with the chart, a stats row and an
+ * History: one shared date navigator, then five chart cards (heart rate, SpO2, steps per hour, daily steps +
+ * distance, the night's sleep) styled like the vendor app's blood-oxygen card: coloured header with the chart, a stats row and an
  * expandable list of the day's values.
  */
 @Composable
@@ -59,6 +60,7 @@ fun HistoryScreen(vm: HistoryViewModel = viewModel()) {
     val hr by vm.hr.collectAsStateWithLifecycle()
     val spo2 by vm.spo2.collectAsStateWithLifecycle()
     val steps by vm.steps.collectAsStateWithLifecycle()
+    val sleep by vm.sleep.collectAsStateWithLifecycle()
     val summary by vm.summary.collectAsStateWithLifecycle()
     val daily by vm.daily.collectAsStateWithLifecycle()
     val range by vm.rangeDays.collectAsStateWithLifecycle()
@@ -76,6 +78,7 @@ fun HistoryScreen(vm: HistoryViewModel = viewModel()) {
         Spo2Card(day, spo2)
         StepsHourCard(day, steps, summary, profile.stepGoal)
         DailyCard(daily, range, profile.stepGoal, day, onRange = vm::setRange, onSelectDay = vm::selectDay)
+        SleepCard(day, sleep)
     }
 }
 
@@ -211,6 +214,44 @@ private fun DailyCard(
         stats = stats, rowsTitle = "Last $range days", rows = rows,
     ) { colors ->
         DailyStepsChart(days, todayStart, goal, selectedDay = selectedDay, onDaySelected = onSelectDay, colors = colors)
+    }
+}
+
+/**
+ * The night that ended on the selected morning (previous noon .. noon, `repo.sleepForNight`): hypnogram, the
+ * totals line, bed / rise times, and the stage list in bed-to-rise order.
+ */
+@Composable
+private fun SleepCard(day: Long, stages: List<SleepStage>) {
+    val chart = remember(stages) { SleepChartData.build(stages) }
+    val stats = remember(chart) {
+        if (chart == null) emptyList() else listOf(
+            "Bed" to Fmt.time(chart.start),
+            "Rise" to Fmt.time(chart.end),
+            "Asleep" to SleepChartData.hoursMinutes(chart.summary.totalMin),
+            "Awake" to SleepChartData.hoursMinutes(chart.summary.awakeMin),
+        )
+    }
+    val rows = remember(chart) {
+        chart?.blocks.orEmpty().map { b -> Fmt.time(b.start) to "${SleepMath.stageName(b.stage)} · ${b.minutes} min" }
+    }
+    val rowsTitle = if (Fmt.isToday(day)) "Last night's stages" else "Stages, night to ${Fmt.date(day)}"
+    ChartCard(
+        title = "Sleep",
+        container = MaterialTheme.colorScheme.surfaceVariant,
+        stats = stats, rowsTitle = rowsTitle, rows = rows,
+    ) { colors ->
+        Column {
+            SleepHypnogram(chart, colors = colors)
+            if (chart != null) {
+                Spacer(Modifier.height(8.dp))
+                Text(SleepChartData.totalsLine(chart.summary), style = MaterialTheme.typography.bodySmall)
+                Text(
+                    "Bed ${Fmt.time(chart.start)} · rise ${Fmt.time(chart.end)} · ${Fmt.date(chart.start)}",
+                    style = MaterialTheme.typography.bodySmall,
+                )
+            }
+        }
     }
 }
 

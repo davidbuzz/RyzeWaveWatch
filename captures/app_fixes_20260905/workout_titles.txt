@@ -1,0 +1,13 @@
+tapping 451,1478 ('Workout')
+  163, 1045          TextView       Past workouts
+  339, 1173          TextView       Outdoor Walking · Sat 5 Sep 08:35
+  339, 1283          TextView       02:38 · 155 m · 16:58 /km · avg 99 bpm
+saved /home/buzz/RyzeWaveWatch/captures/app_fixes_20260905/workout_list_outdoor_walking.png (142005 bytes)
+row text: 'Outdoor Walking · Sat 5 Sep 08:35'
+tapping 339,1173 ('Outdoor Walking · Sat 5 Sep 08:35')
+  221,  261          TextView       Outdoor Walking
+  120,  334          TextView       Duration
+   49,  126          View           Back
+  402,  126          TextView       Outdoor Walking · Sat 5 Sep 08:35
+saved /home/buzz/RyzeWaveWatch/captures/app_fixes_20260905/workout_detail_outdoor_walking.png (131901 bytes)
+tapping 49,126 ('Back')

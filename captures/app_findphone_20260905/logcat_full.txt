@@ -1,0 +1,731 @@
+--------- beginning of main
+09-05 09:47:24.276 I/adbd    ( 1298): adbd service requested 'shell,v2,raw:pidof au.buzz.ryzewave'
+09-05 09:47:24.361 I/adbd    ( 1298): adbd service requested 'shell,v2,raw:dumpsys audio'
+09-05 09:47:24.564 I/adbd    ( 1298): adbd service requested 'shell,v2,raw:am broadcast -n au.buzz.ryzewave/.debug.DebugEventReceiver -a au.buzz.ryzewave.debug.FIND_PHONE --ez start true'
+09-05 09:47:24.634 I/ActivityManager( 1870): Broadcasting: Intent { act=au.buzz.ryzewave.debug.FIND_PHONE flg=0x400000 cmp=au.buzz.ryzewave/.debug.DebugEventReceiver (has extras) }
+--------- beginning of system
+09-05 09:47:24.636 I/ActivityManager( 1870): Enqueued broadcast Intent { act=au.buzz.ryzewave.debug.FIND_PHONE flg=0x400000 cmp=au.buzz.ryzewave/.debug.DebugEventReceiver (has extras) }: 0
+09-05 09:47:24.641 I/DebugEvent( 3590): injecting WatchEvent.FindPhone(start=true) (debug hook)
+09-05 09:47:24.651 I/FindPhone( 3590): notification posted
+09-05 09:47:24.671 I/FindPhone( 3590): alarm volume raised 6 -> 7 for the ring
+09-05 09:47:24.684 I/vol.Events( 2270): writeEvent level_changed STREAM_ALARM 7
+09-05 09:47:24.785 I/HidlServiceManagement( 1404): Trying to get transport of android.hardware.media.omx@1.0::IOmx/default without hwservicemanager
+09-05 09:47:24.862 W/NotificationHistory( 1870): Attempted to add notif for locked/gone/disabled user 0
+09-05 09:47:24.865 W/mediaserver( 1404): AIBinder_linkToDeath is being called with a non-null cookie and no onUnlink callback set. This might not be intended. AIBinder_DeathRecipient_setOnUnlinked should be called first.
+09-05 09:47:24.867 W/mediaserver( 1404): AIBinder_linkToDeath is being called with a non-null cookie and no onUnlink callback set. This might not be intended. AIBinder_DeathRecipient_setOnUnlinked should be called first.
+09-05 09:47:24.867 W/mediaserver( 1404): AIBinder_linkToDeath is being called with a non-null cookie and no onUnlink callback set. This might not be intended. AIBinder_DeathRecipient_setOnUnlinked should be called first.
+09-05 09:47:25.031 W/TouchableRegionManager( 2270): onHeadsUpPinnedModeChanged
+09-05 09:47:25.042 E/ApplicationHelper( 1870): Fail to get PackageManager
+09-05 09:47:25.046 I/netd    ( 1149): tetherGetStats() -> {[]} <2.55ms>
+09-05 09:47:25.058 I/FindPhone( 3590): ringtone content://settings/system/alarm_alert playing on the alarm stream
+09-05 09:47:25.059 I/GenericSource( 1404): start
+09-05 09:47:25.061 E/ApplicationHelper( 1870): Fail to get PackageManager
+09-05 09:47:25.064 I/FlashNotifController( 1870): startFlashNotification: type=2, tag=alarm
+09-05 09:47:25.078 I/FindPhone( 3590): vibrating
+09-05 09:47:25.080 I/FindPhone( 3590): find phone (watch): ringing for up to 30 s
+09-05 09:47:25.081 I/GraphFactory( 3590): notify: dropped au.buzz.ryzewave: ongoing
+09-05 09:47:25.081 I/WatchNotify( 3590): posted au.buzz.ryzewave 0|au.buzz.ryzewave|1002|null|10378: dropped
+09-05 09:47:25.084 I/ActivityManager( 1870): Broadcast completed: result=0
+09-05 09:47:25.088 I/libPerfCtl( 1184): xgfGetFPS pid:2270 fps:-1
+09-05 09:47:25.088 I/GraphFactory( 3590): notify: dropped au.buzz.ryzewave: ongoing
+09-05 09:47:25.089 I/WatchNotify( 3590): posted au.buzz.ryzewave 0|au.buzz.ryzewave|2147483647|ranker_group|10378|ranker_group: dropped
+09-05 09:47:25.097 I/BufferQueueDebug( 1227): [Surface(name=7e0270b StatusBar)/@0xff9fc94 - animation-leash of insets_animation#2280](this:0xb4000071637afea0,id:-1,api:0,p:-1,c:-1) BufferQueue core=(1227:/system/bin/surfaceflinger)
+09-05 09:47:25.099 I/hwcomposer( 1163): [HWCDisplay] (0 updateFps():3644), (type:1, mode:2) fps:0.499033,dur:2003.87,max:2003.87,min:2003.87  
+09-05 09:47:25.100 E/ApplicationHelper( 1870): Fail to get PackageManager
+09-05 09:47:25.102 I/Vibrator( 1204): Vibrator on for timeoutMs: 600
+09-05 09:47:25.105 I/CCodec  ( 1404): setting up 'default' as default (vendor) store
+09-05 09:47:25.115 I/BufferQueueDebug( 1227): [NotificationShade#2281](this:0xb4000071637f71b0,id:-1,api:0,p:-1,c:-1) BufferQueue core=(1227:/system/bin/surfaceflinger)
+09-05 09:47:25.115 I/BufferQueueProducer( 1227): [StatusBar#82](this:0xb400007163793700,id:-1,api:0,p:-1,c:1227) queueBuffer: fps=0.04 dur=25073.27 max=25073.27 min=25073.27
+09-05 09:47:25.116 I/SurfaceFlinger( 1227): onHandleDestroyed: name=Surface(name=7e0270b StatusBar)/@0xff9fc94 - animation-leash of insets_animation#2277, layerId=2277, parentId=0
+09-05 09:47:25.116 I/WindowManager( 1870): Relayout Window{f94759 u0 NotificationShade}: oldVis=4 newVis=0 focusMayChange = true requestedWidth = 720 requestedHeight = 1604 outFrames = ClientWindowFrames{frame=[0,0][720,1604] display=[0,0][720,1604] parentFrame=[0,0][0,0]} outSurfaceControl = Surface(name=NotificationShade)/@0x622d431
+09-05 09:47:25.132 I/BufferQueueDebug( 1227): [Surface(name=7e0270b StatusBar)/@0xff9fc94 - animation-leash of insets_animation#2277](this:0xb4000071635eb230,id:-1,api:0,p:-1,c:1227) onDestructor()
+09-05 09:47:25.210 I/BpBinder( 1455): onLastStrongRef automatically unlinking death recipients: android.hardware.media.bufferpool2.IAccessor
+09-05 09:47:25.211 I/BpBinder( 1455): onLastStrongRef automatically unlinking death recipients: android.hardware.media.bufferpool2.IAccessor
+09-05 09:47:25.219 W/mediaserver( 1404): AIBinder_linkToDeath is being called with a non-null cookie and no onUnlink callback set. This might not be intended. AIBinder_DeathRecipient_setOnUnlinked should be called first.
+09-05 09:47:25.219 I/CCodec  ( 1404): Created component [c2.android.vorbis.decoder]
+09-05 09:47:25.240 I/CCodecConfig( 1404): query failed after returning 8 values (BAD_INDEX)
+09-05 09:47:25.248 I/CCodecConfig( 1404): query failed after returning 8 values (BAD_INDEX)
+09-05 09:47:25.249 I/MediaCodec( 1404): MediaCodec will operate in async mode
+09-05 09:47:25.262 I/CCodecBufferChannel( 1404): [c2.android.vorbis.decoder#234] Created output block pool with allocatorID 16 => poolID 60 - OK
+09-05 09:47:25.266 E/Codec2-ComponentInterface( 1455): We have a failed config
+09-05 09:47:25.286 W/mediaswcodec( 1455): AIBinder_linkToDeath is being called with a non-null cookie and no onUnlink callback set. This might not be intended. AIBinder_DeathRecipient_setOnUnlinked should be called first.
+09-05 09:47:25.286 W/mediaserver( 1404): AIBinder_linkToDeath is being called with a non-null cookie and no onUnlink callback set. This might not be intended. AIBinder_DeathRecipient_setOnUnlinked should be called first.
+09-05 09:47:25.302 W/mediaswcodec( 1455): AIBinder_linkToDeath is being called with a non-null cookie and no onUnlink callback set. This might not be intended. AIBinder_DeathRecipient_setOnUnlinked should be called first.
+09-05 09:47:25.328 I/QAWController( 2270): Re-creating the QAW client to avoid stale.
+09-05 09:47:25.328 I/QAWController( 2270): Re-creating the QAW client to avoid stale.
+09-05 09:47:25.329 I/QAWController( 2270): Re-creating the QAW client to avoid stale.
+09-05 09:47:25.345 W/AudioFlinger_Threads( 1210): createTrack_l(): mismatch between requested flags (00000008) and output flags (00000006)
+09-05 09:47:25.379 E/ApplicationHelper( 1870): Fail to get PackageManager
+09-05 09:47:25.379 E/ApplicationHelper( 1870): Fail to get PackageManager
+09-05 09:47:25.380 E/ApplicationHelper( 1870): Fail to get PackageManager
+09-05 09:47:25.380 E/ApplicationHelper( 1870): Fail to get PackageManager
+09-05 09:47:25.416 W/BitmapDrawable( 2638): BitmapDrawable created with null Bitmap
+09-05 09:47:25.416 W/BitmapDrawable( 2638): BitmapDrawable created with null Bitmap
+09-05 09:47:25.416 W/BitmapDrawable( 2638): BitmapDrawable created with null Bitmap
+09-05 09:47:25.416 I/QAWalletSvc( 2638): QAW tile tap fix enabled, using home intent for placeholder. [CONTEXT service_id=79 ]
+09-05 09:47:25.416 I/QAWalletSvc( 2638): QAW tile tap fix enabled, using home intent for placeholder. [CONTEXT service_id=79 ]
+09-05 09:47:25.416 I/QAWalletSvc( 2638): QAW tile tap fix enabled, using home intent for placeholder. [CONTEXT service_id=79 ]
+09-05 09:47:25.486 W/AudioALSAHardware( 1158): setParameters(), set vip fail
+09-05 09:47:25.509 I/AudioALSAStreamOut( 1158): updateSourceMetadata(), do nothing source_metadata = 0x6fe869dfe8
+09-05 09:47:25.515 I/AHAL_Stream( 1158): start()
+09-05 09:47:25.580 W/aurisys_controller( 1158): lib_name fsm_audio, scene 0, no active handler!!
+09-05 09:47:25.580 W/aurisys_controller( 1158): lib_name fsm_audio, scene 1, no active handler!!
+09-05 09:47:25.580 W/aurisys_controller( 1158): lib_name fsm_audio, scene 6, no active handler!!
+09-05 09:47:25.580 W/AudioALSADeviceConfigManager( 1158): ApplyDeviceTurnonSequenceByName(), fs1815_skt_aurisys: enable left channel ramp for dual_speaker_output, rampNeeded=1
+09-05 09:47:25.607 W/AudioALSAPlaybackHandlerBase( 1158): getQueuedFramesInfo(), mTimeStampValid false!!
+09-05 09:47:25.626 W/AudioALSAPlaybackHandlerBase( 1158): getQueuedFramesInfo(), mTimeStampValid false!!
+09-05 09:47:25.632 I/AudioALSAStreamOut( 1158): updateSourceMetadata(), do nothing source_metadata = 0x6fe869dfe8
+09-05 09:47:25.706 I/WifiHAL ( 2170): feature_set=0x8488341a
+09-05 09:47:25.985 I/Vibrator( 1204): Vibrator on for timeoutMs: 600
+09-05 09:47:26.088 I/libPerfCtl( 1184): xgfGetFPS pid:2270 fps:-1
+09-05 09:47:26.886 I/Vibrator( 1204): Vibrator on for timeoutMs: 600
+09-05 09:47:27.089 I/libPerfCtl( 1184): xgfGetFPS pid:2270 fps:-1
+09-05 09:47:27.154 I/BufferQueueProducer( 1227): [NotificationShade#2281](this:0xb4000071637f71b0,id:-1,api:0,p:-1,c:1227) queueBuffer: fps=11.56 dur=1989.41 max=1554.69 min=16.07
+09-05 09:47:27.157 I/hwcomposer( 1163): [HWCDisplay] (0 updateFps():3644), (type:1, mode:2) fps:13.604856,dur:2058.09,max:1554.99,min:14.57  
+09-05 09:47:28.089 I/libPerfCtl( 1184): xgfGetFPS pid:2270 fps:-1
+09-05 09:47:28.099 I/adbd    ( 1298): adbd service requested 'exec:screencap '-p''
+09-05 09:47:28.107 I/BufferQueueProducer( 1227): [au.buzz.ryzewave/au.buzz.ryzewave.MainActivity#2275](this:0xb4000071637c3d90,id:-1,api:0,p:-1,c:1227) queueBuffer: fps=0.20 dur=5014.78 max=5014.78 min=5014.78
+09-05 09:47:28.157 I/BufferQueueProducer( 1227): [NotificationShade#2281](this:0xb4000071637f71b0,id:-1,api:0,p:-1,c:1227) queueBuffer: fps=59.84 dur=1002.74 max=17.41 min=16.13
+09-05 09:47:28.159 I/hwcomposer( 1163): [HWCDisplay] (0 updateFps():3644), (type:1, mode:2) fps:59.840946,dur:1002.66,max:18.84,min:14.97  
+09-05 09:47:28.316 W/BpBinder( 4095): Linking to death on android.gui.ISurfaceComposer but there are no threads (yet?) listening to incoming transactions. See ProcessState::startThreadPool and ProcessState::setThreadPoolMaxThreadCount. Generally you should setup the binder threadpool before other initialization steps.
+09-05 09:47:28.317 W/ProcessState( 4095): Extra binder thread started, but 0 threads requested. Do not use *startThreadPool when zero threads are requested.
+09-05 09:47:28.357 I/GrallocExtra( 4095): gralloc_extra_query:is_SW3D 0
+09-05 09:47:28.358 I/DMABUFHEAPS( 4095): Using DMA-BUF heap named: mtk_mm
+09-05 09:47:28.358 I/DMABUFHEAPS( 4095): Using DMA-BUF heap named: mtk_mm-uncached
+09-05 09:47:28.358 I/DMABUFHEAPS( 4095): Using DMA-BUF heap named: mtk_svp_region
+09-05 09:47:28.358 I/DMABUFHEAPS( 4095): Using DMA-BUF heap named: mtk_prot_region
+09-05 09:47:28.358 I/DMABUFHEAPS( 4095): Using DMA-BUF heap named: mtk_wfd_region
+09-05 09:47:28.533 W/RefBase ( 4095): RefBase: Explicit destruction, weak count = 0 (in 0x7f563fc858). Use sp<> to manage this object.
+09-05 09:47:28.563 I/thermal_repeater( 1421): [recvMdThermalInfo] ret=30, strLen=127,  3, 40, -127, -28402, 32767, 0
+09-05 09:47:28.582 I/adbd    ( 1298): adbd service requested 'shell,v2,raw:cmd statusbar expand-notifications'
+09-05 09:47:28.685 I/Vibrator( 1204): Vibrator on for timeoutMs: 600
+09-05 09:47:28.728 I/WifiHAL ( 2170): feature_set=0x8488341a
+09-05 09:47:28.742 I/BufferQueueProducer( 1227): [StatusBar#82](this:0xb400007163793700,id:-1,api:0,p:-1,c:1227) queueBuffer: fps=2.48 dur=3626.86 max=3392.87 min=16.47
+09-05 09:47:28.743 I/BpBinder( 1227): onLastStrongRef automatically unlinking death recipients: 
+09-05 09:47:28.769 I/BufferQueueDebug( 1227): [Surface(name=81bb773 NavigationBar0)/@0xde2b681 - animation-leash of insets_animation#2282](this:0xb4000071637cf3d0,id:-1,api:0,p:-1,c:-1) BufferQueue core=(1227:/system/bin/surfaceflinger)
+09-05 09:47:28.775 W/WindowManager( 1870): Changing focus from Window{75f65f2 u0 au.buzz.ryzewave/au.buzz.ryzewave.MainActivity} to Window{f94759 u0 NotificationShade} displayId=0 Callers=com.android.server.wm.RootWindowContainer.updateFocusedWindowLocked:470 com.android.server.wm.WindowManagerService.updateFocusedWindowLocked:6674 com.android.server.wm.WindowManagerService.relayoutWindowInner:2692 com.android.server.wm.WindowManagerService.relayoutWindow:2362 
+09-05 09:47:28.776 I/BufferQueueDebug( 1227): [Surface(name=81bb773 NavigationBar0)/@0xde2b681 - animation-leash of insets_animation#2283](this:0xb4000071637825a0,id:-1,api:0,p:-1,c:-1) BufferQueue core=(1227:/system/bin/surfaceflinger)
+09-05 09:47:28.778 I/BufferQueueDebug( 1227): [Surface(name=7e0270b StatusBar)/@0xff9fc94 - animation-leash of insets_animation#2284](this:0xb4000071637be270,id:-1,api:0,p:-1,c:-1) BufferQueue core=(1227:/system/bin/surfaceflinger)
+09-05 09:47:28.779 I/mtkpower@impl( 1193): [setMode] type:6, enabled:1
+09-05 09:47:28.780 E/mtkpower@impl( 1193): [setMode] unknown type
+09-05 09:47:28.821 I/BufferQueueProducer( 1227): [FramebufferSurface](this:0xb4000072a35d6370,id:-1,api:1,p:1227,c:1227) queueBuffer: fps=0.02 dur=610860.29 max=610631.78 min=14.58
+09-05 09:47:28.826 I/BufferQueueProducer( 1227): [NavigationBar0#1654](this:0xb40000716378dbe0,id:-1,api:0,p:-1,c:1227) queueBuffer: fps=0.17 dur=60341.93 max=60192.18 min=16.40
+09-05 09:47:28.828 I/SurfaceFlinger( 1227): onHandleDestroyed: name=Surface(name=7e0270b StatusBar)/@0xff9fc94 - animation-leash of insets_animation#2280, layerId=2280, parentId=0
+09-05 09:47:28.828 I/SurfaceFlinger( 1227): onHandleDestroyed: name=Surface(name=81bb773 NavigationBar0)/@0xde2b681 - animation-leash of insets_animation#2282, layerId=2282, parentId=0
+09-05 09:47:28.828 I/SurfaceFlinger( 1227): onHandleDestroyed: name=Surface(name=81bb773 NavigationBar0)/@0xde2b681 - animation-leash of insets_animation#2276, layerId=2276, parentId=0
+09-05 09:47:28.851 I/BufferQueueDebug( 1227): [Surface(name=7e0270b StatusBar)/@0xff9fc94 - animation-leash of insets_animation#2280](this:0xb4000071637afea0,id:-1,api:0,p:-1,c:1227) onDestructor()
+09-05 09:47:28.851 I/BufferQueueDebug( 1227): [Surface(name=81bb773 NavigationBar0)/@0xde2b681 - animation-leash of insets_animation#2276](this:0xb4000071637c1000,id:-1,api:0,p:-1,c:1227) onDestructor()
+09-05 09:47:28.852 I/BufferQueueDebug( 1227): [Surface(name=81bb773 NavigationBar0)/@0xde2b681 - animation-leash of insets_animation#2282](this:0xb4000071637cf3d0,id:-1,api:0,p:-1,c:1227) onDestructor()
+09-05 09:47:28.908 I/mtkpower@impl( 1193): [setMode] type:6, enabled:0
+09-05 09:47:28.909 E/mtkpower@impl( 1193): [setMode] unknown type
+09-05 09:47:29.089 I/libPerfCtl( 1184): xgfGetFPS pid:1227 fps:-1
+09-05 09:47:29.089 I/libPerfCtl( 1184): xgfGetFPS pid:2270 fps:-1
+09-05 09:47:29.089 I/libPerfCtl( 1184): xgfGetFPS pid:3590 fps:-1
+09-05 09:47:29.210 I/BufferQueueProducer( 1227): [NotificationShade#2281](this:0xb4000071637f71b0,id:-1,api:0,p:-1,c:1227) queueBuffer: fps=33.23 dur=1053.12 max=383.65 min=16.29
+09-05 09:47:29.224 I/mtkpower@impl( 1193): [setMode] type:6, enabled:1
+09-05 09:47:29.225 E/mtkpower@impl( 1193): [setMode] unknown type
+09-05 09:47:29.225 I/hwcomposer( 1163): [HWCDisplay] (0 updateFps():3644), (type:1, mode:2) fps:35.651215,dur:1065.88,max:360.33,min:15.28  
+09-05 09:47:29.325 I/mtkpower@impl( 1193): [setMode] type:6, enabled:0
+09-05 09:47:29.325 E/mtkpower@impl( 1193): [setMode] unknown type
+09-05 09:47:29.450 I/mtkpower@impl( 1193): [setMode] type:6, enabled:1
+09-05 09:47:29.451 E/mtkpower@impl( 1193): [setMode] unknown type
+09-05 09:47:29.586 I/Vibrator( 1204): Vibrator on for timeoutMs: 600
+09-05 09:47:29.822 I/BufferQueueProducer( 1227): [FramebufferSurface](this:0xb4000072a35d6370,id:-1,api:1,p:1227,c:1227) queueBuffer: fps=26.98 dur=1000.89 max=360.20 min=11.79
+09-05 09:47:29.963 I/mtkpower@impl( 1193): [setMode] type:6, enabled:0
+09-05 09:47:29.963 E/mtkpower@impl( 1193): [setMode] unknown type
+09-05 09:47:30.090 I/libPerfCtl( 1184): xgfGetFPS pid:1227 fps:-1
+09-05 09:47:30.090 I/libPerfCtl( 1184): xgfGetFPS pid:2270 fps:-1
+09-05 09:47:30.485 I/Vibrator( 1204): Vibrator on for timeoutMs: 600
+09-05 09:47:30.648 I/adbd    ( 1298): adbd service requested 'exec:screencap '-p''
+09-05 09:47:30.874 W/BpBinder( 4105): Linking to death on android.gui.ISurfaceComposer but there are no threads (yet?) listening to incoming transactions. See ProcessState::startThreadPool and ProcessState::setThreadPoolMaxThreadCount. Generally you should setup the binder threadpool before other initialization steps.
+09-05 09:47:30.875 W/ProcessState( 4105): Extra binder thread started, but 0 threads requested. Do not use *startThreadPool when zero threads are requested.
+09-05 09:47:30.916 I/GrallocExtra( 4105): gralloc_extra_query:is_SW3D 0
+09-05 09:47:30.917 I/DMABUFHEAPS( 4105): Using DMA-BUF heap named: mtk_mm
+09-05 09:47:30.917 I/DMABUFHEAPS( 4105): Using DMA-BUF heap named: mtk_mm-uncached
+09-05 09:47:30.917 I/DMABUFHEAPS( 4105): Using DMA-BUF heap named: mtk_svp_region
+09-05 09:47:30.917 I/DMABUFHEAPS( 4105): Using DMA-BUF heap named: mtk_prot_region
+09-05 09:47:30.917 I/DMABUFHEAPS( 4105): Using DMA-BUF heap named: mtk_wfd_region
+09-05 09:47:31.057 I/Finsky  ( 1041): [68] Stats for Executor: LightweightExecutor xuh@da8740a[Running, pool size = 4, active threads = 0, queued tasks = 0, completed tasks = 326]
+09-05 09:47:31.058 I/Finsky  ( 1041): [68] Stats for Executor: BlockingExecutor xuh@4a8e52d[Running, pool size = 2, active threads = 0, queued tasks = 0, completed tasks = 51]
+09-05 09:47:31.070 I/Finsky  ( 1041): [68] Stats for Executor: bgExecutor xuh@e41fc5b[Running, pool size = 4, active threads = 0, queued tasks = 0, completed tasks = 639]
+09-05 09:47:31.089 I/libPerfCtl( 1184): xgfGetFPS pid:1227 fps:-1
+09-05 09:47:31.090 I/libPerfCtl( 1184): xgfGetFPS pid:2270 fps:-1
+09-05 09:47:31.119 W/RefBase ( 4105): RefBase: Explicit destruction, weak count = 0 (in 0x6fac5fa858). Use sp<> to manage this object.
+09-05 09:47:31.131 I/lowmemorykiller(  375): Kill 'com.google.android.apps.nbu.files' (3339), uid 10137, oom_score_adj 955 to free 96296kB rss, 32900kB swap; reason: device is not responding
+09-05 09:47:31.133 E/lowmemorykiller(  375): process_mrelease 3339 failed: No such process
+09-05 09:47:31.160 I/adbd    ( 1298): adbd service requested 'shell,v2,raw:dumpsys notification --noredact'
+09-05 09:47:31.169 I/Zygote  ( 1150): Process 3339 exited due to signal 9 (Killed)
+09-05 09:47:31.169 I/ActivityManager( 1870): Process com.google.android.apps.nbu.files (pid 3339) has died: cch+55 CEM 
+09-05 09:47:31.170 I/libprocessgroup( 1870): Removed cgroup /sys/fs/cgroup/uid_10137/pid_3339
+09-05 09:47:31.170 W/libprocessgroup( 1870): RemoveCgroup: /dev/memcg/apps/uid_10137/pid_3339 does not exist.
+09-05 09:47:31.172 I/mtkpower_client( 1870): [PowerHal_Wrap_notifyAppState] com.google.android.apps.nbu.files/com.google.android.apps.nbu.files pid=3339 activityId:3339 state:3
+09-05 09:47:31.173 I/vendor.mediatek.hardware.mtkpower_applist-service.mediatek( 1184): packName: com.google.android.apps.nbu.files actName: com.google.android.apps.nbu.files pid: 3339 activityId: 3339 uid: 10137 state: 3
+09-05 09:47:31.173 I/MTK_APPList( 1184): [notifyAPPstate] com.google.android.apps.nbu.files/com.google.android.apps.nbu.files, pid=3339, activityId=3339, uid=10137, state:DEAD, fps:-1, win:0
+09-05 09:47:31.173 I/MTK_APPList( 1184): [notifyAPPstate] multi_resumed_app_count: 1
+09-05 09:47:31.173 I/MTK_APPList( 1184): [notifyAPPstate] multi_resumed_app_info[0] au.buzz.ryzewave/au.buzz.ryzewave.MainActivity, pid:3590, activityId:169424530, fps:-1, isMultiWindow:0
+09-05 09:47:31.173 I/MTK_APPList( 1184): [getForegroundAPPCount] 1
+09-05 09:47:31.173 I/MTK_APPList( 1184): [notifyAPPstate] pack:com.google.android.apps.nbu.files, pid:3339, STATE_DEAD
+09-05 09:47:31.173 I/MTK_APPList( 1184): [notifyNetdUID] 10378
+09-05 09:47:31.174 I/MTK_APPList( 1184): [notifyPID] 3590
+09-05 09:47:31.175 I/libPowerHal( 1193): [perfSetSysInfo] pid type:24, 3590
+09-05 09:47:31.176 I/netd    ( 1149): tetherGetStats() -> {[]} <2.43ms>
+09-05 09:47:31.202 I/Finsky  ( 1041): [68] Stats for Executor: GrpcBackgroundExecutor xuh@64fa00b[Running, pool size = 1, active threads = 0, queued tasks = 0, completed tasks = 1]
+09-05 09:47:31.305 I/adbd    ( 1298): adbd service requested 'shell,v2,raw:dumpsys audio'
+09-05 09:47:31.392 I/adbd    ( 1298): adbd service requested 'shell,v2,raw:dumpsys audio'
+09-05 09:47:31.396 I/system_server( 1870): Background young concurrent mark compact GC freed 11MB AllocSpace bytes, 33(2148KB) LOS objects, 25% free, 66MB/89MB, paused 1.724ms,6.455ms total 114.502ms
+09-05 09:47:31.407 W/System  ( 1870): A resource failed to call close. 
+09-05 09:47:31.407 W/System  ( 1870): A resource failed to call close. 
+09-05 09:47:31.457 I/adbd    ( 1298): adbd service requested 'shell,v2,raw:dumpsys vibrator_manager'
+09-05 09:47:31.545 I/adbd    ( 1298): adbd service requested 'shell,v2,raw:uiautomator dump /sdcard/ui.xml'
+09-05 09:47:31.750 I/WifiHAL ( 2170): feature_set=0x8488341a
+09-05 09:47:31.784 I/AndroidRuntime( 4120): Using default boot image
+09-05 09:47:31.784 I/AndroidRuntime( 4120): Leaving lock profiling enabled
+09-05 09:47:31.792 I/app_process( 4120): Using generational CollectorTypeCMC GC.
+09-05 09:47:31.962 I/app_process( 4120): Priority-to-niceness mapping: 19, 16, 13, 10, 0, -2, -4, -5, -6, -8
+09-05 09:47:32.000 W/libc    ( 4120): Access denied finding property "ro.vendor.mtk.hbt_binfmt_misc_support"
+09-05 09:47:32.000 W/libc    ( 4120): Access denied finding property "ro.vendor.mtk.app32_boost_support"
+09-05 09:47:32.000 W/libc    ( 4120): Access denied finding property "ro.vendor.mtk.hbt_dyn_type"
+09-05 09:47:32.000 W/libc    ( 4120): Access denied finding property "persist.vendor.mtk.hbt_dyn_type"
+09-05 09:47:32.028 I/UiAutomation( 4120): Initialized for user 0 on display 0
+09-05 09:47:32.028 W/UiAutomation( 4120): Created with deprecatead constructor, assumes DEFAULT_DISPLAY
+09-05 09:47:32.030 I/UiAutomationManager( 1870): Registering UiTestAutomationService (id=com.android.server.accessibility/UiAutomation, flags=0x0) when called by user 0
+09-05 09:47:32.032 W/MagnificationConnectionManager( 1870): requestConnection duplicated request: connect=false, mConnectionState=DISCONNECTED
+09-05 09:47:32.034 I/BufferQueueDebug( 1227): [WindowToken{9fae161 type=2032 android.os.Binder@66f9cc8}#2285](this:0xb4000071635eb230,id:-1,api:0,p:-1,c:-1) BufferQueue core=(1227:/system/bin/surfaceflinger)
+09-05 09:47:32.039 W/MagnificationConnectionManager( 1870): requestConnection duplicated request: connect=false, mConnectionState=DISCONNECTED
+09-05 09:47:32.048 I/mtkpower@impl( 1193): [setMode] type:6, enabled:1
+09-05 09:47:32.048 E/mtkpower@impl( 1193): [setMode] unknown type
+09-05 09:47:32.056 I/BufferQueueProducer( 1227): [FramebufferSurface](this:0xb4000072a35d6370,id:-1,api:1,p:1227,c:1227) queueBuffer: fps=2.69 dur=2233.60 max=2150.26 min=14.26
+09-05 09:47:32.057 I/hwcomposer( 1163): [HWCDisplay] (0 updateFps():3644), (type:1, mode:2) fps:10.596473,dur:2831.13,max:2150.55,min:11.26  
+09-05 09:47:32.090 I/libPerfCtl( 1184): xgfGetFPS pid:1227 fps:-1
+09-05 09:47:32.090 I/libPerfCtl( 1184): xgfGetFPS pid:2270 fps:-1
+09-05 09:47:32.127 I/mtkpower@impl( 1193): [setMode] type:6, enabled:0
+09-05 09:47:32.128 E/mtkpower@impl( 1193): [setMode] unknown type
+09-05 09:47:32.286 I/Vibrator( 1204): Vibrator on for timeoutMs: 600
+09-05 09:47:33.066 W/libc    ( 4120): Access denied finding property "qemu.sf.lcd_density"
+09-05 09:47:33.066 W/libc    ( 4120): Access denied finding property "qemu.sf.lcd_density"
+09-05 09:47:33.090 I/libPerfCtl( 1184): xgfGetFPS pid:1227 fps:-1
+09-05 09:47:33.090 I/libPerfCtl( 1184): xgfGetFPS pid:2270 fps:-1
+09-05 09:47:33.090 I/libPerfCtl( 1184): xgfGetFPS pid:3590 fps:-1
+09-05 09:47:33.105 I/BufferQueueProducer( 1227): [au.buzz.ryzewave/au.buzz.ryzewave.MainActivity#2275](this:0xb4000071637c3d90,id:-1,api:0,p:-1,c:1227) queueBuffer: fps=0.20 dur=4997.61 max=4997.61 min=4997.61
+09-05 09:47:33.108 I/mtkpower@impl( 1193): [setMode] type:6, enabled:1
+09-05 09:47:33.108 E/mtkpower@impl( 1193): [setMode] unknown type
+09-05 09:47:33.119 I/BufferQueueProducer( 1227): [FramebufferSurface](this:0xb4000072a35d6370,id:-1,api:1,p:1227,c:1227) queueBuffer: fps=1.88 dur=1063.44 max=1043.34 min=20.10
+09-05 09:47:33.120 I/hwcomposer( 1163): [HWCDisplay] (0 updateFps():3644), (type:1, mode:2) fps:1.881067,dur:1063.23,max:1043.55,min:19.67  
+09-05 09:47:33.130 I/AccessibilityNodeInfoDumper( 4120): Skipping invisible child: android.view.accessibility.AccessibilityNodeInfo@88743; boundsInParent: Rect(0, 0 - 170, 47); boundsInScreen: Rect(109, 160 - 279, 160); boundsInWindow: Rect(109, 160 - 279, 160); packageName: com.android.systemui; className: android.widget.TextView; text: some-network2; error: null; maxTextLength: -1; stateDescription: null; contentDescription: null; tooltipText: null; containerTitle: null; viewIdResName: com.android.systemui:id/app_label; uniqueId: null; checkable: false; checked: false; focusable: false; focused: false; selected: false; clickable: false; longClickable: false; contextClickable: false; enabled: true; password: false; scrollable: false; granularScrollingSupported: false; importantForAccessibility: false; visible: false; actions: [AccessibilityAction: ACTION_SELECT - null, AccessibilityAction: ACTION_CLEAR_SELECTION - null, AccessibilityAction: ACTION_ACCESSIBILITY_FOCUS - null, AccessibilityAction: ACTION_NEXT_AT_MOVEMENT_GRANULARITY - null, AccessibilityAction: ACTION_PREVIOUS_AT_MOVEMENT_GRANULARITY - null, AccessibilityAction: ACTION_SET_SELECTION - null, AccessibilityAction: ACTION_SHOW_ON_SCREEN - null]; isTextSelectable: false
+09-05 09:47:33.148 I/AccessibilityNodeInfoDumper( 4120): Skipping invisible child: android.view.accessibility.AccessibilityNodeInfo@8a90c; boundsInParent: Rect(0, 0 - 170, 47); boundsInScreen: Rect(448, 160 - 618, 160); boundsInWindow: Rect(448, 160 - 618, 160); packageName: com.android.systemui; className: android.widget.TextView; text: Off; error: null; maxTextLength: -1; stateDescription: null; contentDescription: null; tooltipText: null; containerTitle: null; viewIdResName: com.android.systemui:id/app_label; uniqueId: null; checkable: false; checked: false; focusable: false; focused: false; selected: false; clickable: false; longClickable: false; contextClickable: false; enabled: true; password: false; scrollable: false; granularScrollingSupported: false; importantForAccessibility: false; visible: false; actions: [AccessibilityAction: ACTION_SELECT - null, AccessibilityAction: ACTION_CLEAR_SELECTION - null, AccessibilityAction: ACTION_ACCESSIBILITY_FOCUS - null, AccessibilityAction: ACTION_NEXT_AT_MOVEMENT_GRANULARITY - null, AccessibilityAction: ACTION_PREVIOUS_AT_MOVEMENT_GRANULARITY - null, AccessibilityAction: ACTION_SET_SELECTION - null, AccessibilityAction: ACTION_SHOW_ON_SCREEN - null]; isTextSelectable: false
+09-05 09:47:33.160 I/AccessibilityNodeInfoDumper( 4120): Skipping invisible child: android.view.accessibility.AccessibilityNodeInfo@8cad5; boundsInParent: Rect(0, 0 - 205, 47); boundsInScreen: Rect(109, 279 - 314, 279); boundsInWindow: Rect(109, 279 - 314, 279); packageName: com.android.systemui; className: android.widget.TextView; text: Off; error: null; maxTextLength: -1; stateDescription: null; contentDescription: null; tooltipText: null; containerTitle: null; viewIdResName: com.android.systemui:id/app_label; uniqueId: null; checkable: false; checked: false; focusable: false; focused: false; selected: false; clickable: false; longClickable: false; contextClickable: false; enabled: true; password: false; scrollable: false; granularScrollingSupported: false; importantForAccessibility: false; visible: false; actions: [AccessibilityAction: ACTION_SELECT - null, AccessibilityAction: ACTION_CLEAR_SELECTION - null, AccessibilityAction: ACTION_ACCESSIBILITY_FOCUS - null, AccessibilityAction: ACTION_NEXT_AT_MOVEMENT_GRANULARITY - null, AccessibilityAction: ACTION_PREVIOUS_AT_MOVEMENT_GRANULARITY - null, AccessibilityAction: ACTION_SET_SELECTION - null, AccessibilityAction: ACTION_SHOW_ON_SCREEN - null]; isTextSelectable: false
+09-05 09:47:33.160 I/AccessibilityNodeInfoDumper( 4120): Skipping invisible child: android.view.accessibility.AccessibilityNodeInfo@8ce96; boundsInParent: Rect(0, 0 - 0, 0); boundsInScreen: Rect(332, 255 - 332, 255); boundsInWindow: Rect(332, 255 - 332, 255); packageName: com.android.systemui; className: android.widget.FrameLayout; text: null; error: null; maxTextLength: -1; stateDescription: null; contentDescription: null; tooltipText: null; containerTitle: null; viewIdResName: null; uniqueId: null; checkable: false; checked: false; focusable: false; focused: false; selected: false; clickable: false; longClickable: false; contextClickable: false; enabled: true; password: false; scrollable: false; granularScrollingSupported: false; importantForAccessibility: false; visible: false; actions: [AccessibilityAction: ACTION_SELECT - null, AccessibilityAction: ACTION_CLEAR_SELECTION - null, AccessibilityAction: ACTION_ACCESSIBILITY_FOCUS - null, AccessibilityAction: ACTION_SHOW_ON_SCREEN - null]; isTextSelectable: false
+09-05 09:47:33.168 I/AccessibilityNodeInfoDumper( 4120): Skipping invisible child: android.view.accessibility.AccessibilityNodeInfo@8ec9e; boundsInParent: Rect(0, 0 - 205, 47); boundsInScreen: Rect(448, 279 - 653, 279); boundsInWindow: Rect(448, 279 - 653, 279); packageName: com.android.systemui; className: android.widget.TextView; text: On; error: null; maxTextLength: -1; stateDescription: null; contentDescription: null; tooltipText: null; containerTitle: null; viewIdResName: com.android.systemui:id/app_label; uniqueId: null; checkable: false; checked: false; focusable: false; focused: false; selected: false; clickable: false; longClickable: false; contextClickable: false; enabled: true; password: false; scrollable: false; granularScrollingSupported: false; importantForAccessibility: false; visible: false; actions: [AccessibilityAction: ACTION_SELECT - null, AccessibilityAction: ACTION_CLEAR_SELECTION - null, AccessibilityAction: ACTION_ACCESSIBILITY_FOCUS - null, AccessibilityAction: ACTION_NEXT_AT_MOVEMENT_GRANULARITY - null, AccessibilityAction: ACTION_PREVIOUS_AT_MOVEMENT_GRANULARITY - null, AccessibilityAction: ACTION_SET_SELECTION - null, AccessibilityAction: ACTION_SHOW_ON_SCREEN - null]; isTextSelectable: false
+09-05 09:47:33.169 I/AccessibilityNodeInfoDumper( 4120): Skipping invisible child: android.view.accessibility.AccessibilityNodeInfo@8f05f; boundsInParent: Rect(0, 0 - 0, 0); boundsInScreen: Rect(671, 255 - 671, 255); boundsInWindow: Rect(671, 255 - 671, 255); packageName: com.android.systemui; className: android.widget.FrameLayout; text: null; error: null; maxTextLength: -1; stateDescription: null; contentDescription: null; tooltipText: null; containerTitle: null; viewIdResName: null; uniqueId: null; checkable: false; checked: false; focusable: false; focused: false; selected: false; clickable: false; longClickable: false; contextClickable: false; enabled: true; password: false; scrollable: false; granularScrollingSupported: false; importantForAccessibility: false; visible: false; actions: [AccessibilityAction: ACTION_SELECT - null, AccessibilityAction: ACTION_CLEAR_SELECTION - null, AccessibilityAction: ACTION_ACCESSIBILITY_FOCUS - null, AccessibilityAction: ACTION_SHOW_ON_SCREEN - null]; isTextSelectable: false
+09-05 09:47:33.170 I/mtkpower@impl( 1193): [setMode] type:6, enabled:0
+09-05 09:47:33.170 E/mtkpower@impl( 1193): [setMode] unknown type
+09-05 09:47:33.185 I/Vibrator( 1204): Vibrator on for timeoutMs: 600
+09-05 09:47:33.206 I/AccessibilityNodeInfoDumper( 4120): Skipping invisible child: android.view.accessibility.AccessibilityNodeInfo@789e1f; boundsInParent: Rect(0, 0 - 84, 0); boundsInScreen: Rect(28, 378 - 112, 378); boundsInWindow: Rect(28, 378 - 112, 378); packageName: com.android.systemui; className: android.widget.Button; text: null; error: null; maxTextLength: -1; stateDescription: null; contentDescription: null; tooltipText: null; containerTitle: null; viewIdResName: com.android.systemui:id/veto; uniqueId: null; checkable: false; checked: false; focusable: true; focused: false; selected: false; clickable: true; longClickable: false; contextClickable: false; enabled: true; password: false; scrollable: false; granularScrollingSupported: false; importantForAccessibility: true; visible: false; actions: [AccessibilityAction: ACTION_FOCUS - null, AccessibilityAction: ACTION_SELECT - null, AccessibilityAction: ACTION_CLEAR_SELECTION - null, AccessibilityAction: ACTION_CLICK - null, AccessibilityAction: ACTION_ACCESSIBILITY_FOCUS - null, AccessibilityAction: ACTION_SHOW_ON_SCREEN - null]; isTextSelectable: false
+09-05 09:47:33.257 I/AccessibilityNodeInfoDumper( 4120): Skipping invisible child: android.view.accessibility.AccessibilityNodeInfo@686dcf; boundsInParent: Rect(0, 0 - 84, 0); boundsInScreen: Rect(28, 649 - 112, 649); boundsInWindow: Rect(28, 649 - 112, 649); packageName: com.android.systemui; className: android.widget.Button; text: null; error: null; maxTextLength: -1; stateDescription: null; contentDescription: null; tooltipText: null; containerTitle: null; viewIdResName: com.android.systemui:id/veto; uniqueId: null; checkable: false; checked: false; focusable: true; focused: false; selected: false; clickable: true; longClickable: false; contextClickable: false; enabled: true; password: false; scrollable: false; granularScrollingSupported: false; importantForAccessibility: true; visible: false; actions: [AccessibilityAction: ACTION_FOCUS - null, AccessibilityAction: ACTION_SELECT - null, AccessibilityAction: ACTION_CLEAR_SELECTION - null, AccessibilityAction: ACTION_CLICK - null, AccessibilityAction: ACTION_ACCESSIBILITY_FOCUS - null, AccessibilityAction: ACTION_SHOW_ON_SCREEN - null]; isTextSelectable: false
+09-05 09:47:33.295 I/AccessibilityNodeInfoDumper( 4120): Skipping invisible child: android.view.accessibility.AccessibilityNodeInfo@663e7a; boundsInParent: Rect(0, 0 - 84, 0); boundsInScreen: Rect(28, 733 - 112, 733); boundsInWindow: Rect(28, 733 - 112, 733); packageName: com.android.systemui; className: android.widget.Button; text: null; error: null; maxTextLength: -1; stateDescription: null; contentDescription: null; tooltipText: null; containerTitle: null; viewIdResName: com.android.systemui:id/veto; uniqueId: null; checkable: false; checked: false; focusable: true; focused: false; selected: false; clickable: true; longClickable: false; contextClickable: false; enabled: true; password: false; scrollable: false; granularScrollingSupported: false; importantForAccessibility: true; visible: false; actions: [AccessibilityAction: ACTION_FOCUS - null, AccessibilityAction: ACTION_SELECT - null, AccessibilityAction: ACTION_CLEAR_SELECTION - null, AccessibilityAction: ACTION_CLICK - null, AccessibilityAction: ACTION_ACCESSIBILITY_FOCUS - null, AccessibilityAction: ACTION_SHOW_ON_SCREEN - null]; isTextSelectable: false
+09-05 09:47:33.322 I/AccessibilityNodeInfoDumper( 4120): Skipping invisible child: android.view.accessibility.AccessibilityNodeInfo@674901; boundsInParent: Rect(0, 0 - 84, 0); boundsInScreen: Rect(28, 800 - 112, 800); boundsInWindow: Rect(28, 800 - 112, 800); packageName: com.android.systemui; className: android.widget.Button; text: null; error: null; maxTextLength: -1; stateDescription: null; contentDescription: null; tooltipText: null; containerTitle: null; viewIdResName: com.android.systemui:id/veto; uniqueId: null; checkable: false; checked: false; focusable: true; focused: false; selected: false; clickable: true; longClickable: false; contextClickable: false; enabled: true; password: false; scrollable: false; granularScrollingSupported: false; importantForAccessibility: true; visible: false; actions: [AccessibilityAction: ACTION_FOCUS - null, AccessibilityAction: ACTION_SELECT - null, AccessibilityAction: ACTION_CLEAR_SELECTION - null, AccessibilityAction: ACTION_CLICK - null, AccessibilityAction: ACTION_ACCESSIBILITY_FOCUS - null, AccessibilityAction: ACTION_SHOW_ON_SCREEN - null]; isTextSelectable: false
+09-05 09:47:33.385 I/AccessibilityNodeInfoDumper( 4120): Skipping invisible child: android.view.accessibility.AccessibilityNodeInfo@2ea3aa; boundsInParent: Rect(0, 0 - 84, 0); boundsInScreen: Rect(28, 885 - 112, 885); boundsInWindow: Rect(28, 885 - 112, 885); packageName: com.android.systemui; className: android.widget.Button; text: null; error: null; maxTextLength: -1; stateDescription: null; contentDescription: null; tooltipText: null; containerTitle: null; viewIdResName: com.android.systemui:id/veto; uniqueId: null; checkable: false; checked: false; focusable: true; focused: false; selected: false; clickable: true; longClickable: false; contextClickable: false; enabled: true; password: false; scrollable: false; granularScrollingSupported: false; importantForAccessibility: true; visible: false; actions: [AccessibilityAction: ACTION_FOCUS - null, AccessibilityAction: ACTION_SELECT - null, AccessibilityAction: ACTION_CLEAR_SELECTION - null, AccessibilityAction: ACTION_CLICK - null, AccessibilityAction: ACTION_ACCESSIBILITY_FOCUS - null, AccessibilityAction: ACTION_SHOW_ON_SCREEN - null]; isTextSelectable: false
+09-05 09:47:33.433 I/AccessibilityNodeInfoDumper( 4120): Skipping invisible child: android.view.accessibility.AccessibilityNodeInfo@7098bc; boundsInParent: Rect(0, 0 - 84, 0); boundsInScreen: Rect(28, 1113 - 112, 1113); boundsInWindow: Rect(28, 1113 - 112, 1113); packageName: com.android.systemui; className: android.widget.Button; text: null; error: null; maxTextLength: -1; stateDescription: null; contentDescription: null; tooltipText: null; containerTitle: null; viewIdResName: com.android.systemui:id/veto; uniqueId: null; checkable: false; checked: false; focusable: true; focused: false; selected: false; clickable: true; longClickable: false; contextClickable: false; enabled: true; password: false; scrollable: false; granularScrollingSupported: false; importantForAccessibility: true; visible: false; actions: [AccessibilityAction: ACTION_FOCUS - null, AccessibilityAction: ACTION_SELECT - null, AccessibilityAction: ACTION_CLEAR_SELECTION - null, AccessibilityAction: ACTION_CLICK - null, AccessibilityAction: ACTION_ACCESSIBILITY_FOCUS - null, AccessibilityAction: ACTION_SHOW_ON_SCREEN - null]; isTextSelectable: false
+09-05 09:47:33.473 I/AccessibilityNodeInfoDumper( 4120): Skipping invisible child: android.view.accessibility.AccessibilityNodeInfo@5e8bad; boundsInParent: Rect(0, 0 - 84, 0); boundsInScreen: Rect(28, 1286 - 112, 1286); boundsInWindow: Rect(28, 1286 - 112, 1286); packageName: com.android.systemui; className: android.widget.Button; text: null; error: null; maxTextLength: -1; stateDescription: null; contentDescription: null; tooltipText: null; containerTitle: null; viewIdResName: com.android.systemui:id/veto; uniqueId: null; checkable: false; checked: false; focusable: true; focused: false; selected: false; clickable: true; longClickable: false; contextClickable: false; enabled: true; password: false; scrollable: false; granularScrollingSupported: false; importantForAccessibility: true; visible: false; actions: [AccessibilityAction: ACTION_FOCUS - null, AccessibilityAction: ACTION_SELECT - null, AccessibilityAction: ACTION_CLEAR_SELECTION - null, AccessibilityAction: ACTION_CLICK - null, AccessibilityAction: ACTION_ACCESSIBILITY_FOCUS - null, AccessibilityAction: ACTION_SHOW_ON_SCREEN - null]; isTextSelectable: false
+09-05 09:47:33.529 I/AccessibilityNodeInfoDumper( 4120): Skipping invisible child: android.view.accessibility.AccessibilityNodeInfo@1db3c; boundsInParent: Rect(0, 0 - 572, 84); boundsInScreen: Rect(120, 0 - 692, 84); boundsInWindow: Rect(120, 0 - 692, 84); packageName: com.android.systemui; className: android.widget.LinearLayout; text: null; error: null; maxTextLength: -1; stateDescription: null; contentDescription: null; tooltipText: null; containerTitle: null; viewIdResName: com.android.systemui:id/carrier_group; uniqueId: null; checkable: false; checked: false; focusable: false; focused: false; selected: false; clickable: false; longClickable: false; contextClickable: false; enabled: true; password: false; scrollable: false; granularScrollingSupported: false; importantForAccessibility: true; visible: false; actions: [AccessibilityAction: ACTION_SELECT - null, AccessibilityAction: ACTION_CLEAR_SELECTION - null, AccessibilityAction: ACTION_ACCESSIBILITY_FOCUS - null, AccessibilityAction: ACTION_SHOW_ON_SCREEN - null]; isTextSelectable: false
+09-05 09:47:33.546 I/AccessibilityNodeInfoDumper( 4120): Skipping invisible child: android.view.accessibility.AccessibilityNodeInfo@28bab; boundsInParent: Rect(0, 0 - 0, 0); boundsInScreen: Rect(509, 42 - 509, 42); boundsInWindow: Rect(509, 42 - 509, 42); packageName: com.android.systemui; className: android.widget.FrameLayout; text: null; error: null; maxTextLength: -1; stateDescription: null; contentDescription: null; tooltipText: null; containerTitle: null; viewIdResName: null; uniqueId: null; checkable: false; checked: false; focusable: false; focused: false; selected: false; clickable: false; longClickable: false; contextClickable: false; enabled: true; password: false; scrollable: false; granularScrollingSupported: false; importantForAccessibility: false; visible: false; actions: [AccessibilityAction: ACTION_SELECT - null, AccessibilityAction: ACTION_CLEAR_SELECTION - null, AccessibilityAction: ACTION_ACCESSIBILITY_FOCUS - null, AccessibilityAction: ACTION_SHOW_ON_SCREEN - null]; isTextSelectable: false
+09-05 09:47:33.555 I/AccessibilityNodeInfoDumper( 4120): Skipping invisible child: android.view.accessibility.AccessibilityNodeInfo@2da80; boundsInParent: Rect(0, 0 - 0, 84); boundsInScreen: Rect(692, 0 - 692, 84); boundsInWindow: Rect(692, 0 - 692, 84); packageName: com.android.systemui; className: android.widget.FrameLayout; text: null; error: null; maxTextLength: -1; stateDescription: null; contentDescription: null; tooltipText: null; containerTitle: null; viewIdResName: com.android.systemui:id/privacy_container; uniqueId: null; checkable: false; checked: false; focusable: false; focused: false; selected: false; clickable: false; longClickable: false; contextClickable: false; enabled: true; password: false; scrollable: false; granularScrollingSupported: false; importantForAccessibility: false; visible: false; actions: [AccessibilityAction: ACTION_SELECT - null, AccessibilityAction: ACTION_CLEAR_SELECTION - null, AccessibilityAction: ACTION_ACCESSIBILITY_FOCUS - null, AccessibilityAction: ACTION_SHOW_ON_SCREEN - null]; isTextSelectable: false
+09-05 09:47:33.564 W/AccessibilityNodeInfoDumper( 4120): Fetch time: 495ms
+09-05 09:47:33.569 W/MagnificationConnectionManager( 1870): requestConnection duplicated request: connect=false, mConnectionState=DISCONNECTED
+09-05 09:47:33.590 I/SurfaceFlinger( 1227): onHandleDestroyed: name=WindowToken{9fae161 type=2032 android.os.Binder@66f9cc8}#2285, layerId=2285, parentId=0
+09-05 09:47:33.592 I/mtkpower@impl( 1193): [setMode] type:6, enabled:1
+09-05 09:47:33.592 E/mtkpower@impl( 1193): [setMode] unknown type
+09-05 09:47:33.607 I/BufferQueueDebug( 1227): [WindowToken{9fae161 type=2032 android.os.Binder@66f9cc8}#2285](this:0xb4000071635eb230,id:-1,api:0,p:-1,c:1227) onDestructor()
+09-05 09:47:33.672 I/mtkpower@impl( 1193): [setMode] type:6, enabled:0
+09-05 09:47:33.672 E/mtkpower@impl( 1193): [setMode] unknown type
+09-05 09:47:34.086 I/Vibrator( 1204): Vibrator on for timeoutMs: 600
+09-05 09:47:34.090 I/libPerfCtl( 1184): xgfGetFPS pid:1227 fps:-1
+09-05 09:47:34.091 I/libPerfCtl( 1184): xgfGetFPS pid:2270 fps:-1
+09-05 09:47:34.440 W/RefBase ( 4120): RefBase: Explicit destruction, weak count = 0 (in 0x74d67bb858). Use sp<> to manage this object.
+09-05 09:47:34.492 I/adbd    ( 1298): adbd service requested 'shell,v2,raw:cat /sdcard/ui.xml'
+09-05 09:47:34.541 I/CCodecConfig( 1404): query failed after returning 8 values (BAD_INDEX)
+09-05 09:47:34.578 I/adbd    ( 1298): adbd service requested 'shell,v2,raw:input tap 162 564'
+09-05 09:47:34.632 I/ThreeFingerPointerEventListener( 1870): onPointDown... pointIndex = 0, pointId = 0 currentX = 162.0, currentY = 564.0 mTouchRegion:Rect(43, 96 - 676, 1507)
+09-05 09:47:34.633 I/libPowerHal( 1193): [perfLockAcq] idx:0 hdl:2423 hint:25 pid:1193 tid:1193 duration:10000 lock_user:vendor.mediatek => ret_hdl:2423
+09-05 09:47:34.634 I/libPowerHal( 1193): [PE] MTKPOWER_HINT_APP_TOUCH update cmd:410000, param:1, pr:3
+09-05 09:47:34.634 I/libPowerHal( 1193): [PE] MTKPOWER_HINT_APP_TOUCH update cmd:400000 param:3000000 pr:3
+09-05 09:47:34.634 I/libPowerHal( 1193): [PE] MTKPOWER_HINT_APP_TOUCH update cmd:400100 param:3000000 pr:3
+09-05 09:47:34.634 I/libPowerHal( 1193): value: 1
+09-05 09:47:34.634 I/libPowerHal( 1193): [PE] MTKPOWER_HINT_APP_TOUCH update cmd:410000 param:1 pr:3
+09-05 09:47:34.635 I/libPowerHal( 1193): [setDvfsrcDevFreqOpp] opp:0, freq:3600000000
+09-05 09:47:34.635 I/libPowerHal( 1193): [PE] MTKPOWER_HINT_APP_TOUCH update cmd:1000000 param:0 pr:3
+09-05 09:47:34.635 I/libPowerHal( 1193): [recordCPUFreqInfo] set cluster[0] min(MTKPOWER_HINT_APP_TOUCH): 1700000 max(-1): -1 cluster[1] min(MTKPOWER_HINT_APP_TOUCH): 2000000 max(-1): -1
+09-05 09:47:34.635 I/libPowerHal( 1193): [perfLockAcq] Done for hdl : 2423
+09-05 09:47:34.669 I/libPowerHal( 1193): [perfLockRel] hdl:2423, idx:0
+09-05 09:47:34.669 I/libPowerHal( 1193): [PD] MTKPOWER_HINT_APP_TOUCH update cmd:410000 param:0, pr:6
+09-05 09:47:34.669 I/libPowerHal( 1193): [PD] MTKPOWER_HINT_APP_TOUCH update cmd:400000 param:-1 pr:6
+09-05 09:47:34.669 I/libPowerHal( 1193): [PD] MTKPOWER_HINT_APP_TOUCH update cmd:400100 param:-1 pr:6
+09-05 09:47:34.669 I/libPowerHal( 1193): value: 0
+09-05 09:47:34.669 I/libPowerHal( 1193): [PD] MTKPOWER_HINT_APP_TOUCH update cmd:410000 param:0 pr:6
+09-05 09:47:34.669 I/ThreeFingerPointerEventListener( 1870): onPointUp
+09-05 09:47:34.670 I/libPowerHal( 1193): [PD] MTKPOWER_HINT_APP_TOUCH update cmd:1000000 param:-1 pr:6
+09-05 09:47:34.670 I/libPowerHal( 1193): [recordCPUFreqInfo] set cluster[0] min(-1): -1 max(-1): -1 cluster[1] min(-1): -1 max(-1): -1
+09-05 09:47:34.670 I/libPowerHal( 1193): [perfLockRel] Done for hdl : 2423
+09-05 09:47:34.691 I/FlashNotifController( 1870): stopFlashNotification: tag=alarm
+09-05 09:47:34.692 I/AudioALSAStreamOut( 1158): updateSourceMetadata(), do nothing source_metadata = 0x6fe869dfe8
+09-05 09:47:34.709 I/BufferQueueProducer( 1227): [NotificationShade#2281](this:0xb4000071637f71b0,id:-1,api:0,p:-1,c:1227) queueBuffer: fps=4.91 dur=5498.86 max=4813.62 min=16.41
+09-05 09:47:34.709 I/BpBinder( 1455): onLastStrongRef automatically unlinking death recipients: android.hardware.media.bufferpool2.IClientManager
+09-05 09:47:34.712 I/mtkpower@impl( 1193): [setMode] type:6, enabled:1
+09-05 09:47:34.712 E/mtkpower@impl( 1193): [setMode] unknown type
+09-05 09:47:34.718 W/AMessage( 1404): failed to post message as target looper for handler 0 is gone.
+09-05 09:47:34.723 I/BufferQueueProducer( 1227): [FramebufferSurface](this:0xb4000072a35d6370,id:-1,api:1,p:1227,c:1227) queueBuffer: fps=1.87 dur=1604.22 max=1107.96 min=16.54
+09-05 09:47:34.724 I/hwcomposer( 1163): [HWCDisplay] (0 updateFps():3644), (type:1, mode:2) fps:1.870218,dur:1604.09,max:1107.93,min:16.51  
+09-05 09:47:34.728 I/FindPhone( 3590): alarm volume restored to 6
+09-05 09:47:34.732 I/FindPhone( 3590): find phone: stopped (user)
+09-05 09:47:34.732 I/WatchService( 3590): find phone: stop tapped (stopped)
+09-05 09:47:34.733 W/MediaPlayer( 3590): mediaplayer went away with unhandled events
+09-05 09:47:34.733 W/MediaPlayer( 3590): mediaplayer went away with unhandled events
+09-05 09:47:34.752 W/TouchableRegionManager( 2270): onHeadsUpPinnedModeChanged
+09-05 09:47:34.752 I/vol.Events( 2270): writeEvent level_changed STREAM_ALARM 6
+09-05 09:47:34.755 W/AudioPolicyManagerCustomImpl( 1210): [MTK_APM_Route]setOutputDevices() mIoHandle 13 mId 1 device (0x2)(0x1, 0x2, 0x4, 0x8, 0x10, 0x20, 0x40, 0x400, 0x800, 0x1000, 0x4000, 0x100000, 0x4000000) delayMs 84 force 0 size 4
+09-05 09:47:34.755 I/AudioALSAStreamOut( 1158): updateSourceMetadata(), do nothing source_metadata = 0x6fcaebdfe8
+09-05 09:47:34.763 D/APM_AudioPolicyManager( 1210): [MTK_APM_Output]releaseOutput() 13 portId 45
+09-05 09:47:34.773 I/WifiHAL ( 2170): feature_set=0x8488341a
+09-05 09:47:34.810 I/BufferQueueProducer( 1227): [StatusBar#82](this:0xb400007163793700,id:-1,api:0,p:-1,c:1227) queueBuffer: fps=0.82 dur=6067.80 max=5365.49 min=16.71
+09-05 09:47:34.962 I/adbd    ( 1298): adbd service requested 'shell,v2:export ANDROID_LOG_TAGS="''"; exec logcat '-d' '-v' 'time' '-s' 'FindPhone' 'DebugEvent' 'WatchService''
+09-05 09:47:35.090 I/libPerfCtl( 1184): xgfGetFPS pid:1227 fps:-1
+09-05 09:47:35.090 I/libPerfCtl( 1184): xgfGetFPS pid:2270 fps:-1
+09-05 09:47:35.424 W/libc    ( 1870): Access denied finding property "vendor.mbrain.battery"
+09-05 09:47:35.427 W/libc    ( 1870): Access denied finding property "vendor.mbrain.battery"
+09-05 09:47:35.530 I/mtkpower@impl( 1193): [setMode] type:6, enabled:0
+09-05 09:47:35.530 E/mtkpower@impl( 1193): [setMode] unknown type
+09-05 09:47:35.702 I/AHAL_Stream( 1158): pause()
+09-05 09:47:35.704 I/AHAL_Stream( 1158): flush()
+09-05 09:47:35.730 W/AudioALSAHardwareResourceManager( 1158): CloseSpeakerPath advance_close_audio_fs1815_pa 0
+09-05 09:47:36.091 I/libPerfCtl( 1184): xgfGetFPS pid:1227 fps:-1
+09-05 09:47:36.091 I/libPerfCtl( 1184): xgfGetFPS pid:2270 fps:-1
+09-05 09:47:36.709 I/adbd    ( 1298): adbd service requested 'exec:screencap '-p''
+09-05 09:47:36.919 W/BpBinder( 4149): Linking to death on android.gui.ISurfaceComposer but there are no threads (yet?) listening to incoming transactions. See ProcessState::startThreadPool and ProcessState::setThreadPoolMaxThreadCount. Generally you should setup the binder threadpool before other initialization steps.
+09-05 09:47:36.919 W/ProcessState( 4149): Extra binder thread started, but 0 threads requested. Do not use *startThreadPool when zero threads are requested.
+09-05 09:47:36.967 I/GrallocExtra( 4149): gralloc_extra_query:is_SW3D 0
+09-05 09:47:36.969 I/DMABUFHEAPS( 4149): Using DMA-BUF heap named: mtk_mm
+09-05 09:47:36.969 I/DMABUFHEAPS( 4149): Using DMA-BUF heap named: mtk_mm-uncached
+09-05 09:47:36.969 I/DMABUFHEAPS( 4149): Using DMA-BUF heap named: mtk_svp_region
+09-05 09:47:36.969 I/DMABUFHEAPS( 4149): Using DMA-BUF heap named: mtk_prot_region
+09-05 09:47:36.969 I/DMABUFHEAPS( 4149): Using DMA-BUF heap named: mtk_wfd_region
+09-05 09:47:37.091 I/libPerfCtl( 1184): xgfGetFPS pid:1227 fps:-1
+09-05 09:47:37.092 I/libPerfCtl( 1184): xgfGetFPS pid:2270 fps:-1
+09-05 09:47:37.193 W/RefBase ( 4149): RefBase: Explicit destruction, weak count = 0 (in 0x74a537e858). Use sp<> to manage this object.
+09-05 09:47:37.235 I/adbd    ( 1298): adbd service requested 'shell,v2,raw:cmd statusbar collapse'
+09-05 09:47:37.281 I/CarrierGeographicController( 2270): mPanelClosing: true
+09-05 09:47:37.290 I/adbd    ( 1298): adbd service requested 'shell,v2,raw:dumpsys notification --noredact'
+09-05 09:47:37.298 W/WindowManager( 1870): Changing focus from Window{f94759 u0 NotificationShade} to Window{75f65f2 u0 au.buzz.ryzewave/au.buzz.ryzewave.MainActivity} displayId=0 Callers=com.android.server.wm.RootWindowContainer.updateFocusedWindowLocked:470 com.android.server.wm.WindowManagerService.updateFocusedWindowLocked:6674 com.android.server.wm.WindowManagerService.relayoutWindowInner:2692 com.android.server.wm.WindowManagerService.relayoutWindow:2362 
+09-05 09:47:37.299 I/BufferQueueDebug( 1227): [Surface(name=81bb773 NavigationBar0)/@0xde2b681 - animation-leash of insets_animation#2286](this:0xb4000071637cf3d0,id:-1,api:0,p:-1,c:-1) BufferQueue core=(1227:/system/bin/surfaceflinger)
+09-05 09:47:37.301 I/BufferQueueDebug( 1227): [Surface(name=7e0270b StatusBar)/@0xff9fc94 - animation-leash of insets_animation#2287](this:0xb4000071637c1000,id:-1,api:0,p:-1,c:-1) BufferQueue core=(1227:/system/bin/surfaceflinger)
+09-05 09:47:37.302 I/mtkpower@impl( 1193): [setMode] type:6, enabled:1
+09-05 09:47:37.302 E/mtkpower@impl( 1193): [setMode] unknown type
+09-05 09:47:37.309 I/BufferQueueProducer( 1227): [FramebufferSurface](this:0xb4000072a35d6370,id:-1,api:1,p:1227,c:1227) queueBuffer: fps=17.79 dur=2586.08 max=1838.66 min=10.47
+09-05 09:47:37.310 I/hwcomposer( 1163): [HWCDisplay] (0 updateFps():3644), (type:1, mode:2) fps:17.786812,dur:2586.19,max:1838.70,min:10.78  
+09-05 09:47:37.318 I/BufferQueueProducer( 1227): [NotificationShade#2281](this:0xb4000071637f71b0,id:-1,api:0,p:-1,c:1227) queueBuffer: fps=17.63 dur=2608.55 max=1856.01 min=16.23
+09-05 09:47:37.349 I/SurfaceFlinger( 1227): onHandleDestroyed: name=Surface(name=81bb773 NavigationBar0)/@0xde2b681 - animation-leash of insets_animation#2283, layerId=2283, parentId=0
+09-05 09:47:37.349 I/SurfaceFlinger( 1227): onHandleDestroyed: name=Surface(name=7e0270b StatusBar)/@0xff9fc94 - animation-leash of insets_animation#2284, layerId=2284, parentId=0
+09-05 09:47:37.351 I/BufferQueueDebug( 1227): [Surface(name=81bb773 NavigationBar0)/@0xde2b681 - animation-leash of insets_animation#2283](this:0xb4000071637825a0,id:-1,api:0,p:-1,c:1227) onDestructor()
+09-05 09:47:37.352 I/BufferQueueDebug( 1227): [Surface(name=7e0270b StatusBar)/@0xff9fc94 - animation-leash of insets_animation#2284](this:0xb4000071637be270,id:-1,api:0,p:-1,c:1227) onDestructor()
+09-05 09:47:37.355 I/ImeTracker( 1870): au.buzz.ryzewave:2865aadd: onRequestHide at ORIGIN_SERVER reason HIDE_SAME_WINDOW_FOCUSED_WITHOUT_EDITOR fromUser false
+09-05 09:47:37.356 I/ImeTracker( 1870): au.buzz.ryzewave:2865aadd: onCancelled at PHASE_SERVER_SHOULD_HIDE
+09-05 09:47:37.360 I/GoogleInputMethodService( 8118): GoogleInputMethodService.onFinishInput():2361 
+09-05 09:47:37.361 I/GoogleInputMethodService( 8118): GoogleInputMethodService.onStartInput():1532 onStartInput(EditorInfo{EditorInfo{packageName=au.buzz.ryzewave, inputType=0, inputTypeString=NULL, enableLearning=false, autoCorrection=false, autoComplete=false, imeOptions=0, privateImeOptions=null, actionName=UNSPECIFIED, actionLabel=null, initialSelStart=-1, initialSelEnd=-1, initialCapsMode=0, label=null, fieldId=0, fieldName=null, extras=null, hintText=null, hintLocales=[]}}, false)
+09-05 09:47:37.362 I/LatinIMEBase( 8118): LatinIMEBase.updateInputViewCoverNavigation():316 Update input view padding, isNavbarOverInputWindow=false, bottom inset=84
+09-05 09:47:37.362 I/Module  ( 8118): DeviceLockedStatusModuleProvider$Module.updateDeviceLockedStatusInternal():119 repeatCheckTimes = 0, locked = false
+09-05 09:47:37.364 W/PackageConfigPersister( 1870): App-specific configuration not found for packageName: au.buzz.ryzewave and userId: 0
+09-05 09:47:37.364 I/Module  ( 8118): DeviceLockedStatusModuleProvider$Module.updateDeviceLockedStatusInternal():119 repeatCheckTimes = 1, locked = false
+09-05 09:47:37.652 I/BufferQueueProducer( 1227): [NavigationBar0#1654](this:0xb40000716378dbe0,id:-1,api:0,p:-1,c:1227) queueBuffer: fps=0.34 dur=8825.42 max=8188.49 min=235.21
+09-05 09:47:37.752 I/BufferQueueProducer( 1227): [StatusBar#82](this:0xb400007163793700,id:-1,api:0,p:-1,c:1227) queueBuffer: fps=0.34 dur=2941.86 max=2941.86 min=2941.86
+09-05 09:47:37.789 I/WifiHAL ( 2170): feature_set=0x8488341a
+09-05 09:47:37.875 I/CarrierGeographicController( 2270): mPanelClosing: false
+09-05 09:47:37.899 I/BufferQueueDebug( 1227): [Surface(name=81bb773 NavigationBar0)/@0xde2b681 - animation-leash of insets_animation#2288](this:0xb4000071635eb230,id:-1,api:0,p:-1,c:-1) BufferQueue core=(1227:/system/bin/surfaceflinger)
+09-05 09:47:37.900 W/WindowOnBackDispatcher( 2270): sendCancelIfRunning: isInProgress=false callback=com.android.systemui.back.domain.interactor.BackActionInteractor$callback$2@ad3ad7f
+09-05 09:47:37.906 E/ApplicationHelper( 1870): Fail to get PackageManager
+09-05 09:47:37.906 I/mtkpower@impl( 1193): [setMode] type:6, enabled:0
+09-05 09:47:37.906 E/mtkpower@impl( 1193): [setMode] unknown type
+09-05 09:47:37.910 I/netd    ( 1149): tetherGetStats() -> {[]} <1.84ms>
+09-05 09:47:37.920 I/SurfaceFlinger( 1227): onHandleDestroyed: name=Surface(name=81bb773 NavigationBar0)/@0xde2b681 - animation-leash of insets_animation#2286, layerId=2286, parentId=0
+09-05 09:47:37.921 I/BufferQueueDebug( 1227): [Surface(name=7e0270b StatusBar)/@0xff9fc94 - animation-leash of insets_animation#2289](this:0xb4000071637be270,id:-1,api:0,p:-1,c:-1) BufferQueue core=(1227:/system/bin/surfaceflinger)
+09-05 09:47:37.937 I/BufferQueueDebug( 1227): [Surface(name=81bb773 NavigationBar0)/@0xde2b681 - animation-leash of insets_animation#2286](this:0xb4000071637cf3d0,id:-1,api:0,p:-1,c:1227) onDestructor()
+09-05 09:47:37.937 I/SurfaceFlinger( 1227): onHandleDestroyed: name=NotificationShade#2281, layerId=2281, parentId=0
+09-05 09:47:37.954 I/BufferQueueDebug( 1227): [NotificationShade#2281](this:0xb4000071637f71b0,id:-1,api:0,p:-1,c:1227) onDestructor()
+09-05 09:47:37.956 I/SurfaceFlinger( 1227): onHandleDestroyed: name=Surface(name=7e0270b StatusBar)/@0xff9fc94 - animation-leash of insets_animation#2287, layerId=2287, parentId=0
+09-05 09:47:37.970 I/BufferQueueDebug( 1227): [Surface(name=7e0270b StatusBar)/@0xff9fc94 - animation-leash of insets_animation#2287](this:0xb4000071637c1000,id:-1,api:0,p:-1,c:1227) onDestructor()
+09-05 09:47:38.092 I/libPerfCtl( 1184): xgfGetFPS pid:1227 fps:-1
+09-05 09:47:38.092 I/libPerfCtl( 1184): xgfGetFPS pid:2270 fps:-1
+09-05 09:47:38.103 I/BufferQueueProducer( 1227): [au.buzz.ryzewave/au.buzz.ryzewave.MainActivity#2275](this:0xb4000071637c3d90,id:-1,api:0,p:-1,c:1227) queueBuffer: fps=0.20 dur=4998.39 max=4998.39 min=4998.39
+09-05 09:47:38.583 I/thermal_repeater( 1421): [recvMdThermalInfo] ret=30, strLen=127,  3, 41, -127, -28402, 32767, 0
+09-05 09:47:39.093 I/libPerfCtl( 1184): xgfGetFPS pid:1227 fps:-1
+09-05 09:47:39.093 I/libPerfCtl( 1184): xgfGetFPS pid:2270 fps:-1
+09-05 09:47:39.093 I/libPerfCtl( 1184): xgfGetFPS pid:3590 fps:-1
+09-05 09:47:39.479 I/adbd    ( 1298): adbd service requested 'shell,v2,raw:am broadcast -n au.buzz.ryzewave/.debug.DebugEventReceiver -a au.buzz.ryzewave.debug.FIND_PHONE --ez start true'
+09-05 09:47:39.544 I/ActivityManager( 1870): Broadcasting: Intent { act=au.buzz.ryzewave.debug.FIND_PHONE flg=0x400000 cmp=au.buzz.ryzewave/.debug.DebugEventReceiver (has extras) }
+09-05 09:47:39.545 I/ActivityManager( 1870): Enqueued broadcast Intent { act=au.buzz.ryzewave.debug.FIND_PHONE flg=0x400000 cmp=au.buzz.ryzewave/.debug.DebugEventReceiver (has extras) }: 0
+09-05 09:47:39.548 I/DebugEvent( 3590): injecting WatchEvent.FindPhone(start=true) (debug hook)
+09-05 09:47:39.558 I/FindPhone( 3590): notification posted
+09-05 09:47:39.562 I/FindPhone( 3590): alarm volume raised 6 -> 7 for the ring
+09-05 09:47:39.566 I/vol.Events( 2270): writeEvent level_changed STREAM_ALARM 7
+09-05 09:47:39.582 I/HidlServiceManagement( 1404): Trying to get transport of android.hardware.media.omx@1.0::IOmx/default without hwservicemanager
+09-05 09:47:39.588 W/mediaserver( 1404): AIBinder_linkToDeath is being called with a non-null cookie and no onUnlink callback set. This might not be intended. AIBinder_DeathRecipient_setOnUnlinked should be called first.
+09-05 09:47:39.588 W/mediaserver( 1404): AIBinder_linkToDeath is being called with a non-null cookie and no onUnlink callback set. This might not be intended. AIBinder_DeathRecipient_setOnUnlinked should be called first.
+09-05 09:47:39.588 W/mediaserver( 1404): AIBinder_linkToDeath is being called with a non-null cookie and no onUnlink callback set. This might not be intended. AIBinder_DeathRecipient_setOnUnlinked should be called first.
+09-05 09:47:39.618 I/FlashNotifController( 1870): startFlashNotification: type=2, tag=alarm
+09-05 09:47:39.618 I/GenericSource( 1404): start
+09-05 09:47:39.618 I/FindPhone( 3590): ringtone content://settings/system/alarm_alert playing on the alarm stream
+09-05 09:47:39.620 I/FindPhone( 3590): vibrating
+09-05 09:47:39.622 I/FindPhone( 3590): find phone (watch): ringing for up to 30 s
+09-05 09:47:39.623 I/Vibrator( 1204): Vibrator on for timeoutMs: 600
+09-05 09:47:39.624 I/ActivityManager( 1870): Broadcast completed: result=0
+09-05 09:47:39.627 I/CCodec  ( 1404): setting up 'default' as default (vendor) store
+09-05 09:47:39.633 W/mediaserver( 1404): AIBinder_linkToDeath is being called with a non-null cookie and no onUnlink callback set. This might not be intended. AIBinder_DeathRecipient_setOnUnlinked should be called first.
+09-05 09:47:39.633 I/CCodec  ( 1404): Created component [c2.android.vorbis.decoder]
+09-05 09:47:39.642 I/CCodecConfig( 1404): query failed after returning 8 values (BAD_INDEX)
+09-05 09:47:39.646 I/CCodecConfig( 1404): query failed after returning 8 values (BAD_INDEX)
+09-05 09:47:39.647 I/MediaCodec( 1404): MediaCodec will operate in async mode
+09-05 09:47:39.651 I/CCodecBufferChannel( 1404): [c2.android.vorbis.decoder#516] Created output block pool with allocatorID 16 => poolID 62 - OK
+09-05 09:47:39.652 E/Codec2-ComponentInterface( 1455): We have a failed config
+09-05 09:47:39.656 W/mediaswcodec( 1455): AIBinder_linkToDeath is being called with a non-null cookie and no onUnlink callback set. This might not be intended. AIBinder_DeathRecipient_setOnUnlinked should be called first.
+09-05 09:47:39.656 W/mediaserver( 1404): AIBinder_linkToDeath is being called with a non-null cookie and no onUnlink callback set. This might not be intended. AIBinder_DeathRecipient_setOnUnlinked should be called first.
+09-05 09:47:39.663 W/mediaswcodec( 1455): AIBinder_linkToDeath is being called with a non-null cookie and no onUnlink callback set. This might not be intended. AIBinder_DeathRecipient_setOnUnlinked should be called first.
+09-05 09:47:39.671 W/AudioFlinger_Threads( 1210): createTrack_l(): mismatch between requested flags (00000008) and output flags (00000006)
+09-05 09:47:39.691 W/AudioALSAHardware( 1158): setParameters(), set vip fail
+09-05 09:47:39.692 I/AudioALSAStreamOut( 1158): updateSourceMetadata(), do nothing source_metadata = 0x6fe869dfe8
+09-05 09:47:39.693 I/AHAL_Stream( 1158): start()
+09-05 09:47:39.704 W/aurisys_controller( 1158): lib_name fsm_audio, scene 0, no active handler!!
+09-05 09:47:39.704 W/aurisys_controller( 1158): lib_name fsm_audio, scene 1, no active handler!!
+09-05 09:47:39.704 W/aurisys_controller( 1158): lib_name fsm_audio, scene 6, no active handler!!
+09-05 09:47:39.704 W/AudioALSADeviceConfigManager( 1158): ApplyDeviceTurnonSequenceByName(), fs1815_skt_aurisys: enable left channel ramp for dual_speaker_output, rampNeeded=1
+09-05 09:47:39.729 W/AudioALSAPlaybackHandlerBase( 1158): getQueuedFramesInfo(), mTimeStampValid false!!
+09-05 09:47:39.731 E/AudioALSAPlaybackHandlerBase( 1158): getQueuedFramesInfo(), pcm_get_htimestamp or trylock fail, ret -1, pcm_get_error 
+09-05 09:47:39.760 I/AudioALSAStreamOut( 1158): updateSourceMetadata(), do nothing source_metadata = 0x6fcaebdfe8
+09-05 09:47:39.764 W/NotificationHistory( 1870): Attempted to add notif for locked/gone/disabled user 0
+09-05 09:47:39.771 I/GraphFactory( 3590): notify: dropped au.buzz.ryzewave: ongoing
+09-05 09:47:39.771 I/WatchNotify( 3590): posted au.buzz.ryzewave 0|au.buzz.ryzewave|1002|null|10378: dropped
+09-05 09:47:39.919 W/TouchableRegionManager( 2270): onHeadsUpPinnedModeChanged
+09-05 09:47:39.925 E/ApplicationHelper( 1870): Fail to get PackageManager
+09-05 09:47:39.933 E/ApplicationHelper( 1870): Fail to get PackageManager
+09-05 09:47:39.933 I/netd    ( 1149): tetherGetStats() -> {[]} <3.90ms>
+09-05 09:47:39.956 I/BufferQueueDebug( 1227): [Surface(name=7e0270b StatusBar)/@0xff9fc94 - animation-leash of insets_animation#2290](this:0xb4000071637c1000,id:-1,api:0,p:-1,c:-1) BufferQueue core=(1227:/system/bin/surfaceflinger)
+09-05 09:47:39.960 I/hwcomposer( 1163): [HWCDisplay] (0 updateFps():3644), (type:1, mode:2) fps:15.850230,dur:2649.80,max:1854.19,min:11.94  
+09-05 09:47:39.960 E/ApplicationHelper( 1870): Fail to get PackageManager
+09-05 09:47:39.968 I/BufferQueueDebug( 1227): [NotificationShade#2291](this:0xb4000071637825a0,id:-1,api:0,p:-1,c:-1) BufferQueue core=(1227:/system/bin/surfaceflinger)
+09-05 09:47:39.971 I/WindowManager( 1870): Relayout Window{f94759 u0 NotificationShade}: oldVis=4 newVis=0 focusMayChange = true requestedWidth = 720 requestedHeight = 1604 outFrames = ClientWindowFrames{frame=[0,0][720,1604] display=[0,0][720,1604] parentFrame=[0,0][0,0]} outSurfaceControl = Surface(name=NotificationShade)/@0x508190b
+09-05 09:47:39.975 I/BufferQueueProducer( 1227): [StatusBar#82](this:0xb400007163793700,id:-1,api:0,p:-1,c:1227) queueBuffer: fps=0.45 dur=2223.42 max=2223.42 min=2223.42
+09-05 09:47:39.976 I/SurfaceFlinger( 1227): onHandleDestroyed: name=Surface(name=7e0270b StatusBar)/@0xff9fc94 - animation-leash of insets_animation#2289, layerId=2289, parentId=0
+09-05 09:47:39.992 I/BufferQueueDebug( 1227): [Surface(name=7e0270b StatusBar)/@0xff9fc94 - animation-leash of insets_animation#2289](this:0xb4000071637be270,id:-1,api:0,p:-1,c:1227) onDestructor()
+09-05 09:47:40.092 I/libPerfCtl( 1184): xgfGetFPS pid:2270 fps:-1
+09-05 09:47:40.099 W/BitmapDrawable( 2638): BitmapDrawable created with null Bitmap
+09-05 09:47:40.099 W/BitmapDrawable( 2638): BitmapDrawable created with null Bitmap
+09-05 09:47:40.099 I/QAWalletSvc( 2638): QAW tile tap fix enabled, using home intent for placeholder. [CONTEXT service_id=79 ]
+09-05 09:47:40.099 I/QAWalletSvc( 2638): QAW tile tap fix enabled, using home intent for placeholder. [CONTEXT service_id=79 ]
+09-05 09:47:40.100 W/BitmapDrawable( 2638): BitmapDrawable created with null Bitmap
+09-05 09:47:40.100 I/QAWalletSvc( 2638): QAW tile tap fix enabled, using home intent for placeholder. [CONTEXT service_id=79 ]
+09-05 09:47:40.398 E/ApplicationHelper( 1870): Fail to get PackageManager
+09-05 09:47:40.522 I/Vibrator( 1204): Vibrator on for timeoutMs: 600
+09-05 09:47:40.811 I/WifiHAL ( 2170): feature_set=0x8488341a
+09-05 09:47:40.841 I/AppSearchIcing( 1870): icing-search-engine.cc:2487: Persisting data to disk with mode 3
+09-05 09:47:40.851 I/AppSearchIcing( 1870): icing-search-engine.cc:2502: PersistToDisk completed.
+09-05 09:47:41.093 I/libPerfCtl( 1184): xgfGetFPS pid:2270 fps:-1
+09-05 09:47:41.422 I/Vibrator( 1204): Vibrator on for timeoutMs: 600
+09-05 09:47:41.658 W/libc    ( 1870): Access denied finding property "vendor.mbrain.battery"
+09-05 09:47:41.697 I/BufferQueueProducer( 1227): [StatusBar#82](this:0xb400007163793700,id:-1,api:0,p:-1,c:1227) queueBuffer: fps=7.55 dur=1721.44 max=1486.50 min=14.92
+09-05 09:47:41.697 I/BufferQueueProducer( 1227): [NotificationShade#2291](this:0xb4000071637825a0,id:-1,api:0,p:-1,c:1227) queueBuffer: fps=14.82 dur=1686.90 max=1270.42 min=14.86
+09-05 09:47:41.699 I/hwcomposer( 1163): [HWCDisplay] (0 updateFps():3644), (type:1, mode:2) fps:16.096085,dur:1739.55,max:1271.11,min:14.31  
+09-05 09:47:41.944 I/Finsky:background( 1333): [68] Stats for Executor: bgExecutor xuh@f8b7a62[Running, pool size = 4, active threads = 0, queued tasks = 0, completed tasks = 32]
+09-05 09:47:41.972 I/Finsky:background( 1333): [68] Stats for Executor: LightweightExecutor xuh@bd79186[Running, pool size = 4, active threads = 0, queued tasks = 0, completed tasks = 15]
+09-05 09:47:42.035 I/Finsky:background( 1333): [68] Stats for Executor: BlockingExecutor xuh@12bea0[Running, pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 25]
+09-05 09:47:42.093 I/libPerfCtl( 1184): xgfGetFPS pid:2270 fps:-1
+09-05 09:47:42.644 I/adbd    ( 1298): adbd service requested 'exec:screencap '-p''
+09-05 09:47:42.700 I/BufferQueueProducer( 1227): [NotificationShade#2291](this:0xb4000071637825a0,id:-1,api:0,p:-1,c:1227) queueBuffer: fps=42.88 dur=1002.73 max=301.13 min=16.22
+09-05 09:47:42.702 I/hwcomposer( 1163): [HWCDisplay] (0 updateFps():3644), (type:1, mode:2) fps:42.885395,dur:1002.67,max:300.66,min:15.32  
+09-05 09:47:42.862 W/BpBinder( 4181): Linking to death on android.gui.ISurfaceComposer but there are no threads (yet?) listening to incoming transactions. See ProcessState::startThreadPool and ProcessState::setThreadPoolMaxThreadCount. Generally you should setup the binder threadpool before other initialization steps.
+09-05 09:47:42.863 W/ProcessState( 4181): Extra binder thread started, but 0 threads requested. Do not use *startThreadPool when zero threads are requested.
+09-05 09:47:42.898 I/GrallocExtra( 4181): gralloc_extra_query:is_SW3D 0
+09-05 09:47:42.899 I/DMABUFHEAPS( 4181): Using DMA-BUF heap named: mtk_mm
+09-05 09:47:42.899 I/DMABUFHEAPS( 4181): Using DMA-BUF heap named: mtk_mm-uncached
+09-05 09:47:42.899 I/DMABUFHEAPS( 4181): Using DMA-BUF heap named: mtk_svp_region
+09-05 09:47:42.899 I/DMABUFHEAPS( 4181): Using DMA-BUF heap named: mtk_prot_region
+09-05 09:47:42.899 I/DMABUFHEAPS( 4181): Using DMA-BUF heap named: mtk_wfd_region
+09-05 09:47:43.014 E/ApplicationHelper( 1870): Fail to get PackageManager
+09-05 09:47:43.074 W/RefBase ( 4181): RefBase: Explicit destruction, weak count = 0 (in 0x77bf17f858). Use sp<> to manage this object.
+09-05 09:47:43.094 I/libPerfCtl( 1184): xgfGetFPS pid:2270 fps:-1
+09-05 09:47:43.115 I/adbd    ( 1298): adbd service requested 'shell,v2,raw:am broadcast -n au.buzz.ryzewave/.debug.DebugEventReceiver -a au.buzz.ryzewave.debug.FIND_PHONE --ez start true'
+09-05 09:47:43.118 I/BufferQueueProducer( 1227): [au.buzz.ryzewave/au.buzz.ryzewave.MainActivity#2275](this:0xb4000071637c3d90,id:-1,api:0,p:-1,c:1227) queueBuffer: fps=0.20 dur=5014.85 max=5014.85 min=5014.85
+09-05 09:47:43.169 I/ActivityManager( 1870): Broadcasting: Intent { act=au.buzz.ryzewave.debug.FIND_PHONE flg=0x400000 cmp=au.buzz.ryzewave/.debug.DebugEventReceiver (has extras) }
+09-05 09:47:43.170 I/ActivityManager( 1870): Enqueued broadcast Intent { act=au.buzz.ryzewave.debug.FIND_PHONE flg=0x400000 cmp=au.buzz.ryzewave/.debug.DebugEventReceiver (has extras) }: 0
+09-05 09:47:43.174 I/DebugEvent( 3590): injecting WatchEvent.FindPhone(start=true) (debug hook)
+09-05 09:47:43.174 I/FindPhone( 3590): find phone (watch): already ringing, ignored
+09-05 09:47:43.174 I/ActivityManager( 1870): Broadcast completed: result=0
+09-05 09:47:43.223 I/Vibrator( 1204): Vibrator on for timeoutMs: 600
+09-05 09:47:43.703 I/BufferQueueProducer( 1227): [NotificationShade#2291](this:0xb4000071637825a0,id:-1,api:0,p:-1,c:1227) queueBuffer: fps=59.80 dur=1003.29 max=17.26 min=16.20
+09-05 09:47:43.706 I/hwcomposer( 1163): [HWCDisplay] (0 updateFps():3644), (type:1, mode:2) fps:59.791355,dur:1003.49,max:18.46,min:14.73  
+09-05 09:47:43.840 I/WifiHAL ( 2170): feature_set=0x8488341a
+09-05 09:47:44.094 I/libPerfCtl( 1184): xgfGetFPS pid:2270 fps:-1
+09-05 09:47:44.094 I/libPerfCtl( 1184): xgfGetFPS pid:3590 fps:-1
+09-05 09:47:44.123 I/Vibrator( 1204): Vibrator on for timeoutMs: 600
+09-05 09:47:44.706 I/BufferQueueProducer( 1227): [NotificationShade#2291](this:0xb4000071637825a0,id:-1,api:0,p:-1,c:1227) queueBuffer: fps=59.84 dur=1002.76 max=17.24 min=16.23
+09-05 09:47:44.708 I/hwcomposer( 1163): [HWCDisplay] (0 updateFps():3644), (type:1, mode:2) fps:59.868584,dur:1002.20,max:18.33,min:15.35  
+09-05 09:47:45.023 I/Vibrator( 1204): Vibrator on for timeoutMs: 600
+09-05 09:47:45.094 I/libPerfCtl( 1184): xgfGetFPS pid:2270 fps:-1
+09-05 09:47:45.619 W/TouchableRegionManager( 2270): onHeadsUpPinnedModeChanged
+09-05 09:47:45.659 I/BufferQueueProducer( 1227): [StatusBar#82](this:0xb400007163793700,id:-1,api:0,p:-1,c:1227) queueBuffer: fps=0.25 dur=3962.00 max=3962.00 min=3962.00
+09-05 09:47:45.708 I/BufferQueueProducer( 1227): [NotificationShade#2291](this:0xb4000071637825a0,id:-1,api:0,p:-1,c:1227) queueBuffer: fps=58.86 dur=1002.42 max=34.36 min=15.89
+09-05 09:47:45.710 I/hwcomposer( 1163): [HWCDisplay] (0 updateFps():3644), (type:1, mode:2) fps:58.891731,dur:1001.84,max:34.83,min:15.61  
+09-05 09:47:45.730 W/ExpandableView( 2270): Removing view com.android.systemui.statusbar.notification.row.ExpandableNotificationRow{c5e71fc VFE...C.. ......ID 28,0-692,365 #7f0a02f3 app:id/expandableNotificationRow} from transient container com.android.systemui.statusbar.notification.stack.NotificationStackScrollLayout{90296e6 V.E...... ......ID 0,0-720,1436 #7f0a0596 app:id/notification_stack_scroller} in preparation for moving to parent com.android.systemui.statusbar.notification.stack.NotificationChildrenContainer{a52a857 V.E...... ......I. 0,0-0,0 #7f0a0589 app:id/notification_children_container}
+09-05 09:47:45.817 W/WindowOnBackDispatcher( 2270): sendCancelIfRunning: isInProgress=false callback=com.android.systemui.back.domain.interactor.BackActionInteractor$callback$2@ad3ad7f
+09-05 09:47:45.824 E/ApplicationHelper( 1870): Fail to get PackageManager
+09-05 09:47:45.826 E/ApplicationHelper( 1870): Fail to get PackageManager
+09-05 09:47:45.827 I/netd    ( 1149): tetherGetStats() -> {[]} <2.06ms>
+09-05 09:47:45.840 I/BufferQueueDebug( 1227): [Surface(name=7e0270b StatusBar)/@0xff9fc94 - animation-leash of insets_animation#2292](this:0xb4000071637be270,id:-1,api:0,p:-1,c:-1) BufferQueue core=(1227:/system/bin/surfaceflinger)
+09-05 09:47:45.860 I/SurfaceFlinger( 1227): onHandleDestroyed: name=Surface(name=7e0270b StatusBar)/@0xff9fc94 - animation-leash of insets_animation#2290, layerId=2290, parentId=0
+09-05 09:47:45.860 I/SurfaceFlinger( 1227): onHandleDestroyed: name=NotificationShade#2291, layerId=2291, parentId=0
+09-05 09:47:45.877 I/BufferQueueDebug( 1227): [NotificationShade#2291](this:0xb4000071637825a0,id:-1,api:0,p:-1,c:1227) onDestructor()
+09-05 09:47:45.879 I/BufferQueueDebug( 1227): [Surface(name=7e0270b StatusBar)/@0xff9fc94 - animation-leash of insets_animation#2290](this:0xb4000071637c1000,id:-1,api:0,p:-1,c:1227) onDestructor()
+09-05 09:47:45.926 W/JobScheduler.JobStatus( 1870): Exempted app com.android.vending considered buggy
+09-05 09:47:45.926 W/JobScheduler.JobStatus( 1870): Exempted app com.android.vending considered buggy
+09-05 09:47:45.926 W/JobScheduler.JobStatus( 1870): Exempted app com.android.vending considered buggy
+09-05 09:47:45.926 W/JobScheduler.JobStatus( 1870): Exempted app com.android.vending considered buggy
+09-05 09:47:45.926 W/JobScheduler.JobStatus( 1870): Exempted app com.android.vending considered buggy
+09-05 09:47:45.926 W/JobScheduler.JobStatus( 1870): Exempted app com.android.vending considered buggy
+09-05 09:47:45.926 W/JobScheduler.JobStatus( 1870): Exempted app com.android.vending considered buggy
+09-05 09:47:45.926 W/JobScheduler.JobStatus( 1870): Exempted app com.android.vending considered buggy
+09-05 09:47:45.926 W/JobScheduler.JobStatus( 1870): Exempted app com.android.vending considered buggy
+09-05 09:47:45.926 W/JobScheduler.JobStatus( 1870): Exempted app com.android.vending considered buggy
+09-05 09:47:45.926 W/JobScheduler.JobStatus( 1870): Exempted app com.android.vending considered buggy
+09-05 09:47:45.926 W/JobScheduler.JobStatus( 1870): Exempted app com.android.vending considered buggy
+09-05 09:47:45.926 W/JobScheduler.JobStatus( 1870): Exempted app com.android.vending considered buggy
+09-05 09:47:45.926 W/JobScheduler.JobStatus( 1870): Exempted app com.android.vending considered buggy
+09-05 09:47:45.926 W/JobScheduler.JobStatus( 1870): Exempted app com.android.vending considered buggy
+09-05 09:47:45.926 W/JobScheduler.JobStatus( 1870): Exempted app com.android.vending considered buggy
+09-05 09:47:45.926 W/JobScheduler.JobStatus( 1870): Exempted app com.android.vending considered buggy
+09-05 09:47:45.926 W/JobScheduler.JobStatus( 1870): Exempted app com.android.vending considered buggy
+09-05 09:47:45.926 W/JobScheduler.JobStatus( 1870): Exempted app com.android.vending considered buggy
+09-05 09:47:45.927 E/ApplicationHelper( 1870): Fail to get PackageManager
+09-05 09:47:46.094 I/libPerfCtl( 1184): xgfGetFPS pid:2270 fps:-1
+09-05 09:47:46.822 I/Vibrator( 1204): Vibrator on for timeoutMs: 600
+09-05 09:47:46.862 I/WifiHAL ( 2170): feature_set=0x8488341a
+09-05 09:47:47.095 I/libPerfCtl( 1184): xgfGetFPS pid:2270 fps:-1
+09-05 09:47:47.723 I/Vibrator( 1204): Vibrator on for timeoutMs: 600
+09-05 09:47:48.095 I/libPerfCtl( 1184): xgfGetFPS pid:2270 fps:-1
+09-05 09:47:48.115 I/BufferQueueProducer( 1227): [au.buzz.ryzewave/au.buzz.ryzewave.MainActivity#2275](this:0xb4000071637c3d90,id:-1,api:0,p:-1,c:1227) queueBuffer: fps=0.20 dur=4997.51 max=4997.51 min=4997.51
+09-05 09:47:48.118 I/hwcomposer( 1163): [HWCDisplay] (0 updateFps():3644), (type:1, mode:2) fps:8.718047,dur:2408.80,max:2023.06,min:12.84  
+09-05 09:47:48.395 E/ApplicationHelper( 1870): Fail to get PackageManager
+09-05 09:47:48.601 I/thermal_repeater( 1421): [recvMdThermalInfo] ret=30, strLen=127,  3, 41, -127, -28402, 32767, 0
+09-05 09:47:48.622 I/Vibrator( 1204): Vibrator on for timeoutMs: 600
+09-05 09:47:48.636 I/CCodecConfig( 1404): query failed after returning 8 values (BAD_INDEX)
+09-05 09:47:49.007 W/NuPlayerRenderer( 1404): onNewAudioMediaTime updateAnchor: nowMediaus 235525 delta[114699]us, delta [114699]us ,nowUs 47863218 ms 
+09-05 09:47:49.073 W/libc    ( 1870): Access denied finding property "vendor.mbrain.battery"
+09-05 09:47:49.095 I/libPerfCtl( 1184): xgfGetFPS pid:2270 fps:-1
+09-05 09:47:49.095 I/libPerfCtl( 1184): xgfGetFPS pid:3590 fps:-1
+09-05 09:47:49.101 I/BufferQueueProducer( 1227): [StatusBar#82](this:0xb400007163793700,id:-1,api:0,p:-1,c:1227) queueBuffer: fps=6.97 dur=3442.63 max=3008.17 min=16.06
+09-05 09:47:49.889 I/WifiHAL ( 2170): feature_set=0x8488341a
+09-05 09:47:50.170 E/ApplicationHelper( 1870): Fail to get PackageManager
+09-05 09:47:50.422 I/Vibrator( 1204): Vibrator on for timeoutMs: 600
+09-05 09:47:51.322 I/Vibrator( 1204): Vibrator on for timeoutMs: 600
+09-05 09:47:52.222 I/Vibrator( 1204): Vibrator on for timeoutMs: 600
+09-05 09:47:52.918 I/WifiHAL ( 2170): feature_set=0x8488341a
+09-05 09:47:53.113 I/BufferQueueProducer( 1227): [au.buzz.ryzewave/au.buzz.ryzewave.MainActivity#2275](this:0xb4000071637c3d90,id:-1,api:0,p:-1,c:1227) queueBuffer: fps=0.20 dur=4997.62 max=4997.62 min=4997.62
+09-05 09:47:53.116 I/hwcomposer( 1163): [HWCDisplay] (0 updateFps():3644), (type:1, mode:2) fps:0.400204,dur:4997.45,max:4012.92,min:984.53  
+09-05 09:47:54.022 I/Vibrator( 1204): Vibrator on for timeoutMs: 600
+09-05 09:47:54.112 I/libPerfCtl( 1184): xgfGetFPS pid:2270 fps:-1
+09-05 09:47:54.112 I/libPerfCtl( 1184): xgfGetFPS pid:3590 fps:-1
+09-05 09:47:54.923 I/Vibrator( 1204): Vibrator on for timeoutMs: 600
+09-05 09:47:55.113 I/libPerfCtl( 1184): xgfGetFPS pid:2270 fps:-1
+09-05 09:47:55.823 I/Vibrator( 1204): Vibrator on for timeoutMs: 600
+09-05 09:47:55.940 I/WifiHAL ( 2170): feature_set=0x8488341a
+09-05 09:47:56.113 I/libPerfCtl( 1184): xgfGetFPS pid:2270 fps:-1
+09-05 09:47:57.588 W/AudioPolicyManagerCustomImpl( 1210): [MTK_APM_Route]setOutputDevices() mIoHandle 13 mId 1 device (0x2)(0x1, 0x2, 0x4, 0x8, 0x10, 0x20, 0x40, 0x400, 0x800, 0x1000, 0x4000, 0x100000, 0x4000000) delayMs 84 force 0 size 4
+09-05 09:47:57.589 I/AudioALSAStreamOut( 1158): updateSourceMetadata(), do nothing source_metadata = 0x6fcaebdfe8
+09-05 09:47:57.622 I/Vibrator( 1204): Vibrator on for timeoutMs: 600
+09-05 09:47:57.638 I/AudioALSAStreamOut( 1158): updateSourceMetadata(), do nothing source_metadata = 0x6fe869dfe8
+09-05 09:47:57.638 I/CCodecConfig( 1404): query failed after returning 8 values (BAD_INDEX)
+09-05 09:47:57.989 W/NuPlayerRenderer( 1404): onNewAudioMediaTime updateAnchor: nowMediaus 224802 delta[109308]us, delta [109308]us ,nowUs 47872199 ms 
+09-05 09:47:58.111 I/BufferQueueProducer( 1227): [au.buzz.ryzewave/au.buzz.ryzewave.MainActivity#2275](this:0xb4000071637c3d90,id:-1,api:0,p:-1,c:1227) queueBuffer: fps=0.20 dur=4998.03 max=4998.03 min=4998.03
+09-05 09:47:58.114 I/hwcomposer( 1163): [HWCDisplay] (0 updateFps():3644), (type:1, mode:2) fps:0.200077,dur:4998.08,max:4998.08,min:4998.08  
+09-05 09:47:58.522 I/Vibrator( 1204): Vibrator on for timeoutMs: 600
+09-05 09:47:58.622 I/thermal_repeater( 1421): [recvMdThermalInfo] ret=30, strLen=127,  3, 41, -127, -28402, 32767, 0
+09-05 09:47:58.965 I/WifiHAL ( 2170): feature_set=0x8488341a
+09-05 09:47:59.097 I/libPerfCtl( 1184): xgfGetFPS pid:2270 fps:-1
+09-05 09:47:59.097 I/libPerfCtl( 1184): xgfGetFPS pid:3590 fps:-1
+09-05 09:47:59.423 I/Vibrator( 1204): Vibrator on for timeoutMs: 600
+09-05 09:48:00.067 I/BufferQueueProducer( 1227): [StatusBar#82](this:0xb400007163793700,id:-1,api:0,p:-1,c:1227) queueBuffer: fps=0.09 dur=10965.55 max=10965.55 min=10965.55
+09-05 09:48:00.070 I/hwcomposer( 1163): [HWCDisplay] (0 updateFps():3644), (type:1, mode:2) fps:0.511335,dur:1955.66,max:1955.66,min:1955.66  
+09-05 09:48:00.097 I/libPerfCtl( 1184): xgfGetFPS pid:2270 fps:-1
+09-05 09:48:01.098 I/libPerfCtl( 1184): xgfGetFPS pid:2270 fps:-1
+09-05 09:48:01.222 I/Vibrator( 1204): Vibrator on for timeoutMs: 600
+09-05 09:48:01.993 I/WifiHAL ( 2170): feature_set=0x8488341a
+09-05 09:48:02.123 I/Vibrator( 1204): Vibrator on for timeoutMs: 600
+09-05 09:48:03.023 I/Vibrator( 1204): Vibrator on for timeoutMs: 600
+09-05 09:48:03.109 I/BufferQueueProducer( 1227): [au.buzz.ryzewave/au.buzz.ryzewave.MainActivity#2275](this:0xb4000071637c3d90,id:-1,api:0,p:-1,c:1227) queueBuffer: fps=0.20 dur=4997.58 max=4997.58 min=4997.58
+09-05 09:48:03.111 I/hwcomposer( 1163): [HWCDisplay] (0 updateFps():3644), (type:1, mode:2) fps:0.328814,dur:3041.23,max:3041.23,min:3041.23  
+09-05 09:48:04.092 I/libPerfCtl( 1184): xgfGetFPS pid:2270 fps:-1
+09-05 09:48:04.092 I/libPerfCtl( 1184): xgfGetFPS pid:3590 fps:-1
+09-05 09:48:04.822 I/Vibrator( 1204): Vibrator on for timeoutMs: 600
+09-05 09:48:05.014 I/WifiHAL ( 2170): feature_set=0x8488341a
+09-05 09:48:05.092 I/libPerfCtl( 1184): xgfGetFPS pid:2270 fps:-1
+09-05 09:48:05.723 I/Vibrator( 1204): Vibrator on for timeoutMs: 600
+09-05 09:48:06.093 I/libPerfCtl( 1184): xgfGetFPS pid:2270 fps:-1
+09-05 09:48:06.620 I/CCodecConfig( 1404): query failed after returning 8 values (BAD_INDEX)
+09-05 09:48:06.622 I/Vibrator( 1204): Vibrator on for timeoutMs: 600
+09-05 09:48:06.990 W/NuPlayerRenderer( 1404): onNewAudioMediaTime updateAnchor: nowMediaus 234434 delta[114652]us, delta [114652]us ,nowUs 47881201 ms 
+09-05 09:48:08.036 I/WifiHAL ( 2170): feature_set=0x8488341a
+09-05 09:48:08.106 I/BufferQueueProducer( 1227): [au.buzz.ryzewave/au.buzz.ryzewave.MainActivity#2275](this:0xb4000071637c3d90,id:-1,api:0,p:-1,c:1227) queueBuffer: fps=0.20 dur=4997.77 max=4997.77 min=4997.77
+09-05 09:48:08.108 I/hwcomposer( 1163): [HWCDisplay] (0 updateFps():3644), (type:1, mode:2) fps:0.200091,dur:4997.72,max:4997.72,min:4997.72  
+09-05 09:48:08.423 I/Vibrator( 1204): Vibrator on for timeoutMs: 600
+09-05 09:48:08.643 I/thermal_repeater( 1421): [recvMdThermalInfo] ret=30, strLen=127,  3, 41, -127, -28402, 32767, 0
+09-05 09:48:09.103 I/libPerfCtl( 1184): xgfGetFPS pid:2270 fps:-1
+09-05 09:48:09.104 I/libPerfCtl( 1184): xgfGetFPS pid:3590 fps:-1
+09-05 09:48:09.322 I/Vibrator( 1204): Vibrator on for timeoutMs: 600
+09-05 09:48:09.628 I/FlashNotifController( 1870): stopFlashNotification: tag=alarm
+09-05 09:48:09.633 I/AudioALSAStreamOut( 1158): updateSourceMetadata(), do nothing source_metadata = 0x6fcaebdfe8
+09-05 09:48:09.651 W/AudioPolicyManagerCustomImpl( 1210): [MTK_APM_Route]setOutputDevices() mIoHandle 13 mId 1 device (0x2)(0x1, 0x2, 0x4, 0x8, 0x10, 0x20, 0x40, 0x400, 0x800, 0x1000, 0x4000, 0x100000, 0x4000000) delayMs 84 force 0 size 4
+09-05 09:48:09.651 I/AudioALSAStreamOut( 1158): updateSourceMetadata(), do nothing source_metadata = 0x6fcaebdfe8
+09-05 09:48:09.657 I/BpBinder( 1455): onLastStrongRef automatically unlinking death recipients: android.hardware.media.bufferpool2.IClientManager
+09-05 09:48:09.667 W/AMessage( 1404): failed to post message as target looper for handler 0 is gone.
+09-05 09:48:09.672 D/APM_AudioPolicyManager( 1210): [MTK_APM_Output]releaseOutput() 13 portId 46
+09-05 09:48:09.676 I/FindPhone( 3590): alarm volume restored to 6
+09-05 09:48:09.678 I/FindPhone( 3590): find phone: stopped (timeout)
+09-05 09:48:09.680 I/vol.Events( 2270): writeEvent level_changed STREAM_ALARM 6
+09-05 09:48:09.728 I/BufferQueueProducer( 1227): [StatusBar#82](this:0xb400007163793700,id:-1,api:0,p:-1,c:1227) queueBuffer: fps=0.10 dur=9661.15 max=9661.15 min=9661.15
+09-05 09:48:09.731 I/hwcomposer( 1163): [HWCDisplay] (0 updateFps():3644), (type:1, mode:2) fps:0.616496,dur:1622.07,max:1622.07,min:1622.07  
+09-05 09:48:10.105 I/libPerfCtl( 1184): xgfGetFPS pid:2270 fps:-1
+09-05 09:48:10.648 I/AHAL_Stream( 1158): pause()
+09-05 09:48:10.649 I/AHAL_Stream( 1158): flush()
+09-05 09:48:10.675 W/AudioALSAHardwareResourceManager( 1158): CloseSpeakerPath advance_close_audio_fs1815_pa 0
+09-05 09:48:11.060 I/WifiHAL ( 2170): feature_set=0x8488341a
+09-05 09:48:11.106 I/libPerfCtl( 1184): xgfGetFPS pid:2270 fps:-1
+09-05 09:48:12.106 I/libPerfCtl( 1184): xgfGetFPS pid:2270 fps:-1
+09-05 09:48:13.106 I/libPerfCtl( 1184): xgfGetFPS pid:2270 fps:-1
+09-05 09:48:13.122 I/BufferQueueProducer( 1227): [au.buzz.ryzewave/au.buzz.ryzewave.MainActivity#2275](this:0xb4000071637c3d90,id:-1,api:0,p:-1,c:1227) queueBuffer: fps=0.20 dur=5015.18 max=5015.18 min=5015.18
+09-05 09:48:13.124 I/hwcomposer( 1163): [HWCDisplay] (0 updateFps():3644), (type:1, mode:2) fps:3.830852,dur:3393.50,max:3175.86,min:16.28  
+09-05 09:48:14.081 I/WifiHAL ( 2170): feature_set=0x8488341a
+09-05 09:48:14.120 I/libPerfCtl( 1184): xgfGetFPS pid:2270 fps:-1
+09-05 09:48:14.120 I/libPerfCtl( 1184): xgfGetFPS pid:3590 fps:-1
+09-05 09:48:15.121 I/libPerfCtl( 1184): xgfGetFPS pid:2270 fps:-1
+09-05 09:48:15.195 I/adbd    ( 1298): adbd service requested 'exec:screencap '-p''
+09-05 09:48:15.400 W/BpBinder( 4194): Linking to death on android.gui.ISurfaceComposer but there are no threads (yet?) listening to incoming transactions. See ProcessState::startThreadPool and ProcessState::setThreadPoolMaxThreadCount. Generally you should setup the binder threadpool before other initialization steps.
+09-05 09:48:15.401 W/ProcessState( 4194): Extra binder thread started, but 0 threads requested. Do not use *startThreadPool when zero threads are requested.
+09-05 09:48:15.450 I/GrallocExtra( 4194): gralloc_extra_query:is_SW3D 0
+09-05 09:48:15.451 I/DMABUFHEAPS( 4194): Using DMA-BUF heap named: mtk_mm
+09-05 09:48:15.451 I/DMABUFHEAPS( 4194): Using DMA-BUF heap named: mtk_mm-uncached
+09-05 09:48:15.451 I/DMABUFHEAPS( 4194): Using DMA-BUF heap named: mtk_svp_region
+09-05 09:48:15.451 I/DMABUFHEAPS( 4194): Using DMA-BUF heap named: mtk_prot_region
+09-05 09:48:15.451 I/DMABUFHEAPS( 4194): Using DMA-BUF heap named: mtk_wfd_region
+09-05 09:48:15.628 W/RefBase ( 4194): RefBase: Explicit destruction, weak count = 0 (in 0x742e5ca858). Use sp<> to manage this object.
+09-05 09:48:15.668 I/adbd    ( 1298): adbd service requested 'shell,v2,raw:dumpsys notification --noredact'
+09-05 09:48:15.823 I/adbd    ( 1298): adbd service requested 'shell,v2,raw:am broadcast -n au.buzz.ryzewave/.debug.DebugEventReceiver -a au.buzz.ryzewave.debug.FIND_PHONE --ez start true'
+09-05 09:48:15.878 I/ActivityManager( 1870): Broadcasting: Intent { act=au.buzz.ryzewave.debug.FIND_PHONE flg=0x400000 cmp=au.buzz.ryzewave/.debug.DebugEventReceiver (has extras) }
+09-05 09:48:15.879 I/ActivityManager( 1870): Enqueued broadcast Intent { act=au.buzz.ryzewave.debug.FIND_PHONE flg=0x400000 cmp=au.buzz.ryzewave/.debug.DebugEventReceiver (has extras) }: 0
+09-05 09:48:15.881 I/DebugEvent( 3590): injecting WatchEvent.FindPhone(start=true) (debug hook)
+09-05 09:48:15.888 I/FindPhone( 3590): notification posted
+09-05 09:48:15.893 I/FindPhone( 3590): alarm volume raised 6 -> 7 for the ring
+09-05 09:48:15.895 I/vol.Events( 2270): writeEvent level_changed STREAM_ALARM 7
+09-05 09:48:15.910 I/HidlServiceManagement( 1404): Trying to get transport of android.hardware.media.omx@1.0::IOmx/default without hwservicemanager
+09-05 09:48:15.915 W/mediaserver( 1404): AIBinder_linkToDeath is being called with a non-null cookie and no onUnlink callback set. This might not be intended. AIBinder_DeathRecipient_setOnUnlinked should be called first.
+09-05 09:48:15.915 W/mediaserver( 1404): AIBinder_linkToDeath is being called with a non-null cookie and no onUnlink callback set. This might not be intended. AIBinder_DeathRecipient_setOnUnlinked should be called first.
+09-05 09:48:15.915 W/mediaserver( 1404): AIBinder_linkToDeath is being called with a non-null cookie and no onUnlink callback set. This might not be intended. AIBinder_DeathRecipient_setOnUnlinked should be called first.
+09-05 09:48:15.936 I/FlashNotifController( 1870): startFlashNotification: type=2, tag=alarm
+09-05 09:48:15.936 I/GenericSource( 1404): start
+09-05 09:48:15.937 I/FindPhone( 3590): ringtone content://settings/system/alarm_alert playing on the alarm stream
+09-05 09:48:15.939 I/FindPhone( 3590): vibrating
+09-05 09:48:15.940 I/FindPhone( 3590): find phone (watch): ringing for up to 30 s
+09-05 09:48:15.941 I/Vibrator( 1204): Vibrator on for timeoutMs: 600
+09-05 09:48:15.941 I/ActivityManager( 1870): Broadcast completed: result=0
+09-05 09:48:15.947 I/CCodec  ( 1404): setting up 'default' as default (vendor) store
+09-05 09:48:15.952 I/BpBinder( 1455): onLastStrongRef automatically unlinking death recipients: android.hardware.media.bufferpool2.IAccessor
+09-05 09:48:15.952 I/BpBinder( 1455): onLastStrongRef automatically unlinking death recipients: android.hardware.media.bufferpool2.IAccessor
+09-05 09:48:15.954 W/mediaserver( 1404): AIBinder_linkToDeath is being called with a non-null cookie and no onUnlink callback set. This might not be intended. AIBinder_DeathRecipient_setOnUnlinked should be called first.
+09-05 09:48:15.954 I/CCodec  ( 1404): Created component [c2.android.vorbis.decoder]
+09-05 09:48:15.962 I/CCodecConfig( 1404): query failed after returning 8 values (BAD_INDEX)
+09-05 09:48:15.967 I/CCodecConfig( 1404): query failed after returning 8 values (BAD_INDEX)
+09-05 09:48:15.968 I/MediaCodec( 1404): MediaCodec will operate in async mode
+09-05 09:48:15.973 I/CCodecBufferChannel( 1404): [c2.android.vorbis.decoder#523] Created output block pool with allocatorID 16 => poolID 64 - OK
+09-05 09:48:15.973 E/Codec2-ComponentInterface( 1455): We have a failed config
+09-05 09:48:15.978 W/mediaswcodec( 1455): AIBinder_linkToDeath is being called with a non-null cookie and no onUnlink callback set. This might not be intended. AIBinder_DeathRecipient_setOnUnlinked should be called first.
+09-05 09:48:15.978 W/mediaserver( 1404): AIBinder_linkToDeath is being called with a non-null cookie and no onUnlink callback set. This might not be intended. AIBinder_DeathRecipient_setOnUnlinked should be called first.
+09-05 09:48:15.986 W/mediaswcodec( 1455): AIBinder_linkToDeath is being called with a non-null cookie and no onUnlink callback set. This might not be intended. AIBinder_DeathRecipient_setOnUnlinked should be called first.
+09-05 09:48:15.994 W/AudioFlinger_Threads( 1210): createTrack_l(): mismatch between requested flags (00000008) and output flags (00000006)
+09-05 09:48:16.009 I/AudioALSAStreamOut( 1158): updateSourceMetadata(), do nothing source_metadata = 0x6fe869dfe8
+09-05 09:48:16.009 W/AudioALSAHardware( 1158): setParameters(), set vip fail
+09-05 09:48:16.010 I/AHAL_Stream( 1158): start()
+09-05 09:48:16.023 W/aurisys_controller( 1158): lib_name fsm_audio, scene 0, no active handler!!
+09-05 09:48:16.023 W/aurisys_controller( 1158): lib_name fsm_audio, scene 1, no active handler!!
+09-05 09:48:16.023 W/aurisys_controller( 1158): lib_name fsm_audio, scene 6, no active handler!!
+09-05 09:48:16.023 W/AudioALSADeviceConfigManager( 1158): ApplyDeviceTurnonSequenceByName(), fs1815_skt_aurisys: enable left channel ramp for dual_speaker_output, rampNeeded=1
+09-05 09:48:16.048 W/AudioALSAPlaybackHandlerBase( 1158): getQueuedFramesInfo(), mTimeStampValid false!!
+09-05 09:48:16.049 E/AudioALSAPlaybackHandlerBase( 1158): getQueuedFramesInfo(), pcm_get_htimestamp or trylock fail, ret -1, pcm_get_error 
+09-05 09:48:16.084 I/AudioALSAStreamOut( 1158): updateSourceMetadata(), do nothing source_metadata = 0x6fcd0c5fe8
+09-05 09:48:16.097 W/NotificationHistory( 1870): Attempted to add notif for locked/gone/disabled user 0
+09-05 09:48:16.107 I/GraphFactory( 3590): notify: dropped au.buzz.ryzewave: ongoing
+09-05 09:48:16.107 I/WatchNotify( 3590): posted au.buzz.ryzewave 0|au.buzz.ryzewave|1002|null|10378: dropped
+09-05 09:48:16.121 I/libPerfCtl( 1184): xgfGetFPS pid:2270 fps:-1
+09-05 09:48:16.243 W/TouchableRegionManager( 2270): onHeadsUpPinnedModeChanged
+09-05 09:48:16.248 E/ApplicationHelper( 1870): Fail to get PackageManager
+09-05 09:48:16.254 I/netd    ( 1149): tetherGetStats() -> {[]} <3.48ms>
+09-05 09:48:16.256 E/ApplicationHelper( 1870): Fail to get PackageManager
+09-05 09:48:16.280 I/BufferQueueDebug( 1227): [Surface(name=7e0270b StatusBar)/@0xff9fc94 - animation-leash of insets_animation#2293](this:0xb4000071637f71b0,id:-1,api:0,p:-1,c:-1) BufferQueue core=(1227:/system/bin/surfaceflinger)
+09-05 09:48:16.286 E/ApplicationHelper( 1870): Fail to get PackageManager
+09-05 09:48:16.292 I/BufferQueueDebug( 1227): [NotificationShade#2294](this:0xb4000071637c1000,id:-1,api:0,p:-1,c:-1) BufferQueue core=(1227:/system/bin/surfaceflinger)
+09-05 09:48:16.295 I/WindowManager( 1870): Relayout Window{f94759 u0 NotificationShade}: oldVis=4 newVis=0 focusMayChange = true requestedWidth = 720 requestedHeight = 1604 outFrames = ClientWindowFrames{frame=[0,0][720,1604] display=[0,0][720,1604] parentFrame=[0,0][0,0]} outSurfaceControl = Surface(name=NotificationShade)/@0x829dcbc
+09-05 09:48:16.298 I/BufferQueueProducer( 1227): [StatusBar#82](this:0xb400007163793700,id:-1,api:0,p:-1,c:1227) queueBuffer: fps=1.98 dur=6569.89 max=6351.61 min=16.49
+09-05 09:48:16.298 I/SurfaceFlinger( 1227): onHandleDestroyed: name=Surface(name=7e0270b StatusBar)/@0xff9fc94 - animation-leash of insets_animation#2292, layerId=2292, parentId=0
+09-05 09:48:16.300 I/hwcomposer( 1163): [HWCDisplay] (0 updateFps():3644), (type:1, mode:2) fps:0.314865,dur:3175.97,max:3175.97,min:3175.97  
+09-05 09:48:16.315 I/BufferQueueDebug( 1227): [Surface(name=7e0270b StatusBar)/@0xff9fc94 - animation-leash of insets_animation#2292](this:0xb4000071637be270,id:-1,api:0,p:-1,c:1227) onDestructor()
+09-05 09:48:16.379 W/libc    ( 1870): Access denied finding property "vendor.mbrain.battery"
+09-05 09:48:16.431 W/BitmapDrawable( 2638): BitmapDrawable created with null Bitmap
+09-05 09:48:16.431 W/BitmapDrawable( 2638): BitmapDrawable created with null Bitmap
+09-05 09:48:16.432 I/QAWalletSvc( 2638): QAW tile tap fix enabled, using home intent for placeholder. [CONTEXT service_id=79 ]
+09-05 09:48:16.432 I/QAWalletSvc( 2638): QAW tile tap fix enabled, using home intent for placeholder. [CONTEXT service_id=79 ]
+09-05 09:48:16.436 W/BitmapDrawable( 2638): BitmapDrawable created with null Bitmap
+09-05 09:48:16.436 I/QAWalletSvc( 2638): QAW tile tap fix enabled, using home intent for placeholder. [CONTEXT service_id=79 ]
+09-05 09:48:16.841 I/Vibrator( 1204): Vibrator on for timeoutMs: 600
+09-05 09:48:17.108 I/WifiHAL ( 2170): feature_set=0x8488341a
+09-05 09:48:17.291 I/libPerfCtl( 1184): xgfGetFPS pid:2270 fps:-1
+09-05 09:48:17.740 I/Vibrator( 1204): Vibrator on for timeoutMs: 600
+09-05 09:48:18.136 I/BufferQueueProducer( 1227): [au.buzz.ryzewave/au.buzz.ryzewave.MainActivity#2275](this:0xb4000071637c3d90,id:-1,api:0,p:-1,c:1227) queueBuffer: fps=0.20 dur=5014.17 max=5014.17 min=5014.17
+09-05 09:48:18.138 I/hwcomposer( 1163): [HWCDisplay] (0 updateFps():3644), (type:1, mode:2) fps:14.142910,dur:1838.38,max:1404.40,min:15.58  
+09-05 09:48:18.291 I/libPerfCtl( 1184): xgfGetFPS pid:2270 fps:-1
+09-05 09:48:18.292 I/libPerfCtl( 1184): xgfGetFPS pid:3590 fps:-1
+09-05 09:48:18.320 I/BufferQueueProducer( 1227): [NotificationShade#2294](this:0xb4000071637c1000,id:-1,api:0,p:-1,c:1227) queueBuffer: fps=12.06 dur=1989.23 max=1588.46 min=15.97
+09-05 09:48:18.327 W/FrameTracker( 2270): Missing HWUI jank callback for vsyncId: 3590844, CUJ=J<NOTIFICATION_HEADS_UP_APPEAR>
+09-05 09:48:18.327 W/FrameTracker( 2270): Missed App frame:UNKNOWN: 72, 3590865, 48497301, CUJ=J<NOTIFICATION_HEADS_UP_APPEAR>
+09-05 09:48:18.663 I/thermal_repeater( 1421): [recvMdThermalInfo] ret=30, strLen=127,  3, 40, -127, -28402, 32767, 0
+09-05 09:48:18.962 I/adbd    ( 1298): adbd service requested 'shell,v2,raw:am broadcast -n au.buzz.ryzewave/.debug.DebugEventReceiver -a au.buzz.ryzewave.debug.FIND_PHONE --ez start false'
+09-05 09:48:19.018 I/ActivityManager( 1870): Broadcasting: Intent { act=au.buzz.ryzewave.debug.FIND_PHONE flg=0x400000 cmp=au.buzz.ryzewave/.debug.DebugEventReceiver (has extras) }
+09-05 09:48:19.019 I/ActivityManager( 1870): Enqueued broadcast Intent { act=au.buzz.ryzewave.debug.FIND_PHONE flg=0x400000 cmp=au.buzz.ryzewave/.debug.DebugEventReceiver (has extras) }: 0
+09-05 09:48:19.026 I/DebugEvent( 3590): injecting WatchEvent.FindPhone(start=false) (debug hook)
+09-05 09:48:19.028 I/FlashNotifController( 1870): stopFlashNotification: tag=alarm
+09-05 09:48:19.032 I/AudioALSAStreamOut( 1158): updateSourceMetadata(), do nothing source_metadata = 0x6fe8d5efe8
+09-05 09:48:19.048 I/BpBinder( 1455): onLastStrongRef automatically unlinking death recipients: android.hardware.media.bufferpool2.IClientManager
+09-05 09:48:19.054 W/AMessage( 1404): failed to post message as target looper for handler 0 is gone.
+09-05 09:48:19.062 I/FindPhone( 3590): alarm volume restored to 6
+09-05 09:48:19.063 I/FindPhone( 3590): find phone: stopped (watch)
+09-05 09:48:19.063 W/MediaPlayer( 3590): mediaplayer went away with unhandled events
+09-05 09:48:19.064 W/MediaPlayer( 3590): mediaplayer went away with unhandled events
+09-05 09:48:19.065 I/ActivityManager( 1870): Broadcast completed: result=0
+09-05 09:48:19.073 W/TouchableRegionManager( 2270): onHeadsUpPinnedModeChanged
+09-05 09:48:19.087 I/vol.Events( 2270): writeEvent level_changed STREAM_ALARM 6
+09-05 09:48:19.123 I/BufferQueueProducer( 1227): [StatusBar#82](this:0xb400007163793700,id:-1,api:0,p:-1,c:1227) queueBuffer: fps=4.25 dur=2825.65 max=2591.13 min=15.95
+09-05 09:48:19.142 I/hwcomposer( 1163): [HWCDisplay] (0 updateFps():3644), (type:1, mode:2) fps:48.836048,dur:1003.36,max:184.75,min:14.50  
+09-05 09:48:19.179 W/AudioPolicyManagerCustomImpl( 1210): [MTK_APM_Route]setOutputDevices() mIoHandle 13 mId 1 device (0x2)(0x1, 0x2, 0x4, 0x8, 0x10, 0x20, 0x40, 0x400, 0x800, 0x1000, 0x4000, 0x100000, 0x4000000) delayMs 84 force 0 size 4
+09-05 09:48:19.179 I/AudioALSAStreamOut( 1158): updateSourceMetadata(), do nothing source_metadata = 0x6fe8d5efe8
+09-05 09:48:19.187 D/APM_AudioPolicyManager( 1210): [MTK_APM_Output]releaseOutput() 13 portId 47
+09-05 09:48:19.292 I/libPerfCtl( 1184): xgfGetFPS pid:2270 fps:-1
+09-05 09:48:19.323 I/BufferQueueProducer( 1227): [NotificationShade#2294](this:0xb4000071637c1000,id:-1,api:0,p:-1,c:1227) queueBuffer: fps=58.83 dur=1002.85 max=36.07 min=14.91
+09-05 09:48:19.551 W/WindowOnBackDispatcher( 2270): sendCancelIfRunning: isInProgress=false callback=com.android.systemui.back.domain.interactor.BackActionInteractor$callback$2@ad3ad7f
+09-05 09:48:19.558 E/ApplicationHelper( 1870): Fail to get PackageManager
+09-05 09:48:19.563 I/netd    ( 1149): tetherGetStats() -> {[]} <3.41ms>
+09-05 09:48:19.574 I/BufferQueueDebug( 1227): [Surface(name=7e0270b StatusBar)/@0xff9fc94 - animation-leash of insets_animation#2295](this:0xb4000071637be270,id:-1,api:0,p:-1,c:-1) BufferQueue core=(1227:/system/bin/surfaceflinger)
+09-05 09:48:19.591 I/SurfaceFlinger( 1227): onHandleDestroyed: name=Surface(name=7e0270b StatusBar)/@0xff9fc94 - animation-leash of insets_animation#2293, layerId=2293, parentId=0
+09-05 09:48:19.591 I/SurfaceFlinger( 1227): onHandleDestroyed: name=NotificationShade#2294, layerId=2294, parentId=0
+09-05 09:48:19.608 I/BufferQueueDebug( 1227): [NotificationShade#2294](this:0xb4000071637c1000,id:-1,api:0,p:-1,c:1227) onDestructor()
+09-05 09:48:19.610 I/BufferQueueDebug( 1227): [Surface(name=7e0270b StatusBar)/@0xff9fc94 - animation-leash of insets_animation#2293](this:0xb4000071637f71b0,id:-1,api:0,p:-1,c:1227) onDestructor()
+09-05 09:48:20.038 I/AHAL_Stream( 1158): pause()
+09-05 09:48:20.040 I/AHAL_Stream( 1158): flush()
+09-05 09:48:20.066 W/AudioALSAHardwareResourceManager( 1158): CloseSpeakerPath advance_close_audio_fs1815_pa 0
+09-05 09:48:20.134 I/WifiHAL ( 2170): feature_set=0x8488341a
+09-05 09:48:20.292 I/libPerfCtl( 1184): xgfGetFPS pid:2270 fps:-1
+09-05 09:48:21.087 I/adbd    ( 1298): adbd service requested 'shell,v2,raw:dumpsys notification --noredact'
+09-05 09:48:21.255 I/adbd    ( 1298): adbd service requested 'shell,v2,raw:dumpsys audio'
+09-05 09:48:21.292 I/libPerfCtl( 1184): xgfGetFPS pid:2270 fps:-1
+09-05 09:48:21.330 I/adbd    ( 1298): adbd service requested 'shell,v2:export ANDROID_LOG_TAGS="''"; exec logcat '-d' '-v' 'time''

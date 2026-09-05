@@ -1,0 +1,31 @@
+09-05 10:28:59.963 I/GraphFactory(10066): notify: dropped au.buzz.ryzewave: ongoing
+09-05 10:28:59.963 I/GraphFactory(10066): notify: dropped au.buzz.ryzewave: ongoing
+09-05 10:29:08.772 I/AndroidRuntime(10154): Using default boot image
+09-05 10:29:08.772 I/AndroidRuntime(10154): Leaving lock profiling enabled
+09-05 10:29:11.609 I/AndroidRuntime(10170): Using default boot image
+09-05 10:29:11.610 I/AndroidRuntime(10170): Leaving lock profiling enabled
+09-05 10:29:16.045 I/AndroidRuntime(10196): Using default boot image
+09-05 10:29:16.045 I/AndroidRuntime(10196): Leaving lock profiling enabled
+09-05 10:29:22.316 I/AndroidRuntime(10218): Using default boot image
+09-05 10:29:22.316 I/AndroidRuntime(10218): Leaving lock profiling enabled
+09-05 10:29:26.203 I/AndroidRuntime(10242): Using default boot image
+09-05 10:29:26.203 I/AndroidRuntime(10242): Leaving lock profiling enabled
+09-05 10:29:30.127 I/AndroidRuntime(10263): Using default boot image
+09-05 10:29:30.127 I/AndroidRuntime(10263): Leaving lock profiling enabled
+09-05 10:29:32.875 I/AndroidRuntime(10279): Using default boot image
+09-05 10:29:32.875 I/AndroidRuntime(10279): Leaving lock profiling enabled
+09-05 10:29:35.603 I/AndroidRuntime(10296): Using default boot image
+09-05 10:29:35.603 I/AndroidRuntime(10296): Leaving lock profiling enabled
+09-05 10:29:38.296 I/AndroidRuntime(10312): Using default boot image
+09-05 10:29:38.297 I/AndroidRuntime(10312): Leaving lock profiling enabled
+09-05 10:29:41.040 I/AndroidRuntime(10328): Using default boot image
+09-05 10:29:41.040 I/AndroidRuntime(10328): Leaving lock profiling enabled
+09-05 10:29:43.946 I/HealthConnectExporter(10066): exercise route attached to workout-1: 86 locations
+09-05 10:29:43.946 I/HealthConnectExporter(10066): exported 2 records (ExportCounts(steps=0, heartRate=0, spo2=0, distance=1, sleep=0, workouts=1, routePoints=86)) from 0, 228 unchanged skipped, cursor -> 1788568183585, failed 0
+09-05 10:29:52.416 I/AndroidRuntime(10357): Using default boot image
+09-05 10:29:52.417 I/AndroidRuntime(10357): Leaving lock profiling enabled
+09-05 10:29:55.187 I/AndroidRuntime(10373): Using default boot image
+09-05 10:29:55.188 I/AndroidRuntime(10373): Leaving lock profiling enabled
+09-05 10:29:57.965 I/HealthConnectExporter(10066): nothing to export: 230 candidate records unchanged since their last export (from 0)
+09-05 10:30:06.559 I/AndroidRuntime(10402): Using default boot image
+09-05 10:30:06.560 I/AndroidRuntime(10402): Leaving lock profiling enabled

@@ -1,5 +1,6 @@
 package au.buzz.ryzewave.health
 
+import androidx.health.connect.client.records.ExerciseRouteResult
 import androidx.health.connect.client.records.ExerciseSessionRecord
 import androidx.health.connect.client.records.SleepSessionRecord
 import androidx.health.connect.client.records.metadata.Metadata
@@ -10,13 +11,16 @@ import au.buzz.ryzewave.core.Spo2Sample
 import au.buzz.ryzewave.core.StepsHour
 import au.buzz.ryzewave.core.StrideModel
 import au.buzz.ryzewave.core.StrideSettings
+import au.buzz.ryzewave.core.TrackPoint
 import au.buzz.ryzewave.core.UserProfile
 import au.buzz.ryzewave.core.Workout
 import au.buzz.ryzewave.workout.DefaultStrideModel
+import au.buzz.ryzewave.workout.RealTrack
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneId
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -312,6 +316,91 @@ class HealthConnectMappingTest {
         assertTrue(sessions[0].notes!!.endsWith("320 kcal, Outdoor Running (sport type 1)"))
     }
 
+    // ---- exercise routes
+
+    private fun fix(id: Long, time: Long, lat: Double, lon: Double, accepted: Boolean = true, acc: Float = 6f, alt: Double? = 57.4) =
+        TrackPoint(id, time, lat, lon, acc, 1f, alt, accepted, null)
+
+    @Test
+    fun exerciseSessionCarriesARouteOfTheAcceptedFixesInsideTheSession() {
+        val now = at(2026, 9, 5, 12)
+        val start = at(2026, 9, 5, 8, 35)
+        val end = start + 158_000
+        val w = Workout(id = 1, start = start, end = end, sportType = 0x23, distanceMeters = 155.0, durationSeconds = 158, avgHr = 99, maxHr = 105, calories = 14)
+        val points = listOf(
+            fix(1, start - 1000, -27.4956, 152.9841),                       // before the session: dropped
+            fix(1, start + 30_000, -27.4954, 152.9842, acc = 17.4f),        // later than the next row, sorted into place
+            fix(1, start + 2000, -27.49565, 152.98411, acc = 52.4f, alt = null),
+            fix(1, start + 15_000, -27.49545, 152.98422, accepted = false), // rejected: not part of the route
+            fix(1, start + 30_000, -27.5, 153.0),                           // same instant as an earlier row: dropped
+            fix(1, start + 60_000, -27.4953, 152.9845, acc = -1f),          // negative accuracy: carried without one
+            fix(1, end - 1, -27.49536, 152.98451),                          // just before the end: kept
+            fix(1, end, -27.5, 153.0),                                      // at the end: Health Connect wants route < end
+            fix(1, end + 5000, -27.5, 153.0),                               // after the end: dropped
+        )
+        val locations = HealthConnectMapping.routeLocations(w, points)
+        assertEquals(listOf(start + 2000, start + 30_000, start + 60_000, end - 1), locations.map { it.time.toEpochMilli() })
+        assertEquals(-27.49565, locations[0].latitude, 1e-9)
+        assertEquals(152.98411, locations[0].longitude, 1e-9)
+        assertEquals(52.4, locations[0].horizontalAccuracy!!.inMeters, 1e-4)
+        assertNull(locations[0].altitude)
+        assertEquals(57.4, locations[1].altitude!!.inMeters, 1e-9)
+        assertEquals(-27.4954, locations[1].latitude, 1e-9)
+        assertNull(locations[2].horizontalAccuracy)
+        assertNull(locations[0].verticalAccuracy)
+
+        val session = HealthConnectMapping.exerciseSessionRecords(listOf(w), now, zone, mapOf(1L to points)).single()
+        val result = session.exerciseRouteResult
+        assertTrue(result is ExerciseRouteResult.Data)
+        assertEquals(4, (result as ExerciseRouteResult.Data).exerciseRoute.route.size)
+        assertEquals(4, HealthConnectMapping.routePointCount(session))
+        assertEquals("workout-1", session.metadata.clientRecordId)
+        assertEquals(ExerciseSessionRecord.EXERCISE_TYPE_WALKING, session.exerciseType)
+
+        // no track handed in: the session goes out without a route, exactly as before
+        val bare = HealthConnectMapping.exerciseSessionRecords(listOf(w), now, zone).single()
+        assertTrue(bare.exerciseRouteResult is ExerciseRouteResult.NoData)
+        assertEquals(0, HealthConnectMapping.routePointCount(bare))
+    }
+
+    @Test
+    fun routeIsSkippedWithFewerThanTwoUsableFixes() {
+        val now = at(2026, 9, 5, 12)
+        val start = at(2026, 9, 5, 8, 35)
+        val w = Workout(id = 2, start = start, end = start + 60_000, sportType = 1, distanceMeters = 0.0, durationSeconds = 60, avgHr = null, maxHr = null, calories = 0)
+        val one = listOf(fix(2, start + 1000, -27.5, 153.0))
+        val oneAcceptedManyRejected = one + (2..10).map { fix(2, start + it * 1000L, -27.5, 153.0, accepted = false) }
+        assertNull(HealthConnectMapping.exerciseRoute(w, emptyList()))
+        assertNull(HealthConnectMapping.exerciseRoute(w, one))
+        assertNull(HealthConnectMapping.exerciseRoute(w, oneAcceptedManyRejected))
+        assertNull(HealthConnectMapping.exerciseRoute(w.copy(end = null), one + fix(2, start + 2000, -27.5, 153.0)))
+        val session = HealthConnectMapping.exerciseSessionRecords(listOf(w), now, zone, mapOf(2L to oneAcceptedManyRejected)).single()
+        assertTrue(session.exerciseRouteResult is ExerciseRouteResult.NoData)
+        // two accepted fixes are enough
+        val two = one + fix(2, start + 2000, -27.5001, 153.0001)
+        assertEquals(2, HealthConnectMapping.exerciseRoute(w, two)!!.route.size)
+        assertEquals(HealthConnectMapping.MIN_ROUTE_POINTS, 2)
+    }
+
+    /** The real outdoor walk: all 86 accepted fixes lie inside the session and become the route. */
+    @Test
+    fun realOutdoorWalkBecomesAnEightySixPointRoute() {
+        val now = RealTrack.END + 3600_000
+        val points = RealTrack.pixelOutdoorWalk()
+        val session = HealthConnectMapping.exerciseSessionRecords(listOf(RealTrack.workout), now, zone, mapOf(RealTrack.WORKOUT_ID to points)).single()
+        assertEquals(86, HealthConnectMapping.routePointCount(session))
+        val route = (session.exerciseRouteResult as ExerciseRouteResult.Data).exerciseRoute.route
+        assertEquals(RealTrack.START, session.startTime.toEpochMilli())
+        assertEquals(RealTrack.END, session.endTime.toEpochMilli())
+        assertTrue(route.all { it.time >= session.startTime && it.time < session.endTime })
+        assertTrue(route.zipWithNext().all { (a, b) -> a.time < b.time })
+        assertEquals(52.39, route.first().horizontalAccuracy!!.inMeters, 0.01)
+        assertEquals(57.4, route.first().altitude!!.inMeters, 0.01)
+        assertEquals(-27.495656, route.first().latitude, 1e-9)
+        assertEquals(152.9841077, route.first().longitude, 1e-9)
+        assertEquals("Outdoor Walking", session.title)           // 155 m in 158 s: the type-1 tie-breaker says walking
+    }
+
     // ---- sleep
 
     @Test
@@ -385,5 +474,84 @@ class HealthConnectMappingTest {
         assertTrue(HealthConnectMapping.sleepSessionRecords(emptyList(), now, zone).isEmpty())
         assertTrue(HealthConnectMapping.exerciseSessionRecords(emptyList(), now, zone).isEmpty())
         assertNull(HealthConnectMapping.nights(emptyList(), now, zone).firstOrNull())
+    }
+
+    // ---- content fingerprints (the export ledger)
+
+    /**
+     * The fingerprint is the record's data: not its version (the export clock) and not the `now` cap of an hour /
+     * day in progress, so a later export of unchanged data fingerprints the same; any change of the data does not.
+     */
+    @Test
+    fun fingerprintIgnoresVersionAndTheNowCapButFollowsTheData() {
+        val h = listOf(StepsHour(at(2026, 9, 4, 7), 40, 40, 0))
+        val first = at(2026, 9, 4, 7, 5)
+        val second = at(2026, 9, 4, 7, 25)
+        val a = HealthConnectMapping.stepsRecords(h, first, zone).single()
+        val b = HealthConnectMapping.stepsRecords(h, second, zone).single()
+        assertTrue(a.metadata.clientRecordVersion != b.metadata.clientRecordVersion)
+        assertTrue(a.endTime != b.endTime)
+        assertEquals(HealthConnectMapping.fingerprint(a, first), HealthConnectMapping.fingerprint(b, second))
+        // one more step: different
+        val c = HealthConnectMapping.stepsRecords(listOf(StepsHour(at(2026, 9, 4, 7), 41, 41, 0)), second, zone).single()
+        assertNotEquals(HealthConnectMapping.fingerprint(b, second), HealthConnectMapping.fingerprint(c, second))
+        // the hour closed (end = 08:00, not the cap): different from the open hour, stable afterwards
+        val d = HealthConnectMapping.stepsRecords(h, at(2026, 9, 4, 8, 30), zone).single()
+        val e = HealthConnectMapping.stepsRecords(h, at(2026, 9, 4, 9, 30), zone).single()
+        assertNotEquals(HealthConnectMapping.fingerprint(b, second), HealthConnectMapping.fingerprint(d, at(2026, 9, 4, 8, 30)))
+        assertEquals(HealthConnectMapping.fingerprint(d, at(2026, 9, 4, 8, 30)), HealthConnectMapping.fingerprint(e, at(2026, 9, 4, 9, 30)))
+
+        // the same holds for the day's distance
+        val profile = UserProfile(heightCm = 180)
+        val d1 = HealthConnectMapping.dailyDistanceRecords(h, profile, StrideSettings(), stride, first, zone).single()
+        val d2 = HealthConnectMapping.dailyDistanceRecords(h, profile, StrideSettings(), stride, second, zone).single()
+        assertEquals(HealthConnectMapping.fingerprint(d1, first), HealthConnectMapping.fingerprint(d2, second))
+        val d3 = HealthConnectMapping.dailyDistanceRecords(h, profile, StrideSettings(walkStrideM = 0.8), stride, second, zone).single()
+        assertNotEquals(HealthConnectMapping.fingerprint(d2, second), HealthConnectMapping.fingerprint(d3, second))
+
+        // HR: an extra sample changes the hour's fingerprint
+        val hr1 = HealthConnectMapping.heartRateRecords(listOf(HrSample(at(2026, 9, 4, 7, 2), 70)), first, zone).single()
+        val hr2 = HealthConnectMapping.heartRateRecords(listOf(HrSample(at(2026, 9, 4, 7, 2), 70)), second, zone).single()
+        val hr3 = HealthConnectMapping.heartRateRecords(listOf(HrSample(at(2026, 9, 4, 7, 2), 70), HrSample(at(2026, 9, 4, 7, 20), 90)), second, zone).single()
+        assertEquals(HealthConnectMapping.fingerprint(hr1, first), HealthConnectMapping.fingerprint(hr2, second))
+        assertNotEquals(HealthConnectMapping.fingerprint(hr2, second), HealthConnectMapping.fingerprint(hr3, second))
+
+        // different record kinds never share a fingerprint by accident of equal numbers
+        assertNotEquals(HealthConnectMapping.fingerprint(a, first), HealthConnectMapping.fingerprint(d1, first))
+    }
+
+    @Test
+    fun workoutFingerprintCoversTheRouteAndTheSummary() {
+        val w = Workout(id = 1, start = at(2026, 9, 4, 7), end = at(2026, 9, 4, 7, 30), sportType = 1, distanceMeters = 2500.0, durationSeconds = 1800, avgHr = 120, maxHr = 150, calories = 200)
+        val now = at(2026, 9, 4, 9)
+        val track = listOf(fix(1, w.start + 1000, -27.50, 153.00), fix(1, w.start + 2000, -27.51, 153.00), fix(1, w.start + 3000, -27.51, 153.01))
+        val plain = HealthConnectMapping.exerciseSessionRecords(listOf(w), now, zone).single()
+        val plainLater = HealthConnectMapping.exerciseSessionRecords(listOf(w), now + hour, zone).single()
+        val routed = HealthConnectMapping.exerciseSessionRecords(listOf(w), now, zone, mapOf(1L to track)).single()
+        val routedShorter = HealthConnectMapping.exerciseSessionRecords(listOf(w), now, zone, mapOf(1L to track.take(2))).single()
+        val edited = HealthConnectMapping.exerciseSessionRecords(listOf(w.copy(sportType = 0x23)), now, zone, mapOf(1L to track)).single()
+        assertEquals(HealthConnectMapping.fingerprint(plain, now), HealthConnectMapping.fingerprint(plainLater, now + hour))
+        assertNotEquals(HealthConnectMapping.fingerprint(plain, now), HealthConnectMapping.fingerprint(routed, now))
+        assertNotEquals(HealthConnectMapping.fingerprint(routed, now), HealthConnectMapping.fingerprint(routedShorter, now))
+        assertNotEquals(HealthConnectMapping.fingerprint(routed, now), HealthConnectMapping.fingerprint(edited, now))
+
+        val dist = HealthConnectMapping.workoutDistanceRecords(listOf(w), now, zone).single()
+        val distLater = HealthConnectMapping.workoutDistanceRecords(listOf(w), now + hour, zone).single()
+        val distMore = HealthConnectMapping.workoutDistanceRecords(listOf(w.copy(distanceMeters = 2600.0)), now, zone).single()
+        assertEquals(HealthConnectMapping.fingerprint(dist, now), HealthConnectMapping.fingerprint(distLater, now + hour))
+        assertNotEquals(HealthConnectMapping.fingerprint(dist, now), HealthConnectMapping.fingerprint(distMore, now))
+    }
+
+    @Test
+    fun sleepFingerprintFollowsTheStages() {
+        val stages = listOf(SleepStage(at(2026, 9, 3, 23), 2, 60), SleepStage(at(2026, 9, 4, 0), 1, 60))
+        val now = at(2026, 9, 4, 8)
+        val a = HealthConnectMapping.sleepSessionRecords(stages, now, zone).single()
+        val b = HealthConnectMapping.sleepSessionRecords(stages, now + hour, zone).single()
+        val c = HealthConnectMapping.sleepSessionRecords(stages + SleepStage(at(2026, 9, 4, 1), 3, 30), now, zone).single()
+        val d = HealthConnectMapping.sleepSessionRecords(listOf(stages[0], stages[1].copy(stage = 3)), now, zone).single()
+        assertEquals(HealthConnectMapping.fingerprint(a, now), HealthConnectMapping.fingerprint(b, now + hour))
+        assertNotEquals(HealthConnectMapping.fingerprint(a, now), HealthConnectMapping.fingerprint(c, now))
+        assertNotEquals(HealthConnectMapping.fingerprint(a, now), HealthConnectMapping.fingerprint(d, now))
     }
 }

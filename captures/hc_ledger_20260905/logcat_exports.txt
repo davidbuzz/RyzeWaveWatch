@@ -1,0 +1,3 @@
+09-05 09:27:39.590 I/HealthConnectExporter(32593): exercise route attached to workout-1: 86 locations
+09-05 09:27:39.590 I/HealthConnectExporter(32593): exported 230 records (ExportCounts(steps=20, heartRate=36, spo2=167, distance=4, sleep=2, workouts=1, routePoints=86)) from 0, 0 unchanged skipped, cursor -> 1788564458820, failed 0
+09-05 09:28:02.431 I/HealthConnectExporter(32593): nothing to export: 230 candidate records unchanged since their last export (from 0)

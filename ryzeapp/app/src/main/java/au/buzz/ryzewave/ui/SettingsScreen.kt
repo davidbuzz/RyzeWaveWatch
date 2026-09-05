@@ -40,12 +40,15 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.health.connect.client.HealthConnectClient
@@ -83,6 +86,7 @@ fun SettingsScreen(vm: SettingsViewModel = viewModel()) {
     val health = LocalHealthPermissionHost.current
     val sdkStatus by health.sdkStatus.collectAsStateWithLifecycle()
     val granted by health.granted.collectAsStateWithLifecycle()
+    val optionalMissing by health.optionalMissing.collectAsStateWithLifecycle()
     val snackbar = remember { SnackbarHostState() }
     MessageSnackbar(message, vm::clearMessage, snackbar)
     LaunchedEffect(Unit) {
@@ -119,8 +123,8 @@ fun SettingsScreen(vm: SettingsViewModel = viewModel()) {
                 onSave = vm::saveStride, onReset = vm::resetStride, onCalibrate = vm::calibrateFromLastWorkout,
             )
             HealthSection(
-                enabled = hcEnabled, sdkStatus = sdkStatus, granted = granted, busy = busy || exporting,
-                lastExport = lastExport,
+                enabled = hcEnabled, sdkStatus = sdkStatus, granted = granted, routeMissing = optionalMissing.isNotEmpty(),
+                busy = busy || exporting, lastExport = lastExport,
                 onToggle = { on ->
                     vm.setHealthConnectEnabled(on)
                     if (on && !granted) health.request()     // arming the export without permissions is pointless
@@ -168,6 +172,53 @@ private fun NumberField(label: String, value: String, onChange: (String) -> Unit
     )
 }
 
+// ---- edit guard -------------------------------------------------------------------------------------------
+
+/**
+ * "Local edits win until saved": keeps a form's fields from being clobbered by the settings flow they were seeded
+ * from.
+ *
+ * The obvious `remember(flowValue) { mutableStateOf(flowValue) }` re-creates the field state every time the flow
+ * re-emits, and these flows re-emit for reasons unrelated to what the user is typing (another setting saved, the
+ * service re-applying settings on connect, a scan result chosen, DataStore rewriting its file), so a half-typed
+ * number silently reverts to the stored value — the profile bug of build 1 (weight typed 114, saved 50). The
+ * Profile section got an `edited` flag in build 2; this is that flag, shared by every section with text fields.
+ *
+ * Rules: the fields are seeded with `remember { mutableStateOf(stored…) }`; while [edited] is false, the stored
+ * value is copied into them whenever it changes ([rememberEditGuard] runs `seed` from a `LaunchedEffect(stored)`);
+ * once the user has typed ([touch]) the fields are left alone, whatever the flow does. Call [saved] when the user
+ * saves — the fields already hold what was saved, and the flow's echo re-seeds them with the same values (or with
+ * the normalised ones, e.g. an upper-cased MAC). Call [discard] when something *other* than typing replaces the
+ * stored value (a scan result tapped, "Use defaults", calibration): the edits are thrown away and the stored value
+ * is shown at once, even when the flow does not re-emit because the value did not actually change.
+ */
+@Stable
+class EditGuard internal constructor(private val seed: () -> Unit) {
+    var edited by mutableStateOf(false)
+        private set
+
+    /** The user changed a field: keep the local values until [saved] or [discard]. */
+    fun touch() { edited = true }
+
+    /** The local values were handed to the store; from now on the stored value may re-seed the fields again. */
+    fun saved() { edited = false }
+
+    /** Drop the local edits and show the stored value now. */
+    fun discard() { edited = false; seed() }
+}
+
+/**
+ * See [EditGuard]. [stored] is the flow value the fields mirror; [seed] copies it into the field states and is
+ * re-run whenever [stored] changes while nothing is being edited.
+ */
+@Composable
+fun rememberEditGuard(stored: Any?, seed: () -> Unit): EditGuard {
+    val latestSeed = rememberUpdatedState(seed)
+    val guard = remember { EditGuard { latestSeed.value() } }
+    LaunchedEffect(stored) { if (!guard.edited) latestSeed.value() }
+    return guard
+}
+
 // ---- watch ------------------------------------------------------------------------------------------------
 
 @Composable
@@ -183,18 +234,25 @@ private fun WatchSection(
     onChoose: (ScannedDevice) -> Unit,
     onFind: () -> Unit,
 ) {
-    var text by remember(mac) { mutableStateOf(mac) }
+    var text by remember { mutableStateOf(mac) }
+    val guard = rememberEditGuard(mac) { text = mac }
+    // The field keeps exactly what was typed: rewriting the value inside onValueChange (the old
+    // `it.uppercase()`) under Gboard's composition dropped keystrokes ("abcdef" -> "ACDEF"). The keyboard is asked
+    // for capitals and the value is normalised (trimmed, upper-cased) when it is compared and saved.
+    val normalised = MacText.normalise(text)
     SectionCard("Watch") {
         OutlinedTextField(
             value = text,
-            onValueChange = { text = it.uppercase(Locale.ROOT) },
+            onValueChange = { text = it; guard.touch() },
             label = { Text("MAC address") },
             supportingText = { Text("Default ${UiDefaults.WATCH_MAC}") },
             singleLine = true,
+            keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Characters, keyboardType = KeyboardType.Ascii),
             modifier = Modifier.fillMaxWidth(),
         )
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Button(onClick = { onSave(text) }, enabled = text.trim() != mac) { Text("Save") }
+        // FlowRow: three buttons do not fit one row on a 360 dp phone and a Row squashed "Find watch" onto two lines
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Button(onClick = { onSave(normalised); guard.saved() }, enabled = normalised != mac) { Text("Save") }
             OutlinedButton(onClick = if (scanning) onStopScan else onScan) { Text(if (scanning) "Stop scan" else "Scan") }
             OutlinedButton(onClick = onFind, enabled = status.isConnected() && !busy) { Text("Find watch") }
         }
@@ -203,7 +261,7 @@ private fun WatchSection(
             ListItem(
                 headlineContent = { Text(d.name) },
                 supportingContent = { Text("${d.mac} · ${d.rssi} dBm · tap to use") },
-                modifier = Modifier.clickable { onChoose(d) },
+                modifier = Modifier.clickable { guard.discard(); onChoose(d) },
             )
         }
         if (scanning && results.isEmpty()) {
@@ -217,22 +275,18 @@ private fun WatchSection(
 
 @Composable
 private fun ProfileSection(profile: UserProfile, onSave: (UserProfile) -> Unit) {
-    // Local edit state is seeded from the stored profile only while the user has not typed anything (and again
-    // after Save); keying it on the profile flow made in-progress edits revert whenever the flow re-emitted.
+    // Local edit state; the stored profile only re-seeds it while nothing is being edited (see EditGuard).
     var height by remember { mutableStateOf(profile.heightCm.toString()) }
     var weight by remember { mutableStateOf(profile.weightKg.toString()) }
     var age by remember { mutableStateOf(profile.age.toString()) }
     var goal by remember { mutableStateOf(profile.stepGoal.toString()) }
     var male by remember { mutableStateOf(profile.male) }
-    var edited by remember { mutableStateOf(false) }
-    LaunchedEffect(profile, edited) {
-        if (!edited) {
-            height = profile.heightCm.toString()
-            weight = profile.weightKg.toString()
-            age = profile.age.toString()
-            goal = profile.stepGoal.toString()
-            male = profile.male
-        }
+    val guard = rememberEditGuard(profile) {
+        height = profile.heightCm.toString()
+        weight = profile.weightKg.toString()
+        age = profile.age.toString()
+        goal = profile.stepGoal.toString()
+        male = profile.male
     }
     val parsed = UserProfile(
         heightCm = height.toIntOrNull() ?: 0,
@@ -244,18 +298,18 @@ private fun ProfileSection(profile: UserProfile, onSave: (UserProfile) -> Unit) 
     val valid = parsed.heightCm in 100..250 && parsed.weightKg in 20..300 && parsed.age in 5..120 && parsed.stepGoal in 500..100_000
     SectionCard("Profile") {
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            NumberField("Height", height, { height = it; edited = true }, Modifier.weight(1f), "cm")
-            NumberField("Weight", weight, { weight = it; edited = true }, Modifier.weight(1f), "kg")
+            NumberField("Height", height, { height = it; guard.touch() }, Modifier.weight(1f), "cm")
+            NumberField("Weight", weight, { weight = it; guard.touch() }, Modifier.weight(1f), "kg")
         }
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            NumberField("Age", age, { age = it; edited = true }, Modifier.weight(1f))
-            NumberField("Step goal", goal, { goal = it; edited = true }, Modifier.weight(1f))
+            NumberField("Age", age, { age = it; guard.touch() }, Modifier.weight(1f))
+            NumberField("Step goal", goal, { goal = it; guard.touch() }, Modifier.weight(1f))
         }
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            FilterChip(selected = male, onClick = { male = true; edited = true }, label = { Text("Male") })
-            FilterChip(selected = !male, onClick = { male = false; edited = true }, label = { Text("Female") })
+            FilterChip(selected = male, onClick = { male = true; guard.touch() }, label = { Text("Male") })
+            FilterChip(selected = !male, onClick = { male = false; guard.touch() }, label = { Text("Female") })
         }
-        Button(onClick = { onSave(parsed); edited = false }, enabled = valid && parsed != profile) { Text("Save profile") }
+        Button(onClick = { onSave(parsed); guard.saved() }, enabled = valid && parsed != profile) { Text("Save profile") }
     }
 }
 
@@ -293,8 +347,12 @@ private fun StrideSection(
     onReset: () -> Unit,
     onCalibrate: () -> Unit,
 ) {
-    var walk by remember(stride) { mutableStateOf(stride.walkStrideM?.let { fmt3(it) } ?: "") }
-    var run by remember(stride) { mutableStateOf(stride.runStrideM?.let { fmt3(it) } ?: "") }
+    var walk by remember { mutableStateOf(stride.walkStrideM?.let { fmt3(it) } ?: "") }
+    var run by remember { mutableStateOf(stride.runStrideM?.let { fmt3(it) } ?: "") }
+    val guard = rememberEditGuard(stride) {
+        walk = stride.walkStrideM?.let { fmt3(it) } ?: ""
+        run = stride.runStrideM?.let { fmt3(it) } ?: ""
+    }
     val walkVal = walk.toDoubleOrNull()
     val runVal = run.toDoubleOrNull()
     val walkOk = walk.isBlank() || (walkVal != null && walkVal in DefaultStrideModel.MIN_STRIDE_M..DefaultStrideModel.MAX_STRIDE_M)
@@ -308,15 +366,15 @@ private fun StrideSection(
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            NumberField("Walk stride", walk, { walk = it }, Modifier.weight(1f), "m")
-            NumberField("Run stride", run, { run = it }, Modifier.weight(1f), "m")
+            NumberField("Walk stride", walk, { walk = it; guard.touch() }, Modifier.weight(1f), "m")
+            NumberField("Run stride", run, { run = it; guard.touch() }, Modifier.weight(1f), "m")
         }
         if (!walkOk || !runOk) Text("Stride must be between ${DefaultStrideModel.MIN_STRIDE_M} and ${DefaultStrideModel.MAX_STRIDE_M} m", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Button(onClick = { onSave(parsed) }, enabled = walkOk && runOk && parsed != stride) { Text("Save") }
-            OutlinedButton(onClick = onReset, enabled = stride != StrideSettings()) { Text("Use defaults") }
+            Button(onClick = { onSave(parsed); guard.saved() }, enabled = walkOk && runOk && parsed != stride) { Text("Save") }
+            OutlinedButton(onClick = { guard.discard(); onReset() }, enabled = stride != StrideSettings()) { Text("Use defaults") }
         }
-        OutlinedButton(onClick = onCalibrate, enabled = calibrationWorkout != null) { Text("Calibrate from last GPS workout") }
+        OutlinedButton(onClick = { guard.discard(); onCalibrate() }, enabled = calibrationWorkout != null) { Text("Calibrate from last GPS workout") }
         Text(
             calibrationWorkout?.let { "Uses ${Fmt.dateTime(it.start)}: ${Fmt.metres(it.distanceMeters)} in ${Fmt.duration(it.durationSeconds)}, divided by the steps the watch counted in that window." }
                 ?: "Record a GPS workout of at least 200 m first.",
@@ -337,6 +395,8 @@ private fun HealthSection(
     enabled: Boolean,
     sdkStatus: Int,
     granted: Boolean,
+    /** The optional exercise-route permission was declined: exports run, sessions carry no GPS track. */
+    routeMissing: Boolean,
     busy: Boolean,
     lastExport: ExportResult?,
     onToggle: (Boolean) -> Unit,
@@ -347,8 +407,11 @@ private fun HealthSection(
     SectionCard("Health Connect") {
         Text(healthSdkLabel(sdkStatus), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         SwitchRow("Export to Health Connect", enabled, enabled = available, onChange = onToggle)
+        // `granted` is the exporter's own test (the required write permissions), so this status, the Export now
+        // button and the background exports agree; the route permission is optional and only gets a hint.
         Text(
             when {
+                granted && routeMissing -> "Permissions granted (GPS routes not allowed: workouts are exported without their track)"
                 granted -> "Permissions granted"
                 enabled -> "Permissions not granted yet — nothing is exported until you grant them"
                 else -> "Permissions not granted yet"
@@ -356,7 +419,9 @@ private fun HealthSection(
             style = MaterialTheme.typography.bodyMedium,
             color = if (enabled && !granted) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface,
         )
-        OutlinedButton(onClick = onGrant, enabled = available && !granted, modifier = Modifier.fillMaxWidth()) { Text("Grant permissions") }
+        OutlinedButton(onClick = onGrant, enabled = available && (!granted || routeMissing), modifier = Modifier.fillMaxWidth()) {
+            Text(if (granted && routeMissing) "Grant route permission" else "Grant permissions")
+        }
         Button(onClick = onExport, enabled = available && granted && !busy, modifier = Modifier.fillMaxWidth()) { Text(if (busy) "Exporting…" else "Export now") }
         if (lastExport != null) {
             Text(
@@ -373,7 +438,7 @@ private fun exportSummary(r: ExportResult): String {
     val at = Fmt.time(r.time)
     return when (r.status) {
         ExportResult.Status.OK -> "Last export $at: ${r.inserted} records" + (if (r.failed > 0) ", ${r.failed} rejected" else "")
-        ExportResult.Status.NOTHING_TO_EXPORT -> "Last export $at: nothing new"
+        ExportResult.Status.NOTHING_TO_EXPORT -> "Last export $at: nothing new" + (if (r.skipped > 0) " (${r.skipped} records unchanged)" else "")
         else -> "Last export $at failed: ${r.message ?: r.status.name}"
     }
 }

@@ -1,0 +1,41 @@
+  205,  842          TextView       Health Connect
+  234,  912          TextView       Health Connect available
+  314,  993          TextView       Export to Health Connect
+  232, 1080          TextView       Permissions granted
+  360, 1168          TextView       Grant permissions
+  360, 1270          TextView       Export now
+  284, 1351          TextView       Last export 10:47: nothing new
+== all 7 granted
+saved /home/buzz/RyzeWaveWatch/captures/app_fixes_20260905/hc_all_granted.png (146681 bytes)
+== tap Export now (first run after install: companions missing -> track read once, everything unchanged)
+tapping 360,1270 ('Export now')
+saved /home/buzz/RyzeWaveWatch/captures/app_fixes_20260905/hc_export_now_toast_1.png (154806 bytes)
+09-05 10:53:27.522 11221 11221 I HealthConnectExporter: nothing to export: 230 candidate records unchanged since their last export (from 0, 0 sessions unchanged without reading their tracks)
+== tap Export now again (companions stored -> session skipped without reading its track)
+tapping 360,1270 ('Export now')
+saved /home/buzz/RyzeWaveWatch/captures/app_fixes_20260905/hc_export_now_toast_2.png (154806 bytes)
+09-05 10:53:35.003 11221 11221 I HealthConnectExporter: nothing to export: 230 candidate records unchanged since their last export (from 0, 1 sessions unchanged without reading their tracks)
+  232, 1080          TextView       Permissions granted
+  360, 1168          TextView       Grant permissions
+  360, 1355          TextView       Last export 10:53: nothing new (230 records unchanged)
+== revoke WRITE_EXERCISE_ROUTE only, then resume the activity (onResume -> host.refresh)
+        android.permission.health.WRITE_EXERCISE_ROUTE: granted=false, flags=[ USER_SENSITIVE_WHEN_GRANTED|USER_SENSITIVE_WHEN_DENIED]
+        android.permission.health.WRITE_EXERCISE: granted=true, flags=[ USER_SENSITIVE_WHEN_GRANTED|USER_SENSITIVE_WHEN_DENIED]
+09-05 10:54:08.821 12823 12823 I HealthPermissions: Health Connect grants: export allowed, optional missing [android.permission.health.WRITE_EXERCISE_ROUTE]
+saved /home/buzz/RyzeWaveWatch/captures/app_fixes_20260905/hc_route_revoked.png (117187 bytes)
+  360, 1119          TextView       Permissions granted (GPS routes not allowed: workouts are exported without their track)
+  360, 1262          TextView       Grant route permission
+  360, 1358          TextView       Export now
+Export now -> TextView(enabled=true,clickable=false) < View(enabled=true,clickable=true) < View(enabled=true,clickable=false)
+Grant route permission -> TextView(enabled=true,clickable=false) < View(enabled=true,clickable=true) < View(enabled=true,clickable=false)
+saved /home/buzz/RyzeWaveWatch/captures/app_fixes_20260905/hc_route_revoked.png (155979 bytes)
+== re-grant WRITE_EXERCISE_ROUTE, resume
+        android.permission.health.WRITE_EXERCISE_ROUTE: granted=true, flags=[ USER_SENSITIVE_WHEN_GRANTED|USER_SENSITIVE_WHEN_DENIED]
+09-05 10:55:01.353 12823 12823 I HealthPermissions: Health Connect grants: export allowed
+pid now: 12823
+  232, 1064          TextView       Permissions granted
+  360, 1152          TextView       Grant permissions
+  360, 1254          TextView       Export now
+Export now -> TextView(enabled=true,clickable=false) < View(enabled=true,clickable=true) < View(enabled=true,clickable=false)
+Grant permissions -> TextView(enabled=true,clickable=false) < View(enabled=false,clickable=true) < View(enabled=true,clickable=false)
+saved /home/buzz/RyzeWaveWatch/captures/app_fixes_20260905/hc_route_regranted.png (146410 bytes)

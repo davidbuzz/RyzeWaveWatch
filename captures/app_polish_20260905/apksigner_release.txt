@@ -1,0 +1,17 @@
+Verifies
+Verified using v1 scheme (JAR signing): false
+Verified using v2 scheme (APK Signature Scheme v2): true
+Verified using v3 scheme (APK Signature Scheme v3): false
+Verified using v3.1 scheme (APK Signature Scheme v3.1): false
+Verified using v4 scheme (APK Signature Scheme v4): false
+Verified for SourceStamp: false
+Number of signers: 1
+Signer #1 certificate DN: CN=Buzz's Ryze Wave
+Signer #1 certificate SHA-256 digest: 03a11508362d9d07c47860bb6683fe263b85177b6ae8a97189a6906d8fdfd78d
+Signer #1 certificate SHA-1 digest: d67c771761d353ec0a667328b42d1f7c2031b5f4
+Signer #1 certificate MD5 digest: e339a24ba23855582ecbd10b2a0984c7
+Signer #1 key algorithm: RSA
+Signer #1 key size (bits): 2048
+Signer #1 public key SHA-256 digest: 98f4a23074f1b88fd2f63611711a1bc948ac64aa029433a61c61bb77351aca19
+Signer #1 public key SHA-1 digest: c74b3250db552182f195e38c90d932eeb1c35b55
+Signer #1 public key MD5 digest: cc68482938e2aa38eac04ee468af6847

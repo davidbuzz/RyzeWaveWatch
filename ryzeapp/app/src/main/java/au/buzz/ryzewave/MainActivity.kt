@@ -34,7 +34,12 @@ class MainActivity : ComponentActivity() {
     }
 
     private val healthHost: HealthConnectPermissionHost by lazy {
-        HealthConnectPermissionHost(this, lifecycleScope, App.graph.health.writePermissions) { healthLauncher.launch(it) }
+        // Request every write permission (route included) but gate on what the exporter actually needs.
+        HealthConnectPermissionHost(
+            this, lifecycleScope,
+            request = App.graph.health.writePermissions,
+            required = App.graph.health.requiredPermissions,
+        ) { healthLauncher.launch(it) }
     }
 
     private val permissionLauncher = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { result ->

@@ -56,6 +56,7 @@ sealed class WatchEvent {
     data class Spo2Result(val time: Long, val percent: Int?) : WatchEvent()
     data class HrSummary(val time: Long, val max: Int, val min: Int, val avg: Int) : WatchEvent()
     data class RealtimeSteps(val stepsHour: StepsHour) : WatchEvent()
-    data object FindPhone : WatchEvent()
+    /** `D1 0A 01` (the watch is looking for the phone: ring) / `D1 0A 00` (stop ringing). */
+    data class FindPhone(val start: Boolean) : WatchEvent()
     data class Raw(val channel: String, val hex: String) : WatchEvent()
 }

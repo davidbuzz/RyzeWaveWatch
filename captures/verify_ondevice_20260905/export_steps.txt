@@ -1,0 +1,31 @@
+total 460
+drwxrwxr-x  2 buzz buzz   4096 Sep  5 10:17 .
+drwx------ 21 buzz buzz   4096 Sep  5 10:17 ..
+-rw-rw-r--  1 buzz buzz 167936 Sep  5 10:17 ryzewave.db
+-rw-rw-r--  1 buzz buzz  32768 Sep  5 10:17 ryzewave.db-shm
+-rw-rw-r--  1 buzz buzz 259592 Sep  5 10:17 ryzewave.db-wal
+before: hc_export rows 231 workout rows in ledger [('wdist-1',), ('workout-1',)]
+after: hc_export rows 229 user_version 3 journal delete
+cp: Needs 1 argument (see "cp --help")
+04207e276fd0e75f074ceb07985a5888  /tmp/claude-1000/-home-buzz-RyzeWaveWatch/a8cfe5ce-cab3-47da-bf23-26c8acc106be/scratchpad/db2/ryzewave.db
+10:17:26 startup exporter lines:
+09-05 10:17:16.911 I/HealthConnectExporter( 8492): nothing to export: 0 candidate records unchanged since their last export (from 1788566757920)
+09-05 10:17:16.911 I/GraphFactory( 8492): Health Connect export after sync: ExportResult(status=NOTHING_TO_EXPORT, counts=ExportCounts(steps=0, heartRate=0, spo2=0, distance=0, sleep=0, workouts=0, routePoints=0), inserted=0, failed=0, cursor=1788567057920, message=null, time=1788567436911, skipped=0)
+09-05 10:17:18.542 I/GraphFactory( 8492): notify: dropped au.buzz.ryzewave: ongoing
+09-05 10:17:18.542 I/GraphFactory( 8492): notify: dropped au.buzz.ryzewave: ongoing
+tapping 635,1478 ('Settings')
+10:17:40 EXPORT 1
+no node containing 'Export now'
+09-05 10:17:16.911 I/HealthConnectExporter( 8492): nothing to export: 0 candidate records unchanged since their last export (from 1788566757920)
+10:17:55 EXPORT 2
+no node containing 'Export now'
+/tmp/claude-1000/-home-buzz-RyzeWaveWatch/a8cfe5ce-cab3-47da-bf23-26c8acc106be/scratchpad/export_test.sh: line 46: /app_tap.sh: No such file or directory
+10:18:05 EXPORT 2
+no node containing 'Export now'
+/tmp/claude-1000/-home-buzz-RyzeWaveWatch/a8cfe5ce-cab3-47da-bf23-26c8acc106be/scratchpad/export_test.sh: line 48: 1_ledger.png: command not found
+09-05 10:17:16.911 I/HealthConnectExporter( 8492): nothing to export: 0 candidate records unchanged since their last export (from 1788566757920)
+10:18:19 EXPORT 2
+no node containing 'Export now'
+09-05 10:17:16.911 I/HealthConnectExporter( 8492): nothing to export: 0 candidate records unchanged since their last export (from 1788566757920)
+10:18:33 DONE
+EXIT=0

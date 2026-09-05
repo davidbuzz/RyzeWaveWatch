@@ -63,7 +63,7 @@ import kotlin.math.min
  *    (WORKOUT, persisted by the workout controller);
  *  - pushes at any time: `F7 03` (AUTO HR sample → repository), `F7 04` ([WatchEvent.HrSummary]), `34 00 00 xx`
  *    (SpO2 result → repository + [WatchEvent.Spo2Result]), `B1` (→ repository + [WatchEvent.RealtimeSteps]),
- *    `A2 <pct> [01]` (status battery / charging), `D1 0A 01` ([WatchEvent.FindPhone]). History packets nobody
+ *    `A2 <pct> [01]` (status battery / charging), `D1 0A 01/00` ([WatchEvent.FindPhone] start / stop). History packets nobody
  *    asked for (`F7`/`B2`/`34 FA` records and `31`/`32` sleep packets streamed in answer to Ryze Fit's fetch when
  *    it shares the link) are persisted too — they are valid watch data whichever app asked, and the upserts are
  *    idempotent. Anything else unrequested is only surfaced as [WatchEvent.Raw].
@@ -571,7 +571,7 @@ class WatchApiImpl(
             }
             is Packet.Battery -> _status.update { it.copy(batteryPercent = p.percent, charging = p.charging) }
             is Packet.Version -> if (!p.dsp && p.version.isNotEmpty()) _status.update { it.copy(firmware = p.version) }
-            is Packet.FindPhone -> if (p.start) _events.tryEmit(WatchEvent.FindPhone)
+            is Packet.FindPhone -> _events.tryEmit(WatchEvent.FindPhone(p.start))
             is Packet.Unknown -> if (!raw.consumed) _events.tryEmit(WatchEvent.Raw(raw.channel.notifyName, p.raw))
             else -> Unit
         }

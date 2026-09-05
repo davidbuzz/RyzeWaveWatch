@@ -40,3 +40,12 @@ Established facts:
   FD 48 list (70) = watch menu order; 1 = Outdoor Running (all workouts so far), 0x23 Outdoor Walking, 2 Cycling.
   Realtime workout push is `FD <sportType> <hr> …` (14 B) — app decoder only matched type 1 (fix pending), see
   docs/APP.md "Sport types". Wrist check of names for 0x23/0x02 asked of Buzz.
+- 2026-09-05 ~09:00: build 7 committed (ceb43b4: sport picker, HC exercise type by sport id, FD <type> decoder).
+  First real outdoor walk (Pixel 9a, build 6) analysed: 155 m / 158 s, steady, cross-checks agree; watch hourly
+  steps looked low (78) — asked Buzz which hand held the phone. Buzz is away for hours with the watch; a
+  watch-independent batch workflow (track plot + HC route, export hygiene, sleep card, find-phone ringer,
+  settings/icon/release polish) is running on the Moto. Tools: tools/pull_app_data.sh, tools/analyse_workout.py.
+- 2026-09-05 ~11:30: build 8 = track plot + HC ExerciseRoute (route visible in Health Connect), export ledger
+  (Room v3, fingerprints, stride re-export), sleep card + hypnogram, find-phone ringer (debug trigger), MAC field
+  fix, launcher icon, signed release build (keystore git-ignored at ryzeapp/keystore/). 324 unit tests. Track plot
+  showed a poor first anchor + Doppler-credit over-count on the real walk (docs/APP.md "Tracker finding").

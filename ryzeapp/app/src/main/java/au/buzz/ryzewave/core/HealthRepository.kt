@@ -1,6 +1,7 @@
 package au.buzz.ryzewave.core
 
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 
 /**
@@ -26,6 +27,8 @@ interface HealthRepository {
     fun workouts(): Flow<List<Workout>>
     fun workout(id: Long): Flow<Workout?>
     fun trackPoints(workoutId: Long): Flow<List<TrackPoint>>
+    /** One-shot read of [trackPoints] (the Health Connect exporter attaches them to the session as a route). */
+    suspend fun trackPointsOnce(workoutId: Long): List<TrackPoint> = trackPoints(workoutId).first()
     suspend fun dailySummaries(days: Int): List<DailySummary>
 
     // ---- sync bookkeeping / export cursor
@@ -36,6 +39,14 @@ interface HealthRepository {
     suspend fun stepsSince(time: Long): List<StepsHour>
     suspend fun sleepSince(time: Long): List<SleepStage>
     suspend fun workoutsSince(time: Long): List<Workout>
+
+    // ---- Health Connect export ledger (what was written, by client record id, with a content fingerprint)
+    /** The stored fingerprint of each of [ids] that has been exported; ids never exported are absent. */
+    suspend fun exportedFingerprints(ids: Collection<String>): Map<String, Long> = emptyMap()
+    /** Records (or markers) written to Health Connect at [time], keyed by client record id. */
+    suspend fun markExported(fingerprints: Map<String, Long>, time: Long) {}
+    /** Forgets everything exported, so the next export re-sends the whole history (e.g. after wiping Health Connect). */
+    suspend fun clearExported() {}
 }
 
 /** Small typed settings store (DataStore). Implemented in `data.SettingsStore`, exposed as `App.graph.settings`. */
