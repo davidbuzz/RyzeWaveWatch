@@ -173,13 +173,7 @@ class WorkoutController(
         runningSince?.let { activeMsBefore += max(0L, now - it) }
         runningSince = null
         val elapsed = elapsedSeconds(now)
-        // the pause starts here: credit whatever the tracker has measured but not yet booked (a first-anchor wait
-        // still open in poor accuracy) and drop the anchor, so the walk during the pause is not counted
-        val distance = synchronized(lock) {
-            (tracker as? DefaultGpsDistanceTracker)?.markGap()
-            tracker.distanceMeters
-        }
-        _state.update { it.copy(state = WorkoutPhase.PAUSED, elapsedSeconds = elapsed, distanceMeters = distance, speedMps = 0.0, paceSecPerKm = 0.0) }
+        _state.update { it.copy(state = WorkoutPhase.PAUSED, elapsedSeconds = elapsed, speedMps = 0.0, paceSecPerKm = 0.0) }
         watchCall("pauseWorkout") { watch.pauseWorkout() }
         flush()
         persistWorkout(end = null)
@@ -191,7 +185,7 @@ class WorkoutController(
         runningSince = now
         lastTickTime = now
         synchronized(lock) {
-            (tracker as? DefaultGpsDistanceTracker)?.markGap()      // already done at the pause; harmless here
+            (tracker as? DefaultGpsDistanceTracker)?.markGap()
             calDistanceAtProgress = tracker.distanceMeters
         }
         calProgressTime = now
@@ -219,12 +213,7 @@ class WorkoutController(
         watchUpdateJob = null
 
         val elapsed = elapsedSeconds(now)
-        // flush the tracker first: a workout stopped inside a first-anchor wait (poor accuracy at the start or after
-        // a resume) has measured movement that no fix has booked yet
-        val distance = synchronized(lock) {
-            (tracker as? DefaultGpsDistanceTracker)?.markGap()
-            tracker.distanceMeters
-        }
+        val distance = synchronized(lock) { tracker.distanceMeters }
         val calories = caloriesKcal.roundToInt()
         _state.update {
             it.copy(

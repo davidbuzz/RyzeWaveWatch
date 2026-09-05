@@ -401,6 +401,23 @@ with forward-all off the shell package is dropped as expected), then ran "Sync n
 no disconnect and no crash. Buzz saw both texts on the watch.
 
 
+## Tracker refinement ABANDONED and REVERTED (2026-09-05)
+
+**The GPS tracker on `main` is the build 8 version.** The "Tracker refinements" work described below (per-fix
+Doppler integration, first-anchor wait, re-anchor, anti-deadlock, and the various "build 14" numbers) was developed
+in a fix-and-verify loop and REVERTED after three rounds: each round fixed its findings but introduced new
+edge-case regressions (over-crediting traffic-light stops, a stale Doppler bridge after a dropout, one Doppler
+reading poisoning a speed-less receiver, a multipath re-anchor dropping distance). The approach became too complex
+to be safe. `DefaultGpsDistanceTracker.kt` and its tests are back at the build 8 commit (1c28d2e).
+
+The ONE real-world issue that motivated this (a poor first GPS fix, ~52 m accuracy and ~45 m off the path, adding
+~20-25 m at the very start of the morning walk) is NOT yet fixed. The safe, isolated follow-up is a **first-anchor
+wait alone** (do not anchor distance on a fix worse than ~20 m until a better one arrives or ~15 s pass), built and
+verified as its own small change WITHOUT the Doppler-integration/bridging machinery. Everything below this line is
+the abandoned design, kept for the record; do not treat its "build 14" numbers as current.
+
+---
+
 ## Tracker finding from the first real walk (2026-09-05, build 8 track plot)
 
 The track plot of the Pixel walk shows the first fix (52 m accuracy, reported speed 0) sitting about 45 m away from
