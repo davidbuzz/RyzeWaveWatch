@@ -46,7 +46,7 @@ class RealTrackTrackerTest {
         val stored = RealTrack.workout.distanceMeters
         assertTrue("$r: the 52 m first fix must no longer anchor the walk 45 m off the loop", r.t.distanceMeters < stored - 10.0)
         assertTrue("$r: the walk must not collapse", r.t.distanceMeters > 100.0)
-        assertTrue("$r: expected 120..150 m (build 14 rules give 136.4 m; the truth is unknown)", r.t.distanceMeters in 120.0..150.0)
+        assertTrue("$r: expected 120..150 m (the reworked rules give 132.1 m; the truth is unknown)", r.t.distanceMeters in 120.0..150.0)
         assertEquals(2, r.t.rejectedAccuracyCount)                 // the 132 m and 67 m fixes, unchanged
         assertTrue("first fix (52 m) deferred", r.t.deferredFirstFixCount >= 1)
     }

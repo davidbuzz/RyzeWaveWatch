@@ -41,12 +41,14 @@ object SyntheticRun {
          */
         accuracyAt: (Int) -> Float = { accuracyM },
         /**
-         * Multipath spikes: every [spikeEvery]-th fix (i > 0) is displaced [spikeOffsetM] east of the line and, when
-         * [spikeReportedMps] is given, reports that speed instead of [dopplerSpeedMps]. 0 = no spikes.
+         * Multipath spikes: every [spikeEvery]-th fix (i ≥ spikeEvery) and the [spikeLength] − 1 fixes after it are
+         * displaced [spikeOffsetM] east of the line (a burst of consecutive off-track fixes) and, when
+         * [spikeReportedMps] is given, report that speed instead of [dopplerSpeedMps]. 0 = no spikes.
          */
         spikeEvery: Int = 0,
         spikeOffsetM: Double = 25.0,
         spikeReportedMps: Float? = null,
+        spikeLength: Int = 1,
     ): List<SyntheticFix> {
         val rnd = Random(seed)
         val degLonM = DEG_LAT_M * cos(Math.toRadians(LAT0))
@@ -59,7 +61,7 @@ object SyntheticRun {
                 nN = phi * nN + rnd.nextGaussian() * innovation
                 nE = phi * nE + rnd.nextGaussian() * innovation
             }
-            val spike = spikeEvery > 0 && i > 0 && i % spikeEvery == 0
+            val spike = spikeEvery > 0 && i >= spikeEvery && i % spikeEvery < spikeLength
             val north = speedMps * i + nN
             val east = nE + if (spike) spikeOffsetM else 0.0
             if (gapFromS >= 0 && i >= gapFromS && i < gapFromS + gapLengthS) continue

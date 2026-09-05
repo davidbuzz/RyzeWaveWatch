@@ -1,0 +1,375 @@
+# Old vs new tracker, third review (round 2 of the fix loop), 2026-09-05
+# base = git 1c28d2e tracker (last changed in b40739e), copied into the test source set as BaselineGpsDistanceTracker for a
+# temporary TmpCompareTest (both deleted afterwards); new = the working tree after R1–R5 (chain-gated escape with chain
+# credit, 30 s time limit, chain-speed seeding at wait expiry, spike-at-expiry rejection, anchor on the best earlier fix,
+# markGap credit of an open wait, Doppler-only last-speed term in the rule 3 bound, NaN speed as 0).
+# tgt = the verifier's acceptance figure where one was given. Truths: 3600 m (3 m/s × 1200 s; the tracker's own first
+# interval makes 3597.0 the best possible), 1438.8 m (1.2 m/s), 718.8 m (STOPS), speed × 1199 s for the F2 riders.
+# "[cur]/[O1]/[O2]/[O1+O2]" rows at the end: the optional O1 (rule 4b only when the integral spans > 5 s) and O2 (dropout
+# bridging) variants, measured and NOT adopted (see docs/APP.md "The third review").
+
+== A. round-1 table (D5)
+CMP A 6m doppler                                                           truth=  3600.0 | base=  3597.0 ( -0.08%) | new=  3597.0 ( -0.08%, vs base  +0.00%) acc=1200 jit=0 spk=0 esc=0 def=0 reA=0 tgt=3597.0 (+0.00% vs tgt)
+CMP B 25m doppler                                                          truth=  3600.0 | base=  3597.0 ( -0.08%) | new=  3597.0 ( -0.08%, vs base  +0.00%) acc=1185 jit=0 spk=0 esc=0 def=15 reA=0 tgt=3597.0 (+0.00% vs tgt)
+CMP B2 35m doppler                                                         truth=  3600.0 | base=  3597.0 ( -0.08%) | new=  3597.0 ( -0.08%, vs base  +0.00%) acc=1185 jit=0 spk=0 esc=0 def=15 reA=0 tgt=3597.0 (+0.00% vs tgt)
+CMP E 25m every10th=8m doppler                                             truth=  3600.0 | base=  3597.0 ( -0.08%) | new=  3597.0 ( -0.08%, vs base  +0.00%) acc=1200 jit=0 spk=0 esc=0 def=0 reA=0 tgt=3597.0 (+0.00% vs tgt)
+CMP E 25m every10th=8m (from 5) doppler                                    truth=  3600.0 | base=  3597.0 ( -0.08%) | new=  3597.0 ( -0.08%, vs base  +0.00%) acc=1195 jit=0 spk=0 esc=0 def=5 reA=0 tgt=3597.0 (+0.00% vs tgt)
+CMP E 30/9 alternating doppler                                             truth=  3600.0 | base=  3597.0 ( -0.08%) | new=  3597.0 ( -0.08%, vs base  +0.00%) acc=1200 jit=0 spk=0 esc=0 def=0 reA=0 tgt=3597.0 (+0.00% vs tgt)
+CMP E 9/30 alternating doppler                                             truth=  3600.0 | base=  3597.0 ( -0.08%) | new=  3597.0 ( -0.08%, vs base  +0.00%) acc=1199 jit=0 spk=0 esc=0 def=1 reA=0 tgt=3594.0 (+0.08% vs tgt)
+CMP E2 walk 1.2 25<->8 every 5s doppler                                    truth=  1438.8 | base=  1438.8 ( +0.00%) | new=  1438.8 ( +0.00%, vs base  +0.00%) acc=1195 jit=0 spk=0 esc=0 def=5 reA=0 tgt=1438.8 (+0.00% vs tgt)
+CMP E2 walk 1.2 8<->25 every 5s doppler                                    truth=  1438.8 | base=  1438.8 ( +0.00%) | new=  1438.8 ( +0.00%, vs base  +0.00%) acc=1200 jit=0 spk=0 esc=0 def=0 reA=0 tgt=1438.8 (+0.00% vs tgt)
+CMP B3 25m no doppler                                                      truth=  3600.0 | base=  3595.0 ( -0.14%) | new=  3595.0 ( -0.14%, vs base  +0.00%) acc=91 jit=1094 spk=0 esc=0 def=15 reA=0 tgt=3595.0 (+0.00% vs tgt)
+CMP B3' 35m no doppler                                                     truth=  3600.0 | base=  3561.5 ( -1.07%) | new=  3561.5 ( -1.07%, vs base  +0.00%) acc=64 jit=1121 spk=0 esc=0 def=15 reA=0 tgt=3561.5 (-0.00% vs tgt)
+CMP C 8m no doppler                                                        truth=  3600.0 | base=  3655.2 ( +1.53%) | new=  3655.2 ( +1.53%, vs base  +0.00%) acc=259 jit=941 spk=0 esc=0 def=0 reA=0 tgt=3655.2 (+0.00% vs tgt)
+CMP E3 25m every10th=8m no doppler                                         truth=  3600.0 | base=  3581.5 ( -0.52%) | new=  3581.5 ( -0.52%, vs base  +0.00%) acc=120 jit=1080 spk=0 esc=0 def=0 reA=0 tgt=3581.5 (-0.00% vs tgt)
+CMP E3 25m every10th=8m (from 5) no doppler                                truth=  3600.0 | base=  3595.5 ( -0.13%) | new=  3583.8 ( -0.45%, vs base  -0.32%) acc=120 jit=1075 spk=0 esc=0 def=5 reA=0 tgt=3583.8 (+0.00% vs tgt)
+CMP E3 30/9 alternating no doppler                                         truth=  3600.0 | base=  3631.3 ( +0.87%) | new=  3631.3 ( +0.87%, vs base  +0.00%) acc=215 jit=985 spk=0 esc=0 def=0 reA=0 tgt=3631.3 (-0.00% vs tgt)
+CMP E3 25<->8 every 5s no doppler                                          truth=  3600.0 | base=  3632.1 ( +0.89%) | new=  3617.8 ( +0.49%, vs base  -0.40%) acc=195 jit=1000 spk=0 esc=0 def=5 reA=0 tgt=3617.8 (-0.00% vs tgt)
+CMP E3 8<->25 every 5s no doppler                                          truth=  3600.0 | base=  3611.7 ( +0.33%) | new=  3611.7 ( +0.33%, vs base  +0.00%) acc=189 jit=1011 spk=0 esc=0 def=0 reA=0 tgt=3611.7 (+0.00% vs tgt)
+CMP E3 6/9/3 bands every 4s no doppler                                     truth=  3600.0 | base=  3794.3 ( +5.40%) | new=  3794.3 ( +5.40%, vs base  +0.00%) acc=297 jit=899 spk=4 esc=0 def=0 reA=0 tgt=3794.3 (-0.00% vs tgt)
+CMP E3 walk 1.2 25<->8 every 5s no doppler                                 truth=  1438.8 | base=  1455.9 ( +1.19%) | new=  1454.4 ( +1.08%, vs base  -0.10%) acc=101 jit=1094 spk=0 esc=0 def=5 reA=0 tgt=1454.4 (-0.00% vs tgt)
+CMP D 6m doppler gap=30                                                    truth=  3600.0 | base=  3601.6 ( +0.04%) | new=  3601.6 ( +0.04%, vs base  +0.00%) acc=1170 jit=0 spk=0 esc=0 def=0 reA=0
+CMP D 6m doppler gap=60                                                    truth=  3600.0 | base=  3601.3 ( +0.04%) | new=  3601.3 ( +0.04%, vs base  +0.00%) acc=1140 jit=0 spk=0 esc=0 def=0 reA=0
+CMP D 6m doppler gap=120                                                   truth=  3600.0 | base=  3602.8 ( +0.08%) | new=  3602.8 ( +0.08%, vs base  +0.00%) acc=1080 jit=0 spk=0 esc=0 def=0 reA=0
+CMP D 6m doppler gap=300                                                   truth=  3600.0 | base=  3601.2 ( +0.03%) | new=  3601.2 ( +0.03%, vs base  +0.00%) acc=900 jit=0 spk=0 esc=0 def=0 reA=0
+CMP A sigma=0.0                                                            truth=  3600.0 | base=  3597.0 ( -0.08%) | new=  3597.0 ( -0.08%, vs base  +0.00%) acc=1200 jit=0 spk=0 esc=0 def=0 reA=0
+CMP C 8m no doppler sigma=0.0                                              truth=  3600.0 | base=  3585.0 ( -0.42%) | new=  3585.0 ( -0.42%, vs base  +0.00%) acc=240 jit=960 spk=0 esc=0 def=0 reA=0
+CMP A sigma=0.5                                                            truth=  3600.0 | base=  3597.0 ( -0.08%) | new=  3597.0 ( -0.08%, vs base  +0.00%) acc=1200 jit=0 spk=0 esc=0 def=0 reA=0
+CMP C 8m no doppler sigma=0.5                                              truth=  3600.0 | base=  3594.1 ( -0.16%) | new=  3594.1 ( -0.16%, vs base  +0.00%) acc=264 jit=936 spk=0 esc=0 def=0 reA=0
+CMP A sigma=1.0                                                            truth=  3600.0 | base=  3597.0 ( -0.08%) | new=  3597.0 ( -0.08%, vs base  +0.00%) acc=1200 jit=0 spk=0 esc=0 def=0 reA=0
+CMP C 8m no doppler sigma=1.0                                              truth=  3600.0 | base=  3605.4 ( +0.15%) | new=  3605.4 ( +0.15%, vs base  +0.00%) acc=262 jit=938 spk=0 esc=0 def=0 reA=0
+CMP A sigma=3.0                                                            truth=  3600.0 | base=  3597.0 ( -0.08%) | new=  3597.0 ( -0.08%, vs base  +0.00%) acc=1169 jit=0 spk=31 esc=0 def=0 reA=0
+CMP C 8m no doppler sigma=3.0                                              truth=  3600.0 | base=  3780.2 ( +5.00%) | new=  3780.2 ( +5.00%, vs base  +0.00%) acc=253 jit=944 spk=3 esc=0 def=0 reA=0
+CMP A phi=0.9                                                              truth=  3600.0 | base=  3597.0 ( -0.08%) | new=  3597.0 ( -0.08%, vs base  +0.00%) acc=1200 jit=0 spk=0 esc=0 def=0 reA=0
+CMP C 8m no doppler phi=0.9                                                truth=  3600.0 | base=  3612.4 ( +0.35%) | new=  3612.4 ( +0.35%, vs base  +0.00%) acc=267 jit=933 spk=0 esc=0 def=0 reA=0
+CMP A phi=0.98                                                             truth=  3600.0 | base=  3597.0 ( -0.08%) | new=  3597.0 ( -0.08%, vs base  +0.00%) acc=1200 jit=0 spk=0 esc=0 def=0 reA=0
+CMP C 8m no doppler phi=0.98                                               truth=  3600.0 | base=  3585.4 ( -0.41%) | new=  3585.4 ( -0.41%, vs base  +0.00%) acc=266 jit=934 spk=0 esc=0 def=0 reA=0
+CMP A seed=1                                                               truth=  3600.0 | base=  3597.0 ( -0.08%) | new=  3597.0 ( -0.08%, vs base  +0.00%) acc=1199 jit=0 spk=1 esc=0 def=0 reA=0
+CMP A seed=7                                                               truth=  3600.0 | base=  3597.0 ( -0.08%) | new=  3597.0 ( -0.08%, vs base  +0.00%) acc=1200 jit=0 spk=0 esc=0 def=0 reA=0
+CMP A seed=99                                                              truth=  3600.0 | base=  3597.0 ( -0.08%) | new=  3597.0 ( -0.08%, vs base  +0.00%) acc=1196 jit=0 spk=4 esc=0 def=0 reA=0
+CMP B 25m doppler sigma=5.0                                                truth=  3600.0 | base=  3597.0 ( -0.08%) | new=  3597.0 ( -0.08%, vs base  +0.00%) acc=950 jit=0 spk=235 esc=0 def=15 reA=0
+CMP B2 35m doppler sigma=5.0                                               truth=  3600.0 | base=  3597.0 ( -0.08%) | new=  3597.0 ( -0.08%, vs base  +0.00%) acc=950 jit=0 spk=235 esc=0 def=15 reA=0
+CMP B3 25m no doppler sigma=5.0                                            truth=  3600.0 | base=  3643.4 ( +1.21%) | new=  3644.9 ( +1.25%, vs base  +0.04%) acc=89 jit=1096 spk=0 esc=0 def=15 reA=0
+CMP B3' 35m no doppler sigma=5.0                                           truth=  3600.0 | base=  3597.1 ( -0.08%) | new=  3597.1 ( -0.08%, vs base  +0.00%) acc=64 jit=1121 spk=0 esc=0 def=15 reA=0
+CMP B 25m doppler sigma=10.0                                               truth=  3600.0 | base=  3597.0 ( -0.08%) | new=  3597.0 ( -0.08%, vs base  +0.00%) acc=642 jit=0 spk=543 esc=0 def=15 reA=0
+CMP B2 35m doppler sigma=10.0                                              truth=  3600.0 | base=  3597.0 ( -0.08%) | new=  3597.0 ( -0.08%, vs base  +0.00%) acc=642 jit=0 spk=543 esc=0 def=15 reA=0
+CMP B3 25m no doppler sigma=10.0                                           truth=  3600.0 | base=  4119.6 (+14.43%) | new=  4150.4 (+15.29%, vs base  +0.85%) acc=97 jit=1078 spk=10 esc=0 def=15 reA=0 tgt=4119.6 (+0.75% vs tgt)
+CMP B3' 35m no doppler sigma=10.0                                          truth=  3600.0 | base=  3737.3 ( +3.81%) | new=  3737.3 ( +3.81%, vs base  +0.00%) acc=63 jit=1122 spk=0 esc=0 def=15 reA=0
+CMP STOPS acc=5.0 standing reports 0.0                                     truth=   718.8 | base=   817.5 (+13.73%) | new=   802.5 (+11.64%, vs base  -2.09%) acc=610 jit=590 spk=0 esc=0 def=0 reA=0
+CMP STOPS acc=5.0 standing reports 0.5                                     truth=   718.8 | base=   817.5 (+13.73%) | new=   819.8 (+14.05%, vs base  +0.32%) acc=610 jit=590 spk=0 esc=0 def=0 reA=0
+CMP STOPS acc=5.0 standing reports 0.7                                     truth=   718.8 | base=   817.5 (+13.73%) | new=   819.6 (+14.02%, vs base  +0.29%) acc=610 jit=590 spk=0 esc=0 def=0 reA=0
+CMP STOPS acc=5.0 standing reports 0.9                                     truth=   718.8 | base=   817.5 (+13.73%) | new=   819.2 (+13.96%, vs base  +0.23%) acc=610 jit=590 spk=0 esc=0 def=0 reA=0
+CMP STOPS acc=5.0 standing reports 0.95                                    truth=   718.8 | base=   817.5 (+13.73%) | new=   819.1 (+13.95%, vs base  +0.22%) acc=610 jit=590 spk=0 esc=0 def=0 reA=0
+CMP STOPS acc=25.0 standing reports 0.0                                    truth=   718.8 | base=   734.6 ( +2.20%) | new=   718.8 ( +0.00%, vs base  -2.20%) acc=585 jit=600 spk=0 esc=0 def=15 reA=0
+CMP STOPS acc=25.0 standing reports 0.5                                    truth=   718.8 | base=   734.6 ( +2.20%) | new=   735.7 ( +2.35%, vs base  +0.15%) acc=585 jit=600 spk=0 esc=0 def=15 reA=0
+CMP STOPS acc=25.0 standing reports 0.7                                    truth=   718.8 | base=   734.6 ( +2.20%) | new=   735.4 ( +2.31%, vs base  +0.11%) acc=585 jit=600 spk=0 esc=0 def=15 reA=0
+CMP STOPS acc=25.0 standing reports 0.9                                    truth=   718.8 | base=   734.6 ( +2.20%) | new=   735.2 ( +2.28%, vs base  +0.08%) acc=585 jit=600 spk=0 esc=0 def=15 reA=0
+CMP STOPS acc=25.0 standing reports 0.95                                   truth=   718.8 | base=   734.6 ( +2.20%) | new=   735.2 ( +2.28%, vs base  +0.08%) acc=585 jit=600 spk=0 esc=0 def=15 reA=0
+CMP STOPS acc=50.0 standing reports 0.0                                    truth=   718.8 | base=   734.6 ( +2.20%) | new=   718.8 ( +0.00%, vs base  -2.20%) acc=585 jit=600 spk=0 esc=0 def=15 reA=0
+CMP STOPS acc=50.0 standing reports 0.5                                    truth=   718.8 | base=   734.6 ( +2.20%) | new=   735.7 ( +2.35%, vs base  +0.15%) acc=585 jit=600 spk=0 esc=0 def=15 reA=0
+CMP STOPS acc=50.0 standing reports 0.7                                    truth=   718.8 | base=   734.6 ( +2.20%) | new=   735.4 ( +2.31%, vs base  +0.11%) acc=585 jit=600 spk=0 esc=0 def=15 reA=0
+CMP STOPS acc=50.0 standing reports 0.9                                    truth=   718.8 | base=   734.6 ( +2.20%) | new=   735.2 ( +2.28%, vs base  +0.08%) acc=585 jit=600 spk=0 esc=0 def=15 reA=0
+CMP STOPS acc=50.0 standing reports 0.95                                   truth=   718.8 | base=   734.6 ( +2.20%) | new=   735.2 ( +2.28%, vs base  +0.08%) acc=585 jit=600 spk=0 esc=0 def=15 reA=0
+
+== REAL walk
+REAL mimicPause=true base=155.2 new=130.7 (tgt 130.7 / 133.4) acc=85 jit=58 spk=0 esc=0 reA=0
+REAL mimicPause=false base=155.7 new=133.4 (tgt 130.7 / 133.4) acc=84 jit=59 spk=0 esc=0 reA=0
+
+== R1. bursts of N fixes 40 m off-track every 60 s
+CMP R1 6m doppler burst N=1                                                truth=  3600.0 | base=  3597.0 ( -0.08%) | new=  3597.0 ( -0.08%, vs base  +0.00%) acc=1181 jit=0 spk=19 esc=0 def=0 reA=0 tgt=3597.0 (+0.00% vs tgt)
+CMP R1 6m doppler burst N=2                                                truth=  3600.0 | base=  3597.0 ( -0.08%) | new=  3597.0 ( -0.08%, vs base  +0.00%) acc=1162 jit=0 spk=38 esc=0 def=0 reA=0 tgt=3597.0 (+0.00% vs tgt)
+CMP R1 6m doppler burst N=3                                                truth=  3600.0 | base=  3596.2 ( -0.11%) | new=  3596.2 ( -0.11%, vs base  +0.00%) acc=1143 jit=0 spk=57 esc=0 def=0 reA=0 tgt=3596.2 (-0.00% vs tgt)
+CMP R1 6m doppler burst N=4                                                truth=  3600.0 | base=  3597.0 ( -0.08%) | new=  3597.0 ( -0.08%, vs base  +0.00%) acc=1124 jit=0 spk=76 esc=0 def=0 reA=0 tgt=3597.0 (+0.00% vs tgt)
+CMP R1 6m doppler burst N=5                                                truth=  3600.0 | base=  3594.1 ( -0.16%) | new=  3594.1 ( -0.16%, vs base  +0.00%) acc=1105 jit=0 spk=95 esc=0 def=0 reA=0 tgt=3594.1 (+0.00% vs tgt)
+CMP R1 6m doppler burst N=6                                                truth=  3600.0 | base=  3603.1 ( +0.09%) | new=  3603.1 ( +0.09%, vs base  +0.00%) acc=1086 jit=0 spk=114 esc=0 def=0 reA=0 tgt=3603.9 (-0.02% vs tgt)
+CMP R1 6m doppler burst N=8                                                truth=  3600.0 | base=  3599.9 ( -0.00%) | new=  3599.9 ( -0.00%, vs base  +0.00%) acc=1048 jit=0 spk=152 esc=0 def=0 reA=0 tgt=3596.7 (+0.09% vs tgt)
+CMP R1 6m doppler burst N=12                                               truth=  3600.0 | base=  3616.3 ( +0.45%) | new=  3616.3 ( +0.45%, vs base  +0.00%) acc=948 jit=0 spk=252 esc=0 def=0 reA=0 tgt=3613.6 (+0.08% vs tgt)
+CMP R1 6m doppler burst N=16                                               truth=  3600.0 | base=  3732.3 ( +3.67%) | new=  3732.3 ( +3.67%, vs base  +0.00%) acc=799 jit=0 spk=401 esc=0 def=0 reA=0 tgt=3753.1 (-0.56% vs tgt)
+CMP R1 6m doppler burst N=20                                               truth=  3600.0 | base=  3867.3 ( +7.43%) | new=  3867.3 ( +7.43%, vs base  +0.00%) acc=684 jit=0 spk=516 esc=0 def=0 reA=0 tgt=3886.5 (-0.49% vs tgt)
+CMP R1 6m doppler burst N=25                                               truth=  3600.0 | base=  3993.5 (+10.93%) | new=  3993.5 (+10.93%, vs base  +0.00%) acc=514 jit=0 spk=686 esc=0 def=0 reA=0 tgt=4015.7 (-0.55% vs tgt)
+CMP R1 walk 1.2 6m doppler burst N=4                                       truth=  1438.8 | base=  1438.8 ( +0.00%) | new=  1438.8 ( +0.00%, vs base  +0.00%) acc=1124 jit=0 spk=76 esc=0 def=0 reA=0 tgt=1438.8 (+0.00% vs tgt)
+CMP R1 walk 1.2 6m doppler burst N=8                                       truth=  1438.8 | base=  1446.8 ( +0.55%) | new=  1446.8 ( +0.55%, vs base  +0.00%) acc=1048 jit=0 spk=152 esc=0 def=0 reA=0 tgt=1443.5 (+0.23% vs tgt)
+CMP R1 8m no doppler burst N=4                                             truth=  3600.0 | base=  3652.6 ( +1.46%) | new=  3652.6 ( +1.46%, vs base  +0.00%) acc=248 jit=876 spk=76 esc=0 def=0 reA=0 tgt=3652.6 (-0.00% vs tgt)
+CMP R1 8m no doppler burst N=8                                             truth=  3600.0 | base=  3660.3 ( +1.67%) | new=  3660.3 ( +1.67%, vs base  +0.00%) acc=235 jit=813 spk=152 esc=0 def=0 reA=0 tgt=3660.0 (+0.01% vs tgt)
+CMP F4 6m doppler every 30th 25m off @10m/s                                truth=  3600.0 | base=  3597.0 ( -0.08%) | new=  3597.0 ( -0.08%, vs base  +0.00%) acc=1161 jit=0 spk=39 esc=0 def=0 reA=0 tgt=3597.0 (+0.00% vs tgt)
+CMP F4 6m doppler every 30th 25m off @3m/s                                 truth=  3600.0 | base=  3597.0 ( -0.08%) | new=  3597.0 ( -0.08%, vs base  +0.00%) acc=1161 jit=0 spk=39 esc=0 def=0 reA=0
+CMP F4 6m doppler every 10th 40m off @10m/s                                truth=  3600.0 | base=  3597.0 ( -0.08%) | new=  3597.0 ( -0.08%, vs base  +0.00%) acc=1081 jit=0 spk=119 esc=0 def=0 reA=0
+CMP F4 walk 1.2 every 30th 25m off @10m/s                                  truth=  1438.8 | base=  1438.8 ( +0.00%) | new=  1438.8 ( +0.00%, vs base  +0.00%) acc=1161 jit=0 spk=39 esc=0 def=0 reA=0
+
+== R2. speed-less receiver at pace (F2) and wait expiry
+CMP F2 6.0 m/s no doppler acc=5.0                                          truth=  7194.0 | base=   120.6 (-98.32%) | new=  7543.1 ( +4.85%, vs base +103.18%) acc=651 jit=463 spk=117 esc=31 def=0 reA=0 tgt=7543.1 (+0.00% vs tgt)
+CMP F2 6.0 m/s no doppler acc=5.0, 40 m first 20 s                         truth=  7194.0 | base=   851.3 (-88.17%) | new=  7533.1 ( +4.71%, vs base +92.88%) acc=641 jit=463 spk=111 esc=30 def=15 reA=0
+CMP F2 6.0 m/s no doppler acc=8.0                                          truth=  7194.0 | base=  7317.2 ( +1.71%) | new=  7317.2 ( +1.71%, vs base  +0.00%) acc=470 jit=721 spk=9 esc=0 def=0 reA=0
+CMP F2 6.0 m/s no doppler acc=8.0, 40 m first 20 s                         truth=  7194.0 | base=  7313.0 ( +1.65%) | new=  7313.2 ( +1.66%, vs base  +0.00%) acc=460 jit=716 spk=9 esc=0 def=15 reA=0
+CMP F2 6.0 m/s no doppler acc=21.0                                         truth=  7194.0 | base=  7199.9 ( +0.08%) | new=  7197.5 ( +0.05%, vs base  -0.03%) acc=203 jit=982 spk=0 esc=0 def=15 reA=0 tgt=7199.9 (-0.03% vs tgt)
+CMP F2 6.0 m/s no doppler acc=21.0, 40 m first 20 s                        truth=  7194.0 | base=  7197.4 ( +0.05%) | new=  7197.5 ( +0.05%, vs base  +0.00%) acc=202 jit=983 spk=0 esc=0 def=15 reA=0
+CMP F2 6.0 m/s no doppler acc=25.0                                         truth=  7194.0 | base=  7174.2 ( -0.28%) | new=  7174.1 ( -0.28%, vs base  -0.00%) acc=173 jit=1012 spk=0 esc=0 def=15 reA=0 tgt=7174.2 (-0.00% vs tgt)
+CMP F2 6.0 m/s no doppler acc=25.0, 40 m first 20 s                        truth=  7194.0 | base=  7176.1 ( -0.25%) | new=  7176.2 ( -0.25%, vs base  +0.00%) acc=173 jit=1012 spk=0 esc=0 def=15 reA=0
+CMP F2 6.0 m/s no doppler acc=30.0                                         truth=  7194.0 | base=  7196.2 ( +0.03%) | new=  7196.1 ( +0.03%, vs base  -0.00%) acc=147 jit=1038 spk=0 esc=0 def=15 reA=0 tgt=7196.2 (-0.00% vs tgt)
+CMP F2 6.0 m/s no doppler acc=30.0, 40 m first 20 s                        truth=  7194.0 | base=  7192.5 ( -0.02%) | new=  7196.2 ( +0.03%, vs base  +0.05%) acc=147 jit=1038 spk=0 esc=0 def=15 reA=0
+CMP F2 6.0 m/s no doppler acc=5 phi=0.9                                    truth=  7194.0 | base=  1016.7 (-85.87%) | new=  7223.1 ( +0.41%, vs base +86.27%) acc=608 jit=588 spk=6 esc=2 def=0 reA=0
+CMP F2 6.0 m/s doppler acc=25                                              truth=  7194.0 | base=  7194.0 ( +0.00%) | new=  7194.0 ( +0.00%, vs base  +0.00%) acc=1164 jit=0 spk=21 esc=0 def=15 reA=0
+CMP F2 6.0 m/s doppler acc=5                                               truth=  7194.0 | base=  7193.2 ( -0.01%) | new=  7193.2 ( -0.01%, vs base  +0.00%) acc=1179 jit=0 spk=21 esc=0 def=0 reA=0
+CMP F2 7.0 m/s no doppler acc=5.0                                          truth=  8393.0 | base=    53.7 (-99.36%) | new=  8837.3 ( +5.29%, vs base +104.65%) acc=639 jit=330 spk=316 esc=85 def=0 reA=0 tgt=8837.3 (-0.00% vs tgt)
+CMP F2 7.0 m/s no doppler acc=5.0, 40 m first 20 s                         truth=  8393.0 | base=   137.2 (-98.36%) | new=  8830.6 ( +5.21%, vs base +103.58%) acc=630 jit=330 spk=308 esc=83 def=15 reA=0
+CMP F2 7.0 m/s no doppler acc=8.0                                          truth=  8393.0 | base=  3552.6 (-57.67%) | new=  8547.4 ( +1.84%, vs base +59.51%) acc=532 jit=640 spk=31 esc=3 def=0 reA=0
+CMP F2 7.0 m/s no doppler acc=8.0, 40 m first 20 s                         truth=  8393.0 | base=  3549.2 (-57.71%) | new=  8543.4 ( +1.79%, vs base +59.50%) acc=522 jit=636 spk=30 esc=3 def=15 reA=0
+CMP F2 7.0 m/s no doppler acc=21.0                                         truth=  8393.0 | base=  8392.3 ( -0.01%) | new=  8392.1 ( -0.01%, vs base  -0.00%) acc=235 jit=950 spk=0 esc=0 def=15 reA=0 tgt=8392.3 (-0.00% vs tgt)
+CMP F2 7.0 m/s no doppler acc=21.0, 40 m first 20 s                        truth=  8393.0 | base=  8392.2 ( -0.01%) | new=  8388.4 ( -0.05%, vs base  -0.05%) acc=234 jit=951 spk=0 esc=0 def=15 reA=0
+CMP F2 7.0 m/s no doppler acc=25.0                                         truth=  8393.0 | base=  8398.7 ( +0.07%) | new=  8398.0 ( +0.06%, vs base  -0.01%) acc=200 jit=985 spk=0 esc=0 def=15 reA=0 tgt=8398.7 (-0.01% vs tgt)
+CMP F2 7.0 m/s no doppler acc=25.0, 40 m first 20 s                        truth=  8393.0 | base=  8397.5 ( +0.05%) | new=  8398.4 ( +0.06%, vs base  +0.01%) acc=199 jit=986 spk=0 esc=0 def=15 reA=0
+CMP F2 7.0 m/s no doppler acc=30.0                                         truth=  8393.0 | base=  8362.8 ( -0.36%) | new=  8362.8 ( -0.36%, vs base  -0.00%) acc=169 jit=1016 spk=0 esc=0 def=15 reA=0 tgt=8362.8 (-0.00% vs tgt)
+CMP F2 7.0 m/s no doppler acc=30.0, 40 m first 20 s                        truth=  8393.0 | base=  8364.8 ( -0.34%) | new=  8362.2 ( -0.37%, vs base  -0.03%) acc=169 jit=1016 spk=0 esc=0 def=15 reA=0
+CMP F2 7.0 m/s no doppler acc=5 phi=0.9                                    truth=  8393.0 | base=    90.5 (-98.92%) | new=  8428.6 ( +0.42%, vs base +99.35%) acc=671 jit=449 spk=120 esc=40 def=0 reA=0
+CMP F2 7.0 m/s doppler acc=25                                              truth=  8393.0 | base=  8393.0 ( +0.00%) | new=  8393.0 ( +0.00%, vs base  +0.00%) acc=1129 jit=0 spk=56 esc=0 def=15 reA=0
+CMP F2 7.0 m/s doppler acc=5                                               truth=  8393.0 | base=  8384.8 ( -0.10%) | new=  8384.8 ( -0.10%, vs base  +0.00%) acc=1143 jit=0 spk=57 esc=0 def=0 reA=0
+CMP F2 4.0 m/s no doppler acc=5.0                                          truth=  4796.0 | base=  5033.4 ( +4.95%) | new=  5033.4 ( +4.95%, vs base  +0.00%) acc=502 jit=698 spk=0 esc=0 def=0 reA=0
+CMP F2 4.0 m/s no doppler acc=25.0                                         truth=  4796.0 | base=  4792.3 ( -0.08%) | new=  4792.0 ( -0.08%, vs base  -0.01%) acc=118 jit=1067 spk=0 esc=0 def=15 reA=0
+CMP F2 5.0 m/s no doppler acc=5.0                                          truth=  5995.0 | base=   715.0 (-88.07%) | new=  6275.2 ( +4.67%, vs base +92.75%) acc=591 jit=595 spk=17 esc=3 def=0 reA=0 tgt=6275.2 (-0.00% vs tgt)
+CMP F2 5.0 m/s no doppler acc=25.0                                         truth=  5995.0 | base=  5999.8 ( +0.08%) | new=  5999.7 ( +0.08%, vs base  -0.00%) acc=147 jit=1038 spk=0 esc=0 def=15 reA=0
+CMP F2 8.0 m/s no doppler acc=5.0                                          truth=  9592.0 | base=    14.3 (-99.85%) | new= 10095.5 ( +5.25%, vs base +105.10%) acc=569 jit=191 spk=577 esc=137 def=0 reA=0
+CMP F2 8.0 m/s no doppler acc=25.0                                         truth=  9592.0 | base=  9614.4 ( +0.23%) | new=  9614.3 ( +0.23%, vs base  -0.00%) acc=227 jit=958 spk=0 esc=0 def=15 reA=0 tgt=9614.3 (-0.00% vs tgt)
+CMP F2 10.0 m/s no doppler acc=5.0                                         truth= 11990.0 | base=     0.0 (-100.00%) | new= 12126.4 ( +1.14%, vs base +101.14%) acc=324 jit=20 spk=989 esc=133 def=0 reA=0
+CMP F2 10.0 m/s no doppler acc=25.0                                        truth= 11990.0 | base= 12011.6 ( +0.18%) | new= 12011.5 ( +0.18%, vs base  -0.00%) acc=285 jit=898 spk=2 esc=0 def=15 reA=0 tgt=12011.5 (+0.00% vs tgt)
+CMP F2 12.0 m/s no doppler acc=5.0                                         truth= 14388.0 | base=     8.8 (-99.94%) | new=  8139.3 (-43.43%, vs base +56.51%) acc=70 jit=1 spk=1174 esc=45 def=0 reA=0
+CMP F2 12.0 m/s no doppler acc=25.0                                        truth= 14388.0 | base=    92.8 (-99.36%) | new=  8929.1 (-37.94%, vs base +61.41%) acc=71 jit=172 spk=979 esc=37 def=15 reA=0
+CMP F1a run 3.0 25m then 15m at t=10                                       truth=  3597.0 | base=  3597.0 ( +0.00%) | new=  3597.0 ( +0.00%, vs base  +0.00%) acc=1190 jit=0 spk=0 esc=0 def=10 reA=0
+CMP F1b run 3.0 30m, cand 25m at t=5, 28m from 15                          truth=  3597.0 | base=  3597.0 ( +0.00%) | new=  3597.0 ( +0.00%, vs base  +0.00%) acc=1185 jit=0 spk=0 esc=0 def=15 reA=0
+CMP F1b' run 3.0 cand at t=14                                              truth=  3597.0 | base=  3597.0 ( +0.00%) | new=  3597.0 ( +0.00%, vs base  +0.00%) acc=1185 jit=0 spk=0 esc=0 def=15 reA=0
+CMP F1c run 3.0 30m for 15s then 25m                                       truth=  3597.0 | base=  3597.0 ( +0.00%) | new=  3597.0 ( +0.00%, vs base  +0.00%) acc=1185 jit=0 spk=0 esc=0 def=15 reA=0
+CMP F1d run 3.0 25m constant                                               truth=  3597.0 | base=  3597.0 ( +0.00%) | new=  3597.0 ( +0.00%, vs base  +0.00%) acc=1185 jit=0 spk=0 esc=0 def=15 reA=0
+CMP F1e run 3.0 25m pause/resume t=600                                     truth=  3597.0 | base=  3594.0 ( -0.08%) | new=  3594.0 ( -0.08%, vs base  +0.00%) acc=1170 jit=0 spk=0 esc=0 def=30 reA=0
+CMP F1f run 3.0 25m pause/resume t=600, 15m from 610                       truth=  3597.0 | base=  3594.0 ( -0.08%) | new=  3594.0 ( -0.08%, vs base  +0.00%) acc=1175 jit=0 spk=0 esc=0 def=25 reA=0
+CMP F1g run 3.0 50m first then 15m                                         truth=  3597.0 | base=  3597.0 ( +0.00%) | new=  3597.0 ( +0.00%, vs base  +0.00%) acc=1199 jit=0 spk=0 esc=0 def=1 reA=0
+CMP F1h run 3.0 acc descending 40..26 then 25                              truth=  3597.0 | base=  3597.0 ( +0.00%) | new=  3597.0 ( +0.00%, vs base  +0.00%) acc=1185 jit=0 spk=0 esc=0 def=15 reA=0
+CMP F1a walk 1.2 25m then 15m at t=10                                      truth=  1438.8 | base=  1438.8 ( +0.00%) | new=  1438.8 ( +0.00%, vs base  +0.00%) acc=1190 jit=0 spk=0 esc=0 def=10 reA=0
+CMP F1b walk 1.2 30m, cand 25m at t=5, 28m from 15                         truth=  1438.8 | base=  1438.8 ( +0.00%) | new=  1438.8 ( +0.00%, vs base  +0.00%) acc=1185 jit=0 spk=0 esc=0 def=15 reA=0
+CMP F1b' walk 1.2 cand at t=14                                             truth=  1438.8 | base=  1438.8 ( +0.00%) | new=  1438.8 ( +0.00%, vs base  +0.00%) acc=1185 jit=0 spk=0 esc=0 def=15 reA=0
+CMP F1c walk 1.2 30m for 15s then 25m                                      truth=  1438.8 | base=  1438.8 ( +0.00%) | new=  1438.8 ( +0.00%, vs base  +0.00%) acc=1185 jit=0 spk=0 esc=0 def=15 reA=0
+CMP F1d walk 1.2 25m constant                                              truth=  1438.8 | base=  1438.8 ( +0.00%) | new=  1438.8 ( +0.00%, vs base  +0.00%) acc=1185 jit=0 spk=0 esc=0 def=15 reA=0
+CMP F1e walk 1.2 25m pause/resume t=600                                    truth=  1438.8 | base=  1437.6 ( -0.08%) | new=  1437.6 ( -0.08%, vs base  +0.00%) acc=1170 jit=0 spk=0 esc=0 def=30 reA=0
+CMP F1f walk 1.2 25m pause/resume t=600, 15m from 610                      truth=  1438.8 | base=  1437.6 ( -0.08%) | new=  1437.6 ( -0.08%, vs base  +0.00%) acc=1175 jit=0 spk=0 esc=0 def=25 reA=0
+CMP F1g walk 1.2 50m first then 15m                                        truth=  1438.8 | base=  1438.8 ( +0.00%) | new=  1438.8 ( +0.00%, vs base  +0.00%) acc=1199 jit=0 spk=0 esc=0 def=1 reA=0
+CMP F1h walk 1.2 acc descending 40..26 then 25                             truth=  1438.8 | base=  1438.8 ( +0.00%) | new=  1438.8 ( +0.00%, vs base  +0.00%) acc=1185 jit=0 spk=0 esc=0 def=15 reA=0
+CMP F1c hop 3.0 m/s 30m for 15s then 25m                                   truth=  3597.0 | base=  3595.0 ( -0.05%) | new=  3595.0 ( -0.05%, vs base  +0.00%) acc=91 jit=1094 spk=0 esc=0 def=15 reA=0 tgt=3595.0 (+0.00% vs tgt)
+CMP F1d hop 3.0 m/s 25m constant                                           truth=  3597.0 | base=  3595.0 ( -0.06%) | new=  3595.0 ( -0.05%, vs base  +0.00%) acc=91 jit=1094 spk=0 esc=0 def=15 reA=0
+CMP F1e hop 3.0 m/s 25m pause/resume t=600                                 truth=  3597.0 | base=  3576.4 ( -0.57%) | new=  3577.3 ( -0.55%, vs base  +0.02%) acc=90 jit=1080 spk=0 esc=0 def=30 reA=0
+CMP F1f hop 3.0 m/s 25m pause/resume, 15m from 610                         truth=  3597.0 | base=  3585.5 ( -0.32%) | new=  3558.5 ( -1.07%, vs base  -0.75%) acc=118 jit=1057 spk=0 esc=0 def=25 reA=0
+CMP F1h hop 3.0 m/s acc descending 40..26 then 25                          truth=  3597.0 | base=  3597.1 ( +0.00%) | new=  3555.5 ( -1.15%, vs base  -1.16%) acc=90 jit=1095 spk=0 esc=0 def=15 reA=0
+CMP F1c hop 6.0 m/s 30m for 15s then 25m                                   truth=  7194.0 | base=  7177.4 ( -0.23%) | new=  7174.1 ( -0.28%, vs base  -0.05%) acc=173 jit=1012 spk=0 esc=0 def=15 reA=0 tgt=7174.1 (+0.00% vs tgt)
+CMP F1d hop 6.0 m/s 25m constant                                           truth=  7194.0 | base=  7174.2 ( -0.28%) | new=  7174.1 ( -0.28%, vs base  -0.00%) acc=173 jit=1012 spk=0 esc=0 def=15 reA=0 tgt=7174.1 (+0.00% vs tgt)
+CMP F1e hop 6.0 m/s 25m pause/resume t=600                                 truth=  7194.0 | base=  7163.1 ( -0.43%) | new=  7163.4 ( -0.43%, vs base  +0.00%) acc=171 jit=999 spk=0 esc=0 def=30 reA=0 tgt=7163.4 (-0.00% vs tgt)
+CMP F1f hop 6.0 m/s 25m pause/resume, 15m from 610                         truth=  7194.0 | base=  7209.5 ( +0.21%) | new=  7151.7 ( -0.59%, vs base  -0.80%) acc=224 jit=951 spk=0 esc=0 def=25 reA=0 tgt=7151.7 (-0.00% vs tgt)
+CMP F1h hop 6.0 m/s acc descending 40..26 then 25                          truth=  7194.0 | base=  7176.3 ( -0.25%) | new=  7094.8 ( -1.38%, vs base  -1.13%) acc=173 jit=1012 spk=0 esc=0 def=15 reA=0
+CMP R2 25m no doppler 100 m spike at t=15..15                              truth=  3600.0 | base=  3595.0 ( -0.14%) | new=  3595.0 ( -0.14%, vs base  +0.00%) acc=91 jit=1093 spk=1 esc=0 def=15 reA=0 tgt=3595.0 (+0.00% vs tgt)
+CMP R2 25m doppler 100 m spike at t=15..15                                 truth=  3600.0 | base=  3597.0 ( -0.08%) | new=  3597.0 ( -0.08%, vs base  +0.00%) acc=1184 jit=0 spk=1 esc=0 def=15 reA=0 tgt=3597.0 (+0.00% vs tgt)
+CMP R2 25m no doppler 40 m spike at t=15..15                               truth=  3600.0 | base=  3595.0 ( -0.14%) | new=  3636.9 ( +1.03%, vs base  +1.16%) acc=92 jit=1091 spk=2 esc=0 def=15 reA=0
+CMP R2 25m doppler 40 m spike at t=15..15                                  truth=  3600.0 | base=  3597.0 ( -0.08%) | new=  3597.0 ( -0.08%, vs base  +0.00%) acc=1183 jit=0 spk=2 esc=0 def=15 reA=0
+CMP R2 25m no doppler 100 m spike at t=15..17                              truth=  3600.0 | base=  3595.0 ( -0.14%) | new=  3595.8 ( -0.12%, vs base  +0.02%) acc=91 jit=1091 spk=3 esc=0 def=15 reA=0 tgt=3595.8 (-0.00% vs tgt)
+CMP R2 25m doppler 100 m spike at t=15..17                                 truth=  3600.0 | base=  3597.0 ( -0.08%) | new=  3597.0 ( -0.08%, vs base  +0.00%) acc=1182 jit=0 spk=3 esc=0 def=15 reA=0 tgt=3597.0 (+0.00% vs tgt)
+CMP R2 25m no doppler 40 m spike at t=15..17                               truth=  3600.0 | base=  3653.9 ( +1.50%) | new=  3636.9 ( +1.03%, vs base  -0.47%) acc=92 jit=1093 spk=0 esc=0 def=15 reA=0
+CMP R2 25m doppler 40 m spike at t=15..17                                  truth=  3600.0 | base=  3597.0 ( -0.08%) | new=  3597.0 ( -0.08%, vs base  +0.00%) acc=1182 jit=0 spk=3 esc=0 def=15 reA=0
+CMP R2 25m no doppler 100 m spike at t=14..16                              truth=  3600.0 | base=  3595.0 ( -0.14%) | new=  3595.2 ( -0.13%, vs base  +0.00%) acc=91 jit=1092 spk=2 esc=0 def=15 reA=0 tgt=3595.2 (-0.00% vs tgt)
+CMP R2 25m doppler 100 m spike at t=14..16                                 truth=  3600.0 | base=  3597.0 ( -0.08%) | new=  3597.0 ( -0.08%, vs base  +0.00%) acc=1183 jit=0 spk=2 esc=0 def=15 reA=0 tgt=3597.0 (+0.00% vs tgt)
+CMP R2 25m no doppler 40 m spike at t=14..16                               truth=  3600.0 | base=  3595.0 ( -0.14%) | new=  3636.9 ( +1.03%, vs base  +1.16%) acc=92 jit=1092 spk=1 esc=0 def=15 reA=0
+CMP R2 25m doppler 40 m spike at t=14..16                                  truth=  3600.0 | base=  3597.0 ( -0.08%) | new=  3597.0 ( -0.08%, vs base  +0.00%) acc=1182 jit=0 spk=3 esc=0 def=15 reA=0
+CMP R2 25m no doppler 100 m spike at t=13..20                              truth=  3600.0 | base=  3595.7 ( -0.12%) | new=  3595.7 ( -0.12%, vs base  +0.00%) acc=91 jit=1088 spk=6 esc=0 def=15 reA=0 tgt=3595.7 (-0.00% vs tgt)
+CMP R2 25m doppler 100 m spike at t=13..20                                 truth=  3600.0 | base=  3596.6 ( -0.09%) | new=  3593.8 ( -0.17%, vs base  -0.08%) acc=1179 jit=0 spk=6 esc=0 def=15 reA=0 tgt=3597.0 (-0.09% vs tgt)
+CMP R2 25m no doppler 40 m spike at t=13..20                               truth=  3600.0 | base=  3635.4 ( +0.98%) | new=  3634.4 ( +0.96%, vs base  -0.03%) acc=92 jit=1093 spk=0 esc=0 def=15 reA=0
+CMP R2 25m doppler 40 m spike at t=13..20                                  truth=  3600.0 | base=  3597.0 ( -0.08%) | new=  3597.0 ( -0.08%, vs base  +0.00%) acc=1183 jit=0 spk=2 esc=0 def=15 reA=0
+
+== R3. hop-mode rule 3 bound
+CMP R3 3 m/s no doppler 5m sigma 3                                         truth=  3600.0 | base=  4680.1 (+30.00%) | new=  4680.1 (+30.00%, vs base  +0.00%) acc=459 jit=729 spk=12 esc=0 def=0 reA=0 tgt=4680.1 (+0.00% vs tgt)
+CMP R3 3 m/s no doppler 8m sigma 5                                         truth=  3600.0 | base=  4956.9 (+37.69%) | new=  4956.9 (+37.69%, vs base  +0.00%) acc=316 jit=782 spk=102 esc=0 def=0 reA=0 tgt=4956.9 (-0.00% vs tgt)
+CMP R3 3 m/s no doppler 6/9/3 sigma 3                                      truth=  3600.0 | base=  4079.3 (+13.31%) | new=  4079.3 (+13.31%, vs base  +0.00%) acc=311 jit=866 spk=23 esc=0 def=0 reA=0 tgt=4079.3 (-0.00% vs tgt)
+
+== R4. pause/resume cadence (markGap every N s) on the 25 m Doppler run
+CMP R4 25m doppler markGap every 10 s                                      truth=  3600.0 | base=  3240.0 (-10.00%) | new=  3213.0 (-10.75%, vs base  -0.75%) acc=0 jit=0 spk=0 esc=0 def=1200 reA=0 tgt=3213.0 (+0.00% vs tgt)
+CMP R4 25m doppler markGap every 14 s                                      truth=  3600.0 | base=  3342.0 ( -7.17%) | new=  3315.0 ( -7.92%, vs base  -0.75%) acc=0 jit=0 spk=0 esc=0 def=1200 reA=0 tgt=3315.0 (+0.00% vs tgt)
+CMP R4 25m doppler markGap every 15 s                                      truth=  3600.0 | base=  3360.0 ( -6.67%) | new=  3318.0 ( -7.83%, vs base  -1.17%) acc=0 jit=0 spk=0 esc=0 def=1200 reA=0 tgt=3318.0 (+0.00% vs tgt)
+CMP R4 25m doppler markGap every 20 s                                      truth=  3600.0 | base=  3420.0 ( -5.00%) | new=  3420.0 ( -5.00%, vs base  +0.00%) acc=300 jit=0 spk=0 esc=0 def=900 reA=0 tgt=3420.0 (+0.00% vs tgt)
+CMP R4 25m doppler markGap every 30 s                                      truth=  3600.0 | base=  3480.0 ( -3.33%) | new=  3480.0 ( -3.33%, vs base  +0.00%) acc=600 jit=0 spk=0 esc=0 def=600 reA=0 tgt=3480.0 (+0.00% vs tgt)
+CMP R4 6m doppler markGap every 10 s                                       truth=  3600.0 | base=  3240.0 (-10.00%) | new=  3240.0 (-10.00%, vs base  +0.00%) acc=1200 jit=0 spk=0 esc=0 def=0 reA=0 tgt=3240.0 (+0.00% vs tgt)
+CMP R4 25m no doppler markGap every 20 s                                   truth=  3600.0 | base=  2375.5 (-34.01%) | new=  2735.1 (-24.02%, vs base  +9.99%) acc=60 jit=240 spk=0 esc=0 def=900 reA=0
+
+== R5. NaN speed
+CMP R5 25m doppler NaN at t=5 (wait) and t=600                             truth=  3600.0 | base=  3604.9 ( +0.14%) | new=  3591.0 ( -0.25%, vs base  -0.39%) acc=1184 jit=1 spk=0 esc=0 def=15 reA=0 tgt=3597.0 (-0.17% vs tgt)
+CMP R5 6m doppler NaN at t=600                                             truth=  3600.0 | base=  3602.0 ( +0.05%) | new=  3594.0 ( -0.17%, vs base  -0.22%) acc=1199 jit=1 spk=0 esc=0 def=0 reA=0
+
+== O. trade-offs (T1–T3, under-reporting receivers, cyclist at the cap)
+CMP T3 6m doppler dropout 0.3 every 20th                                   truth=  3600.0 | base=  3597.0 ( -0.08%) | new=  3437.7 ( -4.51%, vs base  -4.42%) acc=1141 jit=59 spk=0 esc=0 def=0 reA=0
+CMP T1 walk 1.0 reported 0.9/1.1 acc=5.0                                   truth=  1199.0 | base=  1436.6 (+19.82%) | new=  1310.4 ( +9.29%, vs base -10.53%) acc=618 jit=582 spk=0 esc=0 def=0 reA=0
+CMP T1 walk 1.0 reported 0.9/1.1 acc=25.0                                  truth=  1199.0 | base=  1318.9 (+10.00%) | new=  1189.3 ( -0.81%, vs base -10.81%) acc=593 jit=592 spk=0 esc=0 def=15 reA=0
+CMP T2 walk 0.8 reported 0.8, 1.05 every 10th acc=25                       truth=   959.2 | base=  1007.5 ( +5.04%) | new=   936.4 ( -2.38%, vs base  -7.42%) acc=118 jit=1067 spk=0 esc=0 def=15 reA=0
+CMP U1 walk 1.2 reported 0.99, 1.2 every 3rd acc=5.0                       truth=  1438.8 | base=  1672.2 (+16.22%) | new=  1455.4 ( +1.15%, vs base -15.07%) acc=438 jit=762 spk=0 esc=0 def=0 reA=0
+CMP U2 walk 1.2 reported 1.2/0.9 alternating acc=5.0                       truth=  1438.8 | base=  1548.6 ( +7.63%) | new=  1356.8 ( -5.70%, vs base -13.33%) acc=616 jit=584 spk=0 esc=0 def=0 reA=0
+CMP U3 walk 1.2 reported 0.8, 1.2 every 4th acc=5.0                        truth=  1438.8 | base=  1827.5 (+27.02%) | new=  1487.1 ( +3.36%, vs base -23.66%) acc=367 jit=833 spk=0 esc=0 def=0 reA=0
+CMP U4 walk 1.0 reported N(1.0,0.3) acc=5.0                                truth=  1199.0 | base=  1586.2 (+32.29%) | new=  1337.4 (+11.54%, vs base -20.75%) acc=619 jit=581 spk=0 esc=0 def=0 reA=0
+CMP U1 walk 1.2 reported 0.99, 1.2 every 3rd acc=10.0                      truth=  1438.8 | base=  1436.4 ( -0.17%) | new=  1202.7 (-16.41%, vs base -16.24%) acc=400 jit=800 spk=0 esc=0 def=0 reA=0
+CMP U2 walk 1.2 reported 1.2/0.9 alternating acc=10.0                      truth=  1438.8 | base=  1437.6 ( -0.08%) | new=  1239.2 (-13.87%, vs base -13.79%) acc=600 jit=600 spk=0 esc=0 def=0 reA=0
+CMP U3 walk 1.2 reported 0.8, 1.2 every 4th acc=10.0                       truth=  1438.8 | base=  1435.2 ( -0.25%) | new=  1031.8 (-28.28%, vs base -28.03%) acc=300 jit=900 spk=0 esc=0 def=0 reA=0
+CMP U4 walk 1.0 reported N(1.0,0.3) acc=10.0                               truth=  1199.0 | base=  1468.3 (+22.46%) | new=  1184.2 ( -1.23%, vs base -23.69%) acc=591 jit=609 spk=0 esc=0 def=0 reA=0
+CMP U1 walk 1.2 reported 0.99, 1.2 every 3rd acc=25.0                      truth=  1438.8 | base=  1436.4 ( -0.17%) | new=  1202.7 (-16.41%, vs base -16.24%) acc=395 jit=790 spk=0 esc=0 def=15 reA=0
+CMP U2 walk 1.2 reported 1.2/0.9 alternating acc=25.0                      truth=  1438.8 | base=  1437.6 ( -0.08%) | new=  1239.4 (-13.86%, vs base -13.78%) acc=592 jit=593 spk=0 esc=0 def=15 reA=0
+CMP U3 walk 1.2 reported 0.8, 1.2 every 4th acc=25.0                       truth=  1438.8 | base=  1435.2 ( -0.25%) | new=  1032.1 (-28.26%, vs base -28.01%) acc=296 jit=889 spk=0 esc=0 def=15 reA=0
+CMP U4 walk 1.0 reported N(1.0,0.3) acc=25.0                               truth=  1199.0 | base=  1468.3 (+22.46%) | new=  1184.2 ( -1.23%, vs base -23.69%) acc=583 jit=602 spk=0 esc=0 def=15 reA=0
+CMP U1 walk 1.2 reported 0.99, 1.2 every 3rd acc=35.0                      truth=  1438.8 | base=  1436.4 ( -0.17%) | new=  1202.7 (-16.41%, vs base -16.24%) acc=395 jit=790 spk=0 esc=0 def=15 reA=0
+CMP U2 walk 1.2 reported 1.2/0.9 alternating acc=35.0                      truth=  1438.8 | base=  1437.6 ( -0.08%) | new=  1239.4 (-13.86%, vs base -13.78%) acc=592 jit=593 spk=0 esc=0 def=15 reA=0
+CMP U3 walk 1.2 reported 0.8, 1.2 every 4th acc=35.0                       truth=  1438.8 | base=  1435.2 ( -0.25%) | new=  1032.1 (-28.26%, vs base -28.01%) acc=296 jit=889 spk=0 esc=0 def=15 reA=0
+CMP U4 walk 1.0 reported N(1.0,0.3) acc=35.0                               truth=  1199.0 | base=  1468.3 (+22.46%) | new=  1184.2 ( -1.23%, vs base -23.69%) acc=583 jit=602 spk=0 esc=0 def=15 reA=0
+CMP cyclist 12 m/s no doppler acc=5                                        truth= 14388.0 | base=     8.8 (-99.94%) | new=  8139.3 (-43.43%, vs base +56.51%) acc=70 jit=1 spk=1174 esc=45 def=0 reA=0
+CMP cyclist 12 m/s doppler acc=5                                           truth= 14388.0 | base= 12993.3 ( -9.69%) | new= 10838.0 (-24.67%, vs base -14.98%) acc=108 jit=0 spk=1117 esc=25 def=0 reA=0
+
+== O1/O2 variants: [base] = current, [O1] = 4b only when the integral spans > 5 s, [O2] = dropout bridging, [O1+O2]
+CMP [cur] T3 6m doppler dropout 0.3 every 20th                             truth=  3600.0 | base=  3597.0 ( -0.08%) | new=  3437.7 ( -4.51%, vs base  -4.42%) acc=1141 jit=59 spk=0 esc=0 def=0 reA=0
+CMP [cur] T3b 25m doppler dropout 0.3 every 20th                           truth=  3600.0 | base=  3597.0 ( -0.08%) | new=  3437.7 ( -4.51%, vs base  -4.42%) acc=1126 jit=59 spk=0 esc=0 def=15 reA=0
+CMP [cur] T3c 6m doppler dropout 0 for 3 fixes every 60                    truth=  3600.0 | base=  3640.1 ( +1.11%) | new=  3547.9 ( -1.45%, vs base  -2.56%) acc=1152 jit=48 spk=0 esc=0 def=0 reA=0
+CMP [cur] T1 walk 1.0 reported 0.9/1.1 acc=5.0                             truth=  1199.0 | base=  1436.6 (+19.82%) | new=  1310.4 ( +9.29%, vs base -10.53%) acc=618 jit=582 spk=0 esc=0 def=0 reA=0
+CMP [cur] T1 walk 1.0 reported 0.9/1.1 acc=25.0                            truth=  1199.0 | base=  1318.9 (+10.00%) | new=  1189.3 ( -0.81%, vs base -10.81%) acc=593 jit=592 spk=0 esc=0 def=15 reA=0
+CMP [cur] T2 walk 0.8 reported 0.8, 1.05 every 10th acc=25                 truth=   959.2 | base=  1007.5 ( +5.04%) | new=   936.4 ( -2.38%, vs base  -7.42%) acc=118 jit=1067 spk=0 esc=0 def=15 reA=0
+CMP [cur] U1 walk 1.2 reported 0.99, 1.2 every 3rd acc=5.0                 truth=  1438.8 | base=  1672.2 (+16.22%) | new=  1455.4 ( +1.15%, vs base -15.07%) acc=438 jit=762 spk=0 esc=0 def=0 reA=0
+CMP [cur] U2 walk 1.2 reported 1.2/0.9 alternating acc=5.0                 truth=  1438.8 | base=  1548.6 ( +7.63%) | new=  1356.8 ( -5.70%, vs base -13.33%) acc=616 jit=584 spk=0 esc=0 def=0 reA=0
+CMP [cur] U3 walk 1.2 reported 0.8, 1.2 every 4th acc=5.0                  truth=  1438.8 | base=  1827.5 (+27.02%) | new=  1487.1 ( +3.36%, vs base -23.66%) acc=367 jit=833 spk=0 esc=0 def=0 reA=0
+CMP [cur] U4 walk 1.0 reported N(1.0,0.3) acc=5.0                          truth=  1199.0 | base=  1586.2 (+32.29%) | new=  1337.4 (+11.54%, vs base -20.75%) acc=619 jit=581 spk=0 esc=0 def=0 reA=0
+CMP [cur] U1 walk 1.2 reported 0.99, 1.2 every 3rd acc=10.0                truth=  1438.8 | base=  1436.4 ( -0.17%) | new=  1202.7 (-16.41%, vs base -16.24%) acc=400 jit=800 spk=0 esc=0 def=0 reA=0
+CMP [cur] U2 walk 1.2 reported 1.2/0.9 alternating acc=10.0                truth=  1438.8 | base=  1437.6 ( -0.08%) | new=  1239.2 (-13.87%, vs base -13.79%) acc=600 jit=600 spk=0 esc=0 def=0 reA=0
+CMP [cur] U3 walk 1.2 reported 0.8, 1.2 every 4th acc=10.0                 truth=  1438.8 | base=  1435.2 ( -0.25%) | new=  1031.8 (-28.28%, vs base -28.03%) acc=300 jit=900 spk=0 esc=0 def=0 reA=0
+CMP [cur] U4 walk 1.0 reported N(1.0,0.3) acc=10.0                         truth=  1199.0 | base=  1468.3 (+22.46%) | new=  1184.2 ( -1.23%, vs base -23.69%) acc=591 jit=609 spk=0 esc=0 def=0 reA=0
+CMP [cur] U1 walk 1.2 reported 0.99, 1.2 every 3rd acc=25.0                truth=  1438.8 | base=  1436.4 ( -0.17%) | new=  1202.7 (-16.41%, vs base -16.24%) acc=395 jit=790 spk=0 esc=0 def=15 reA=0
+CMP [cur] U2 walk 1.2 reported 1.2/0.9 alternating acc=25.0                truth=  1438.8 | base=  1437.6 ( -0.08%) | new=  1239.4 (-13.86%, vs base -13.78%) acc=592 jit=593 spk=0 esc=0 def=15 reA=0
+CMP [cur] U3 walk 1.2 reported 0.8, 1.2 every 4th acc=25.0                 truth=  1438.8 | base=  1435.2 ( -0.25%) | new=  1032.1 (-28.26%, vs base -28.01%) acc=296 jit=889 spk=0 esc=0 def=15 reA=0
+CMP [cur] U4 walk 1.0 reported N(1.0,0.3) acc=25.0                         truth=  1199.0 | base=  1468.3 (+22.46%) | new=  1184.2 ( -1.23%, vs base -23.69%) acc=583 jit=602 spk=0 esc=0 def=15 reA=0
+CMP [cur] U1 walk 1.2 reported 0.99, 1.2 every 3rd acc=35.0                truth=  1438.8 | base=  1436.4 ( -0.17%) | new=  1202.7 (-16.41%, vs base -16.24%) acc=395 jit=790 spk=0 esc=0 def=15 reA=0
+CMP [cur] U2 walk 1.2 reported 1.2/0.9 alternating acc=35.0                truth=  1438.8 | base=  1437.6 ( -0.08%) | new=  1239.4 (-13.86%, vs base -13.78%) acc=592 jit=593 spk=0 esc=0 def=15 reA=0
+CMP [cur] U3 walk 1.2 reported 0.8, 1.2 every 4th acc=35.0                 truth=  1438.8 | base=  1435.2 ( -0.25%) | new=  1032.1 (-28.26%, vs base -28.01%) acc=296 jit=889 spk=0 esc=0 def=15 reA=0
+CMP [cur] U4 walk 1.0 reported N(1.0,0.3) acc=35.0                         truth=  1199.0 | base=  1468.3 (+22.46%) | new=  1184.2 ( -1.23%, vs base -23.69%) acc=583 jit=602 spk=0 esc=0 def=15 reA=0
+CMP [cur] STOPS acc=5.0 standing reports 0.0                               truth=   718.8 | base=   817.5 (+13.73%) | new=   802.5 (+11.64%, vs base  -2.09%) acc=610 jit=590 spk=0 esc=0 def=0 reA=0
+CMP [cur] STOPS acc=5.0 standing reports 0.7                               truth=   718.8 | base=   817.5 (+13.73%) | new=   819.6 (+14.02%, vs base  +0.29%) acc=610 jit=590 spk=0 esc=0 def=0 reA=0
+CMP [cur] STOPS acc=5.0 standing reports 0.95                              truth=   718.8 | base=   817.5 (+13.73%) | new=   819.1 (+13.95%, vs base  +0.22%) acc=610 jit=590 spk=0 esc=0 def=0 reA=0
+CMP [cur] STOPS acc=25.0 standing reports 0.0                              truth=   718.8 | base=   734.6 ( +2.20%) | new=   718.8 ( +0.00%, vs base  -2.20%) acc=585 jit=600 spk=0 esc=0 def=15 reA=0
+CMP [cur] STOPS acc=25.0 standing reports 0.7                              truth=   718.8 | base=   734.6 ( +2.20%) | new=   735.4 ( +2.31%, vs base  +0.11%) acc=585 jit=600 spk=0 esc=0 def=15 reA=0
+CMP [cur] STOPS acc=25.0 standing reports 0.95                             truth=   718.8 | base=   734.6 ( +2.20%) | new=   735.2 ( +2.28%, vs base  +0.08%) acc=585 jit=600 spk=0 esc=0 def=15 reA=0
+CMP [cur] STOPS acc=50.0 standing reports 0.0                              truth=   718.8 | base=   734.6 ( +2.20%) | new=   718.8 ( +0.00%, vs base  -2.20%) acc=585 jit=600 spk=0 esc=0 def=15 reA=0
+CMP [cur] STOPS acc=50.0 standing reports 0.7                              truth=   718.8 | base=   734.6 ( +2.20%) | new=   735.4 ( +2.31%, vs base  +0.11%) acc=585 jit=600 spk=0 esc=0 def=15 reA=0
+CMP [cur] STOPS acc=50.0 standing reports 0.95                             truth=   718.8 | base=   734.6 ( +2.20%) | new=   735.2 ( +2.28%, vs base  +0.08%) acc=585 jit=600 spk=0 esc=0 def=15 reA=0
+CMP [cur] A 6m doppler                                                     truth=  3600.0 | base=  3597.0 ( -0.08%) | new=  3597.0 ( -0.08%, vs base  +0.00%) acc=1200 jit=0 spk=0 esc=0 def=0 reA=0
+CMP [cur] B 25m doppler                                                    truth=  3600.0 | base=  3597.0 ( -0.08%) | new=  3597.0 ( -0.08%, vs base  +0.00%) acc=1185 jit=0 spk=0 esc=0 def=15 reA=0
+CMP [cur] R4 25m doppler markGap every 10 s                                truth=  3600.0 | base=  3240.0 (-10.00%) | new=  3213.0 (-10.75%, vs base  -0.75%) acc=0 jit=0 spk=0 esc=0 def=1200 reA=0
+CMP [cur] F4 6m doppler every 30th 25m off @10m/s                          truth=  3600.0 | base=  3597.0 ( -0.08%) | new=  3597.0 ( -0.08%, vs base  +0.00%) acc=1161 jit=0 spk=39 esc=0 def=0 reA=0
+CMP [cur] R1 6m doppler burst N=8                                          truth=  3600.0 | base=  3599.9 ( -0.00%) | new=  3599.9 ( -0.00%, vs base  +0.00%) acc=1048 jit=0 spk=152 esc=0 def=0 reA=0
+[cur] REAL mimicPause=true new=130.7
+[cur] REAL mimicPause=false new=133.4
+CMP [O1] T3 6m doppler dropout 0.3 every 20th                              truth=  3600.0 | base=  3597.0 ( -0.08%) | new=  3437.7 ( -4.51%, vs base  -4.42%) acc=1141 jit=59 spk=0 esc=0 def=0 reA=0
+CMP [O1] T3b 25m doppler dropout 0.3 every 20th                            truth=  3600.0 | base=  3597.0 ( -0.08%) | new=  3437.7 ( -4.51%, vs base  -4.42%) acc=1126 jit=59 spk=0 esc=0 def=15 reA=0
+CMP [O1] T3c 6m doppler dropout 0 for 3 fixes every 60                     truth=  3600.0 | base=  3640.1 ( +1.11%) | new=  3547.9 ( -1.45%, vs base  -2.56%) acc=1152 jit=48 spk=0 esc=0 def=0 reA=0
+CMP [O1] T1 walk 1.0 reported 0.9/1.1 acc=5.0                              truth=  1199.0 | base=  1436.6 (+19.82%) | new=  1320.2 (+10.11%, vs base  -9.71%) acc=618 jit=582 spk=0 esc=0 def=0 reA=0
+CMP [O1] T1 walk 1.0 reported 0.9/1.1 acc=25.0                             truth=  1199.0 | base=  1318.9 (+10.00%) | new=  1199.1 ( +0.01%, vs base  -9.99%) acc=593 jit=592 spk=0 esc=0 def=15 reA=0
+CMP [O1] T2 walk 0.8 reported 0.8, 1.05 every 10th acc=25                  truth=   959.2 | base=  1007.5 ( +5.04%) | new=   936.4 ( -2.38%, vs base  -7.42%) acc=118 jit=1067 spk=0 esc=0 def=15 reA=0
+CMP [O1] U1 walk 1.2 reported 0.99, 1.2 every 3rd acc=5.0                  truth=  1438.8 | base=  1672.2 (+16.22%) | new=  1518.5 ( +5.54%, vs base -10.68%) acc=438 jit=762 spk=0 esc=0 def=0 reA=0
+CMP [O1] U2 walk 1.2 reported 1.2/0.9 alternating acc=5.0                  truth=  1438.8 | base=  1548.6 ( +7.63%) | new=  1373.7 ( -4.53%, vs base -12.16%) acc=616 jit=584 spk=0 esc=0 def=0 reA=0
+CMP [O1] U3 walk 1.2 reported 0.8, 1.2 every 4th acc=5.0                   truth=  1438.8 | base=  1827.5 (+27.02%) | new=  1530.7 ( +6.39%, vs base -20.63%) acc=367 jit=833 spk=0 esc=0 def=0 reA=0
+CMP [O1] U4 walk 1.0 reported N(1.0,0.3) acc=5.0                           truth=  1199.0 | base=  1586.2 (+32.29%) | new=  1359.1 (+13.35%, vs base -18.94%) acc=619 jit=581 spk=0 esc=0 def=0 reA=0
+CMP [O1] U1 walk 1.2 reported 0.99, 1.2 every 3rd acc=10.0                 truth=  1438.8 | base=  1436.4 ( -0.17%) | new=  1268.8 (-11.81%, vs base -11.65%) acc=400 jit=800 spk=0 esc=0 def=0 reA=0
+CMP [O1] U2 walk 1.2 reported 1.2/0.9 alternating acc=10.0                 truth=  1438.8 | base=  1437.6 ( -0.08%) | new=  1257.9 (-12.57%, vs base -12.49%) acc=600 jit=600 spk=0 esc=0 def=0 reA=0
+CMP [O1] U3 walk 1.2 reported 0.8, 1.2 every 4th acc=10.0                  truth=  1438.8 | base=  1435.2 ( -0.25%) | new=  1076.4 (-25.19%, vs base -24.94%) acc=300 jit=900 spk=0 esc=0 def=0 reA=0
+CMP [O1] U4 walk 1.0 reported N(1.0,0.3) acc=10.0                          truth=  1199.0 | base=  1468.3 (+22.46%) | new=  1204.0 ( +0.42%, vs base -22.04%) acc=591 jit=609 spk=0 esc=0 def=0 reA=0
+CMP [O1] U1 walk 1.2 reported 0.99, 1.2 every 3rd acc=25.0                 truth=  1438.8 | base=  1436.4 ( -0.17%) | new=  1268.8 (-11.81%, vs base -11.65%) acc=395 jit=790 spk=0 esc=0 def=15 reA=0
+CMP [O1] U2 walk 1.2 reported 1.2/0.9 alternating acc=25.0                 truth=  1438.8 | base=  1437.6 ( -0.08%) | new=  1257.9 (-12.57%, vs base -12.49%) acc=592 jit=593 spk=0 esc=0 def=15 reA=0
+CMP [O1] U3 walk 1.2 reported 0.8, 1.2 every 4th acc=25.0                  truth=  1438.8 | base=  1435.2 ( -0.25%) | new=  1076.4 (-25.19%, vs base -24.94%) acc=296 jit=889 spk=0 esc=0 def=15 reA=0
+CMP [O1] U4 walk 1.0 reported N(1.0,0.3) acc=25.0                          truth=  1199.0 | base=  1468.3 (+22.46%) | new=  1204.0 ( +0.42%, vs base -22.04%) acc=583 jit=602 spk=0 esc=0 def=15 reA=0
+CMP [O1] U1 walk 1.2 reported 0.99, 1.2 every 3rd acc=35.0                 truth=  1438.8 | base=  1436.4 ( -0.17%) | new=  1268.8 (-11.81%, vs base -11.65%) acc=395 jit=790 spk=0 esc=0 def=15 reA=0
+CMP [O1] U2 walk 1.2 reported 1.2/0.9 alternating acc=35.0                 truth=  1438.8 | base=  1437.6 ( -0.08%) | new=  1257.9 (-12.57%, vs base -12.49%) acc=592 jit=593 spk=0 esc=0 def=15 reA=0
+CMP [O1] U3 walk 1.2 reported 0.8, 1.2 every 4th acc=35.0                  truth=  1438.8 | base=  1435.2 ( -0.25%) | new=  1076.4 (-25.19%, vs base -24.94%) acc=296 jit=889 spk=0 esc=0 def=15 reA=0
+CMP [O1] U4 walk 1.0 reported N(1.0,0.3) acc=35.0                          truth=  1199.0 | base=  1468.3 (+22.46%) | new=  1204.0 ( +0.42%, vs base -22.04%) acc=583 jit=602 spk=0 esc=0 def=15 reA=0
+CMP [O1] STOPS acc=5.0 standing reports 0.0                                truth=   718.8 | base=   817.5 (+13.73%) | new=   802.5 (+11.64%, vs base  -2.09%) acc=610 jit=590 spk=0 esc=0 def=0 reA=0
+CMP [O1] STOPS acc=5.0 standing reports 0.7                                truth=   718.8 | base=   817.5 (+13.73%) | new=   819.6 (+14.02%, vs base  +0.29%) acc=610 jit=590 spk=0 esc=0 def=0 reA=0
+CMP [O1] STOPS acc=5.0 standing reports 0.95                               truth=   718.8 | base=   817.5 (+13.73%) | new=   819.1 (+13.95%, vs base  +0.22%) acc=610 jit=590 spk=0 esc=0 def=0 reA=0
+CMP [O1] STOPS acc=25.0 standing reports 0.0                               truth=   718.8 | base=   734.6 ( +2.20%) | new=   718.8 ( +0.00%, vs base  -2.20%) acc=585 jit=600 spk=0 esc=0 def=15 reA=0
+CMP [O1] STOPS acc=25.0 standing reports 0.7                               truth=   718.8 | base=   734.6 ( +2.20%) | new=   735.4 ( +2.31%, vs base  +0.11%) acc=585 jit=600 spk=0 esc=0 def=15 reA=0
+CMP [O1] STOPS acc=25.0 standing reports 0.95                              truth=   718.8 | base=   734.6 ( +2.20%) | new=   735.2 ( +2.28%, vs base  +0.08%) acc=585 jit=600 spk=0 esc=0 def=15 reA=0
+CMP [O1] STOPS acc=50.0 standing reports 0.0                               truth=   718.8 | base=   734.6 ( +2.20%) | new=   718.8 ( +0.00%, vs base  -2.20%) acc=585 jit=600 spk=0 esc=0 def=15 reA=0
+CMP [O1] STOPS acc=50.0 standing reports 0.7                               truth=   718.8 | base=   734.6 ( +2.20%) | new=   735.4 ( +2.31%, vs base  +0.11%) acc=585 jit=600 spk=0 esc=0 def=15 reA=0
+CMP [O1] STOPS acc=50.0 standing reports 0.95                              truth=   718.8 | base=   734.6 ( +2.20%) | new=   735.2 ( +2.28%, vs base  +0.08%) acc=585 jit=600 spk=0 esc=0 def=15 reA=0
+CMP [O1] A 6m doppler                                                      truth=  3600.0 | base=  3597.0 ( -0.08%) | new=  3597.0 ( -0.08%, vs base  +0.00%) acc=1200 jit=0 spk=0 esc=0 def=0 reA=0
+CMP [O1] B 25m doppler                                                     truth=  3600.0 | base=  3597.0 ( -0.08%) | new=  3597.0 ( -0.08%, vs base  +0.00%) acc=1185 jit=0 spk=0 esc=0 def=15 reA=0
+CMP [O1] R4 25m doppler markGap every 10 s                                 truth=  3600.0 | base=  3240.0 (-10.00%) | new=  3213.0 (-10.75%, vs base  -0.75%) acc=0 jit=0 spk=0 esc=0 def=1200 reA=0
+CMP [O1] F4 6m doppler every 30th 25m off @10m/s                           truth=  3600.0 | base=  3597.0 ( -0.08%) | new=  3597.0 ( -0.08%, vs base  +0.00%) acc=1161 jit=0 spk=39 esc=0 def=0 reA=0
+CMP [O1] R1 6m doppler burst N=8                                           truth=  3600.0 | base=  3599.9 ( -0.00%) | new=  3599.9 ( -0.00%, vs base  +0.00%) acc=1048 jit=0 spk=152 esc=0 def=0 reA=0
+[O1] REAL mimicPause=true new=130.7
+[O1] REAL mimicPause=false new=133.4
+CMP [O2] T3 6m doppler dropout 0.3 every 20th                              truth=  3600.0 | base=  3597.0 ( -0.08%) | new=  3551.3 ( -1.35%, vs base  -1.27%) acc=1141 jit=59 spk=0 esc=0 def=0 reA=0
+CMP [O2] T3b 25m doppler dropout 0.3 every 20th                            truth=  3600.0 | base=  3597.0 ( -0.08%) | new=  3552.1 ( -1.33%, vs base  -1.25%) acc=1126 jit=59 spk=0 esc=0 def=15 reA=0
+CMP [O2] T3c 6m doppler dropout 0 for 3 fixes every 60                     truth=  3600.0 | base=  3640.1 ( +1.11%) | new=  3598.9 ( -0.03%, vs base  -1.14%) acc=1152 jit=48 spk=0 esc=0 def=0 reA=0
+CMP [O2] T1 walk 1.0 reported 0.9/1.1 acc=5.0                              truth=  1199.0 | base=  1436.6 (+19.82%) | new=  1403.2 (+17.03%, vs base  -2.78%) acc=618 jit=582 spk=0 esc=0 def=0 reA=0
+CMP [O2] T1 walk 1.0 reported 0.9/1.1 acc=25.0                             truth=  1199.0 | base=  1318.9 (+10.00%) | new=  1285.1 ( +7.18%, vs base  -2.82%) acc=593 jit=592 spk=0 esc=0 def=15 reA=0
+CMP [O2] T2 walk 0.8 reported 0.8, 1.05 every 10th acc=25                  truth=   959.2 | base=  1007.5 ( +5.04%) | new=  1020.1 ( +6.35%, vs base  +1.31%) acc=118 jit=1067 spk=0 esc=0 def=15 reA=0
+CMP [O2] U1 walk 1.2 reported 0.99, 1.2 every 3rd acc=5.0                  truth=  1438.8 | base=  1672.2 (+16.22%) | new=  1557.6 ( +8.26%, vs base  -7.96%) acc=438 jit=762 spk=0 esc=0 def=0 reA=0
+CMP [O2] U2 walk 1.2 reported 1.2/0.9 alternating acc=5.0                  truth=  1438.8 | base=  1548.6 ( +7.63%) | new=  1492.7 ( +3.74%, vs base  -3.89%) acc=616 jit=584 spk=0 esc=0 def=0 reA=0
+CMP [O2] U3 walk 1.2 reported 0.8, 1.2 every 4th acc=5.0                   truth=  1438.8 | base=  1827.5 (+27.02%) | new=  1673.5 (+16.31%, vs base -10.71%) acc=367 jit=833 spk=0 esc=0 def=0 reA=0
+CMP [O2] U4 walk 1.0 reported N(1.0,0.3) acc=5.0                           truth=  1199.0 | base=  1586.2 (+32.29%) | new=  1529.2 (+27.54%, vs base  -4.76%) acc=619 jit=581 spk=0 esc=0 def=0 reA=0
+CMP [O2] U1 walk 1.2 reported 0.99, 1.2 every 3rd acc=10.0                 truth=  1438.8 | base=  1436.4 ( -0.17%) | new=  1318.8 ( -8.34%, vs base  -8.17%) acc=400 jit=800 spk=0 esc=0 def=0 reA=0
+CMP [O2] U2 walk 1.2 reported 1.2/0.9 alternating acc=10.0                 truth=  1438.8 | base=  1437.6 ( -0.08%) | new=  1379.0 ( -4.16%, vs base  -4.07%) acc=600 jit=600 spk=0 esc=0 def=0 reA=0
+CMP [O2] U3 walk 1.2 reported 0.8, 1.2 every 4th acc=10.0                  truth=  1438.8 | base=  1435.2 ( -0.25%) | new=  1288.6 (-10.44%, vs base -10.19%) acc=300 jit=900 spk=0 esc=0 def=0 reA=0
+CMP [O2] U4 walk 1.0 reported N(1.0,0.3) acc=10.0                          truth=  1199.0 | base=  1468.3 (+22.46%) | new=  1411.7 (+17.74%, vs base  -4.72%) acc=591 jit=609 spk=0 esc=0 def=0 reA=0
+CMP [O2] U1 walk 1.2 reported 0.99, 1.2 every 3rd acc=25.0                 truth=  1438.8 | base=  1436.4 ( -0.17%) | new=  1320.3 ( -8.23%, vs base  -8.07%) acc=395 jit=790 spk=0 esc=0 def=15 reA=0
+CMP [O2] U2 walk 1.2 reported 1.2/0.9 alternating acc=25.0                 truth=  1438.8 | base=  1437.6 ( -0.08%) | new=  1377.8 ( -4.24%, vs base  -4.16%) acc=592 jit=593 spk=0 esc=0 def=15 reA=0
+CMP [O2] U3 walk 1.2 reported 0.8, 1.2 every 4th acc=25.0                  truth=  1438.8 | base=  1435.2 ( -0.25%) | new=  1286.7 (-10.57%, vs base -10.32%) acc=296 jit=889 spk=0 esc=0 def=15 reA=0
+CMP [O2] U4 walk 1.0 reported N(1.0,0.3) acc=25.0                          truth=  1199.0 | base=  1468.3 (+22.46%) | new=  1408.8 (+17.50%, vs base  -4.96%) acc=583 jit=602 spk=0 esc=0 def=15 reA=0
+CMP [O2] U1 walk 1.2 reported 0.99, 1.2 every 3rd acc=35.0                 truth=  1438.8 | base=  1436.4 ( -0.17%) | new=  1320.3 ( -8.23%, vs base  -8.07%) acc=395 jit=790 spk=0 esc=0 def=15 reA=0
+CMP [O2] U2 walk 1.2 reported 1.2/0.9 alternating acc=35.0                 truth=  1438.8 | base=  1437.6 ( -0.08%) | new=  1377.8 ( -4.24%, vs base  -4.16%) acc=592 jit=593 spk=0 esc=0 def=15 reA=0
+CMP [O2] U3 walk 1.2 reported 0.8, 1.2 every 4th acc=35.0                  truth=  1438.8 | base=  1435.2 ( -0.25%) | new=  1286.7 (-10.57%, vs base -10.32%) acc=296 jit=889 spk=0 esc=0 def=15 reA=0
+CMP [O2] U4 walk 1.0 reported N(1.0,0.3) acc=35.0                          truth=  1199.0 | base=  1468.3 (+22.46%) | new=  1408.8 (+17.50%, vs base  -4.96%) acc=583 jit=602 spk=0 esc=0 def=15 reA=0
+CMP [O2] STOPS acc=5.0 standing reports 0.0                                truth=   718.8 | base=   817.5 (+13.73%) | new=   811.1 (+12.84%, vs base  -0.89%) acc=610 jit=590 spk=0 esc=0 def=0 reA=0
+CMP [O2] STOPS acc=5.0 standing reports 0.7                                truth=   718.8 | base=   817.5 (+13.73%) | new=   819.6 (+14.02%, vs base  +0.29%) acc=610 jit=590 spk=0 esc=0 def=0 reA=0
+CMP [O2] STOPS acc=5.0 standing reports 0.95                               truth=   718.8 | base=   817.5 (+13.73%) | new=   819.1 (+13.95%, vs base  +0.22%) acc=610 jit=590 spk=0 esc=0 def=0 reA=0
+CMP [O2] STOPS acc=25.0 standing reports 0.0                               truth=   718.8 | base=   734.6 ( +2.20%) | new=   735.7 ( +2.36%, vs base  +0.16%) acc=585 jit=600 spk=0 esc=0 def=15 reA=0
+CMP [O2] STOPS acc=25.0 standing reports 0.7                               truth=   718.8 | base=   734.6 ( +2.20%) | new=   736.5 ( +2.46%, vs base  +0.26%) acc=585 jit=600 spk=0 esc=0 def=15 reA=0
+CMP [O2] STOPS acc=25.0 standing reports 0.95                              truth=   718.8 | base=   734.6 ( +2.20%) | new=   736.3 ( +2.43%, vs base  +0.23%) acc=585 jit=600 spk=0 esc=0 def=15 reA=0
+CMP [O2] STOPS acc=50.0 standing reports 0.0                               truth=   718.8 | base=   734.6 ( +2.20%) | new=   735.7 ( +2.36%, vs base  +0.16%) acc=585 jit=600 spk=0 esc=0 def=15 reA=0
+CMP [O2] STOPS acc=50.0 standing reports 0.7                               truth=   718.8 | base=   734.6 ( +2.20%) | new=   736.5 ( +2.46%, vs base  +0.26%) acc=585 jit=600 spk=0 esc=0 def=15 reA=0
+CMP [O2] STOPS acc=50.0 standing reports 0.95                              truth=   718.8 | base=   734.6 ( +2.20%) | new=   736.3 ( +2.43%, vs base  +0.23%) acc=585 jit=600 spk=0 esc=0 def=15 reA=0
+CMP [O2] A 6m doppler                                                      truth=  3600.0 | base=  3597.0 ( -0.08%) | new=  3597.0 ( -0.08%, vs base  +0.00%) acc=1200 jit=0 spk=0 esc=0 def=0 reA=0
+CMP [O2] B 25m doppler                                                     truth=  3600.0 | base=  3597.0 ( -0.08%) | new=  3597.8 ( -0.06%, vs base  +0.02%) acc=1185 jit=0 spk=0 esc=0 def=15 reA=0
+CMP [O2] R4 25m doppler markGap every 10 s                                 truth=  3600.0 | base=  3240.0 (-10.00%) | new=  3213.0 (-10.75%, vs base  -0.75%) acc=0 jit=0 spk=0 esc=0 def=1200 reA=0
+CMP [O2] F4 6m doppler every 30th 25m off @10m/s                           truth=  3600.0 | base=  3597.0 ( -0.08%) | new=  3597.0 ( -0.08%, vs base  +0.00%) acc=1161 jit=0 spk=39 esc=0 def=0 reA=0
+CMP [O2] R1 6m doppler burst N=8                                           truth=  3600.0 | base=  3599.9 ( -0.00%) | new=  3599.9 ( -0.00%, vs base  +0.00%) acc=1048 jit=0 spk=152 esc=0 def=0 reA=0
+[O2] REAL mimicPause=true new=132.4
+[O2] REAL mimicPause=false new=135.1
+CMP [O1+O2] T3 6m doppler dropout 0.3 every 20th                           truth=  3600.0 | base=  3597.0 ( -0.08%) | new=  3551.3 ( -1.35%, vs base  -1.27%) acc=1141 jit=59 spk=0 esc=0 def=0 reA=0
+CMP [O1+O2] T3b 25m doppler dropout 0.3 every 20th                         truth=  3600.0 | base=  3597.0 ( -0.08%) | new=  3552.1 ( -1.33%, vs base  -1.25%) acc=1126 jit=59 spk=0 esc=0 def=15 reA=0
+CMP [O1+O2] T3c 6m doppler dropout 0 for 3 fixes every 60                  truth=  3600.0 | base=  3640.1 ( +1.11%) | new=  3598.9 ( -0.03%, vs base  -1.14%) acc=1152 jit=48 spk=0 esc=0 def=0 reA=0
+CMP [O1+O2] T1 walk 1.0 reported 0.9/1.1 acc=5.0                           truth=  1199.0 | base=  1436.6 (+19.82%) | new=  1413.0 (+17.85%, vs base  -1.97%) acc=618 jit=582 spk=0 esc=0 def=0 reA=0
+CMP [O1+O2] T1 walk 1.0 reported 0.9/1.1 acc=25.0                          truth=  1199.0 | base=  1318.9 (+10.00%) | new=  1294.9 ( +8.00%, vs base  -2.00%) acc=593 jit=592 spk=0 esc=0 def=15 reA=0
+CMP [O1+O2] T2 walk 0.8 reported 0.8, 1.05 every 10th acc=25               truth=   959.2 | base=  1007.5 ( +5.04%) | new=  1020.1 ( +6.35%, vs base  +1.31%) acc=118 jit=1067 spk=0 esc=0 def=15 reA=0
+CMP [O1+O2] U1 walk 1.2 reported 0.99, 1.2 every 3rd acc=5.0               truth=  1438.8 | base=  1672.2 (+16.22%) | new=  1620.8 (+12.65%, vs base  -3.58%) acc=438 jit=762 spk=0 esc=0 def=0 reA=0
+CMP [O1+O2] U2 walk 1.2 reported 1.2/0.9 alternating acc=5.0               truth=  1438.8 | base=  1548.6 ( +7.63%) | new=  1509.6 ( +4.92%, vs base  -2.71%) acc=616 jit=584 spk=0 esc=0 def=0 reA=0
+CMP [O1+O2] U3 walk 1.2 reported 0.8, 1.2 every 4th acc=5.0                truth=  1438.8 | base=  1827.5 (+27.02%) | new=  1717.1 (+19.34%, vs base  -7.68%) acc=367 jit=833 spk=0 esc=0 def=0 reA=0
+CMP [O1+O2] U4 walk 1.0 reported N(1.0,0.3) acc=5.0                        truth=  1199.0 | base=  1586.2 (+32.29%) | new=  1550.9 (+29.35%, vs base  -2.94%) acc=619 jit=581 spk=0 esc=0 def=0 reA=0
+CMP [O1+O2] U1 walk 1.2 reported 0.99, 1.2 every 3rd acc=10.0              truth=  1438.8 | base=  1436.4 ( -0.17%) | new=  1384.9 ( -3.74%, vs base  -3.58%) acc=400 jit=800 spk=0 esc=0 def=0 reA=0
+CMP [O1+O2] U2 walk 1.2 reported 1.2/0.9 alternating acc=10.0              truth=  1438.8 | base=  1437.6 ( -0.08%) | new=  1397.7 ( -2.86%, vs base  -2.78%) acc=600 jit=600 spk=0 esc=0 def=0 reA=0
+CMP [O1+O2] U3 walk 1.2 reported 0.8, 1.2 every 4th acc=10.0               truth=  1438.8 | base=  1435.2 ( -0.25%) | new=  1333.2 ( -7.34%, vs base  -7.09%) acc=300 jit=900 spk=0 esc=0 def=0 reA=0
+CMP [O1+O2] U4 walk 1.0 reported N(1.0,0.3) acc=10.0                       truth=  1199.0 | base=  1468.3 (+22.46%) | new=  1431.5 (+19.39%, vs base  -3.07%) acc=591 jit=609 spk=0 esc=0 def=0 reA=0
+CMP [O1+O2] U1 walk 1.2 reported 0.99, 1.2 every 3rd acc=25.0              truth=  1438.8 | base=  1436.4 ( -0.17%) | new=  1386.5 ( -3.64%, vs base  -3.47%) acc=395 jit=790 spk=0 esc=0 def=15 reA=0
+CMP [O1+O2] U2 walk 1.2 reported 1.2/0.9 alternating acc=25.0              truth=  1438.8 | base=  1437.6 ( -0.08%) | new=  1396.3 ( -2.96%, vs base  -2.87%) acc=592 jit=593 spk=0 esc=0 def=15 reA=0
+CMP [O1+O2] U3 walk 1.2 reported 0.8, 1.2 every 4th acc=25.0               truth=  1438.8 | base=  1435.2 ( -0.25%) | new=  1331.0 ( -7.49%, vs base  -7.24%) acc=296 jit=889 spk=0 esc=0 def=15 reA=0
+CMP [O1+O2] U4 walk 1.0 reported N(1.0,0.3) acc=25.0                       truth=  1199.0 | base=  1468.3 (+22.46%) | new=  1428.6 (+19.15%, vs base  -3.31%) acc=583 jit=602 spk=0 esc=0 def=15 reA=0
+CMP [O1+O2] U1 walk 1.2 reported 0.99, 1.2 every 3rd acc=35.0              truth=  1438.8 | base=  1436.4 ( -0.17%) | new=  1386.5 ( -3.64%, vs base  -3.47%) acc=395 jit=790 spk=0 esc=0 def=15 reA=0
+CMP [O1+O2] U2 walk 1.2 reported 1.2/0.9 alternating acc=35.0              truth=  1438.8 | base=  1437.6 ( -0.08%) | new=  1396.3 ( -2.96%, vs base  -2.87%) acc=592 jit=593 spk=0 esc=0 def=15 reA=0
+CMP [O1+O2] U3 walk 1.2 reported 0.8, 1.2 every 4th acc=35.0               truth=  1438.8 | base=  1435.2 ( -0.25%) | new=  1331.0 ( -7.49%, vs base  -7.24%) acc=296 jit=889 spk=0 esc=0 def=15 reA=0
+CMP [O1+O2] U4 walk 1.0 reported N(1.0,0.3) acc=35.0                       truth=  1199.0 | base=  1468.3 (+22.46%) | new=  1428.6 (+19.15%, vs base  -3.31%) acc=583 jit=602 spk=0 esc=0 def=15 reA=0
+CMP [O1+O2] STOPS acc=5.0 standing reports 0.0                             truth=   718.8 | base=   817.5 (+13.73%) | new=   811.1 (+12.84%, vs base  -0.89%) acc=610 jit=590 spk=0 esc=0 def=0 reA=0
+CMP [O1+O2] STOPS acc=5.0 standing reports 0.7                             truth=   718.8 | base=   817.5 (+13.73%) | new=   819.6 (+14.02%, vs base  +0.29%) acc=610 jit=590 spk=0 esc=0 def=0 reA=0
+CMP [O1+O2] STOPS acc=5.0 standing reports 0.95                            truth=   718.8 | base=   817.5 (+13.73%) | new=   819.1 (+13.95%, vs base  +0.22%) acc=610 jit=590 spk=0 esc=0 def=0 reA=0
+CMP [O1+O2] STOPS acc=25.0 standing reports 0.0                            truth=   718.8 | base=   734.6 ( +2.20%) | new=   735.7 ( +2.36%, vs base  +0.16%) acc=585 jit=600 spk=0 esc=0 def=15 reA=0
+CMP [O1+O2] STOPS acc=25.0 standing reports 0.7                            truth=   718.8 | base=   734.6 ( +2.20%) | new=   736.5 ( +2.46%, vs base  +0.26%) acc=585 jit=600 spk=0 esc=0 def=15 reA=0
+CMP [O1+O2] STOPS acc=25.0 standing reports 0.95                           truth=   718.8 | base=   734.6 ( +2.20%) | new=   736.3 ( +2.43%, vs base  +0.23%) acc=585 jit=600 spk=0 esc=0 def=15 reA=0
+CMP [O1+O2] STOPS acc=50.0 standing reports 0.0                            truth=   718.8 | base=   734.6 ( +2.20%) | new=   735.7 ( +2.36%, vs base  +0.16%) acc=585 jit=600 spk=0 esc=0 def=15 reA=0
+CMP [O1+O2] STOPS acc=50.0 standing reports 0.7                            truth=   718.8 | base=   734.6 ( +2.20%) | new=   736.5 ( +2.46%, vs base  +0.26%) acc=585 jit=600 spk=0 esc=0 def=15 reA=0
+CMP [O1+O2] STOPS acc=50.0 standing reports 0.95                           truth=   718.8 | base=   734.6 ( +2.20%) | new=   736.3 ( +2.43%, vs base  +0.23%) acc=585 jit=600 spk=0 esc=0 def=15 reA=0
+CMP [O1+O2] A 6m doppler                                                   truth=  3600.0 | base=  3597.0 ( -0.08%) | new=  3597.0 ( -0.08%, vs base  +0.00%) acc=1200 jit=0 spk=0 esc=0 def=0 reA=0
+CMP [O1+O2] B 25m doppler                                                  truth=  3600.0 | base=  3597.0 ( -0.08%) | new=  3597.8 ( -0.06%, vs base  +0.02%) acc=1185 jit=0 spk=0 esc=0 def=15 reA=0
+CMP [O1+O2] R4 25m doppler markGap every 10 s                              truth=  3600.0 | base=  3240.0 (-10.00%) | new=  3213.0 (-10.75%, vs base  -0.75%) acc=0 jit=0 spk=0 esc=0 def=1200 reA=0
+CMP [O1+O2] F4 6m doppler every 30th 25m off @10m/s                        truth=  3600.0 | base=  3597.0 ( -0.08%) | new=  3597.0 ( -0.08%, vs base  +0.00%) acc=1161 jit=0 spk=39 esc=0 def=0 reA=0
+CMP [O1+O2] R1 6m doppler burst N=8                                        truth=  3600.0 | base=  3599.9 ( -0.00%) | new=  3599.9 ( -0.00%, vs base  +0.00%) acc=1048 jit=0 spk=152 esc=0 def=0 reA=0
+[O1+O2] REAL mimicPause=true new=132.4
+[O1+O2] REAL mimicPause=false new=135.1

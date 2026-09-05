@@ -271,6 +271,38 @@ class WorkoutControllerTest {
         const val DEG_LAT_M = DefaultGpsDistanceTrackerTest.DEG_LAT_M
     }
 
+    /**
+     * A workout paused or stopped inside the tracker's first-anchor wait (25 m fixes: nothing accepted for 15 s) used
+     * to lose those seconds — stop() read the distance without flushing the wait. pause() and stop() now call
+     * markGap(), which credits the movement the held fixes measured (9 intervals × 3 m/s = 27 m; then 4 × 3 m after
+     * the resume), and the row, the state and the tracker agree.
+     */
+    @Test
+    fun pauseAndStopFlushTheOpenFirstAnchorWait() = runBlocking<Unit> {
+        val ctl = controller(tickMs = 10_000L)
+        ctl.start(1)
+        for (i in 0..9) {
+            now += 1_000L
+            ctl.onLocation(now, LAT + 3.0 * i / DEG_LAT_M, LON, 25f, 3f, null)
+        }
+        assertEquals(0, ctl.state.value.acceptedPointCount)
+        assertEquals(0.0, ctl.state.value.distanceMeters, 0.0)
+        ctl.pause()
+        assertEquals(27.0, ctl.state.value.distanceMeters, 0.05)
+        awaitUntil("paused row persisted") { repo.updates().any { it.end == null && it.distanceMeters > 26.0 } }
+        now += 30_000L
+        ctl.resume()
+        for (i in 10..14) {
+            now += 1_000L
+            ctl.onLocation(now, LAT + 3.0 * i / DEG_LAT_M, LON, 25f, 3f, null)   // a new wait after the resume
+        }
+        assertEquals(27.0, ctl.state.value.distanceMeters, 0.05)
+        val w = ctl.stop()!!
+        assertEquals(39.0, w.distanceMeters, 0.05)
+        assertEquals(39.0, ctl.state.value.distanceMeters, 0.05)
+        assertEquals(w, repo.updates().last())
+    }
+
     @Test
     fun stopReportsTheFinalRowOnceEvenWithZeroDistance() = runBlocking<Unit> {
         val ctl = controller(tickMs = 10_000L)

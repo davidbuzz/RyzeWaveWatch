@@ -70,11 +70,14 @@ class DefaultGpsDistanceTrackerTest {
     }
 
     @Test
-    fun waitCreditsTheIntegralWhenTheCurrentFixIsTheBestAtExpiry() {
+    fun waitCreditsTheIntegralWhenABetterCurrentFixIsAcceptedFromTheCandidateAtExpiry() {
         for (i in 0..14) assertFalse(t.addFix(i * 1000L, latPlus(3.0 * i), lon0, 30f, 3f))
-        assertTrue(t.addFix(15_000L, latPlus(45.0), lon0, 25f, 3f))      // wait over, 25 m is the best seen: anchors here
+        // wait over: the t=0 candidate anchors (the best fix held *before* this one, even though this one is better)
+        // and this fix is accepted from it with the integral since the first held fix
+        assertTrue(t.addFix(15_000L, latPlus(45.0), lon0, 25f, 3f))
         assertEquals(45.0, t.distanceMeters, 0.05)                        // 15 s × 3 m/s
         assertEquals(1, t.acceptedCount)
+        assertEquals(0, t.escapedSpikeCount)
     }
 
     @Test
@@ -96,70 +99,135 @@ class DefaultGpsDistanceTrackerTest {
     }
 
     @Test
-    fun waitExpiryNeverRejects_anImplausibleHopFromTheCandidateAnchorsTheCurrentFix() {
+    fun waitExpiryAcceptsASpeedlessRiderFromTheWaitsChainSpeed() {
         // a 6 m/s cyclist with no Doppler speed and 25 m fixes: after the 15 s wait the current fix is 90 m from the
-        // candidate, more than 2.5 × 15 + two radii, so it is a spike from there — it becomes the anchor instead
-        // (nothing to credit without a receiver speed) and the ride is measured from it. Rejecting it deadlocked the
-        // tracker: every later fix was farther still, 0.0 m after 20 minutes.
+        // t=0 candidate, more than 2.5 × 15 + two radii — but the held fixes walked those 90 m in 6 m hops, so the
+        // plausibility bound is seeded with the chain's 6 m/s and the fix is accepted as the 90 m hop. Rejecting it
+        // deadlocked the tracker (every later fix was farther still, 0.0 m after 20 minutes); anchoring on it
+        // without credit, as the previous version did, lost the wait's 90 m at every start.
         for (i in 0..14) assertFalse(t.addFix(i * 1000L, latPlus(6.0 * i), lon0, 25f, 0f))
         assertTrue(t.addFix(15_000L, latPlus(90.0), lon0, 25f, 0f))
+        assertEquals(0, t.rejectedSpikeCount)
+        assertEquals(0, t.escapedSpikeCount)
+        assertEquals(90.0, t.distanceMeters, 0.05)
+        for (i in 16..21) assertFalse(t.addFix(i * 1000L, latPlus(6.0 * i), lon0, 25f, 0f))   // 6..36 m: inside the 37.5 m radius
+        assertTrue(t.addFix(22_000L, latPlus(132.0), lon0, 25f, 0f))                            // 42 m over 7 s: the plain 2.5 × 7 + 50 bound
+        assertEquals(132.0, t.distanceMeters, 0.1)
+    }
+
+    @Test
+    fun aSpikeAtWaitExpiryIsRejectedAndTheCandidateStaysTheAnchor() {
+        // the same start with Doppler 6 m/s, but the fix at expiry is a real spike (200 m: a 116 m hop in 1 s from the
+        // previous raw fix breaks the chain). It is rejected like any spike — anchoring on it put the anchor 100 m off
+        // the path and cost the wait plus an escape — and the next fix on the path is accepted from the t=0 candidate
+        // with the receiver's 96 m
+        for (i in 0..14) assertFalse(t.addFix(i * 1000L, latPlus(6.0 * i), lon0, 25f, 6f))
+        assertFalse(t.addFix(15_000L, latPlus(200.0), lon0, 25f, 6f))
+        assertEquals(1, t.rejectedSpikeCount)
+        assertEquals(0, t.escapedSpikeCount)
+        assertEquals(0.0, t.distanceMeters, 0.0)
+        assertTrue(t.addFix(16_000L, latPlus(96.0), lon0, 25f, 6f))
+        assertEquals(96.0, t.distanceMeters, 0.05)
+        assertEquals(1, t.acceptedCount)
+    }
+
+    @Test
+    fun aRiderBeyondTheSpeedCapAtWaitExpiryAnchorsWithTheChainCredit() {
+        // no Doppler, 14 m/s hops (noisy but consistent: below 1.5 × 12 m/s) held for 15 s with a better fix at t=10
+        // as the candidate. At expiry the 140 m from the first held fix to the candidate are credited (beyond the
+        // noise; capped at 12 m/s × 10 s = 120 m) and the candidate anchors; the fix at expiry is 12.4 m/s from it —
+        // over the cap, a spike — yet 6 m/s from the previous raw fix with the whole chain consistent: the rider
+        // outran the bound, so the fix anchors crediting the chain from the candidate (62 m, capped at 12 m/s × 5 s)
+        // instead of being rejected for ever: 120 + 60 = 180 m of the 202 m ridden
+        assertFalse(t.addFix(0L, lat0, lon0, 30f, 0f))
+        for (i in 1..14) assertFalse(t.addFix(i * 1000L, latPlus(14.0 * i), lon0, if (i == 10) 25f else 30f, 0f))
+        assertTrue(t.addFix(15_000L, latPlus(202.0), lon0, 30f, 0f))
         assertEquals(1, t.rejectedSpikeCount)
         assertEquals(1, t.escapedSpikeCount)
-        assertEquals(0.0, t.distanceMeters, 0.0)
-        for (i in 16..21) assertFalse(t.addFix(i * 1000L, latPlus(6.0 * i), lon0, 25f, 0f))   // 6..36 m: inside the 37.5 m radius
-        assertTrue(t.addFix(22_000L, latPlus(132.0), lon0, 25f, 0f))                            // 42 m over 7 s
-        assertEquals(42.0, t.distanceMeters, 0.1)
+        assertEquals(180.0, t.distanceMeters, 0.05)
     }
 
-    @Test
-    fun waitExpiryOnASpikeCreditsNothingBeyondTheCappedIntegral() {
-        // the same start with Doppler 6 m/s, but the fix at expiry is a real spike (200 m in 15 s > 12 m/s): it anchors,
-        // the 90 m the receiver measured during the wait are credited, the 200 m hop is not
-        for (i in 0..14) assertFalse(t.addFix(i * 1000L, latPlus(6.0 * i), lon0, 25f, 6f))
-        assertTrue(t.addFix(15_000L, latPlus(200.0), lon0, 25f, 6f))
-        assertEquals(1, t.escapedSpikeCount)
-        assertEquals(90.0, t.distanceMeters, 0.05)
-    }
-
-    // rule 3: plausibility uses the speed the tracker has measured, and spikes cannot go on for ever
+    // rule 3: the bound knows the receiver's last Doppler speed but not a hop-derived one, and spikes cannot go on
+    // for ever — the escape credits the raw chain when the fixes agree with each other
 
     @Test
-    fun theLastAcceptedSpeedKeepsARunnerWithoutDopplerPlausible() {
+    fun aSpeedlessRunnerRejectedByNoiseIsRecoveredFromTheRawChain() {
         assertTrue(t.addFix(0L, lat0, lon0, 5f, 0f))
         assertTrue(t.addFix(2000L, latPlus(12.0), lon0, 5f, 0f))          // 6 m/s over 2 s: 12 m ≤ 2.5 × 2 + 10
-        assertFalse(t.addFix(3000L, latPlus(31.0), lon0, 5f, 0f))         // 19 m in 1 s: a spike (> 12 m/s)
+        assertFalse(t.addFix(4000L, latPlus(28.0), lon0, 5f, 0f))         // 16 m over 2 s > 15: a spike (noise), 8 m/s from the previous fix (1)
+        assertFalse(t.addFix(5000L, latPlus(34.0), lon0, 5f, 0f))         // 22 m over 3 s > 17.5: the bound grows 2.5 m/s, the runner 6 (2)
+        assertEquals(2, t.rejectedSpikeCount)
+        // (3): three spikes each ≤ 12 m/s from the previous raw fix and no hop of the chain over 18 m/s — the fixes
+        // agree with each other and only the anchor is stale. Re-anchor crediting the chain since the anchor
+        // (16 + 6 + 6 = 28 m, within 12 m/s × 4 s), not the 28 m hop and not nothing
+        assertTrue(t.addFix(6000L, latPlus(40.0), lon0, 5f, 0f))
+        assertEquals(3, t.rejectedSpikeCount)
+        assertEquals(1, t.escapedSpikeCount)
+        assertEquals(40.0, t.distanceMeters, 0.05)
+        assertTrue(t.addFix(8000L, latPlus(52.0), lon0, 5f, 0f))          // and the run is measured on from the new anchor (12 m over 2 s)
+        assertEquals(52.0, t.distanceMeters, 0.05)
+    }
+
+    @Test
+    fun aHopDerivedSpeedDoesNotWidenTheBound() {
+        // a 6 m/s hop accepted at t=2 does not make 6 m/s the bound: the next fix is judged by the plain
+        // 2.5 × dt + radii (a hop-derived speed is noisy and self-reinforcing; the escape above recovers a real runner)
+        assertTrue(t.addFix(0L, lat0, lon0, 5f, 0f))
+        assertTrue(t.addFix(2000L, latPlus(12.0), lon0, 5f, 0f))
+        assertFalse(t.addFix(5000L, latPlus(30.0), lon0, 5f, 0f))         // 18 m over 3 s > 17.5: a spike
         assertEquals(1, t.rejectedSpikeCount)
-        // 18 m over 3 s: more than 2.5 × 3 + 10 = 17.5 (the old bound rejected it, and every later fix — dt grew
-        // while the allowance grew 2.5 m per second and the runner 6), but within 6 × 3 + 10
+        assertEquals(12.0, t.distanceMeters, 0.05)
+    }
+
+    @Test
+    fun theReceiversLastDopplerSpeedWidensTheBound() {
+        // with a Doppler speed of 6 m/s at the last accepted fix, a fix reporting nothing (a dropout) 18 m away over
+        // 3 s is within 6 × 3 + 10 and accepted
+        assertTrue(t.addFix(0L, lat0, lon0, 5f, 6f))
+        assertTrue(t.addFix(2000L, latPlus(12.0), lon0, 5f, 6f))
         assertTrue(t.addFix(5000L, latPlus(30.0), lon0, 5f, 0f))
+        assertEquals(0, t.rejectedSpikeCount)
         assertEquals(30.0, t.distanceMeters, 0.05)
     }
 
     @Test
-    fun threeConsistentSpikesReAnchorWithoutCredit() {
+    fun threeConsistentSpikesReAnchorCreditingTheRawChain() {
         assertTrue(t.addFix(0L, lat0, lon0, 5f, 0f))
         assertFalse(t.addFix(1000L, latPlus(2.0), lon0, 5f, 0f))          // jitter
-        assertFalse(t.addFix(2000L, latPlus(16.0), lon0, 5f, 0f))         // 16 m > 2.5 × 2 + 10: spike; 14 m/s from the previous fix, not consistent
+        assertFalse(t.addFix(2000L, latPlus(16.0), lon0, 5f, 0f))         // 16 m > 2.5 × 2 + 10: spike; 14 m/s from the previous fix, not agreeing (but under the 18 m/s chain allowance)
         assertFalse(t.addFix(3000L, latPlus(26.0), lon0, 5f, 0f))         // spike, 10 m/s from the previous fix (1)
         assertFalse(t.addFix(4000L, latPlus(36.0), lon0, 5f, 0f))         // spike (2)
         assertTrue(t.addFix(5000L, latPlus(46.0), lon0, 5f, 0f))          // (3): the fixes agree with each other, the anchor is stale — re-anchor here
         assertEquals(4, t.rejectedSpikeCount)
         assertEquals(1, t.escapedSpikeCount)
-        assertEquals(0.0, t.distanceMeters, 0.0)                           // the lost segment is lost, nothing is invented
+        assertEquals(46.0, t.distanceMeters, 0.05)                         // the chain the fixes drew: 2 + 14 + 10 + 10 + 10 m (≤ 12 m/s × 5 s)
         assertTrue(t.addFix(6000L, latPlus(56.0), lon0, 5f, 0f))          // and the walk is measured on from the new anchor
-        assertEquals(10.0, t.distanceMeters, 0.05)
+        assertEquals(56.0, t.distanceMeters, 0.05)
     }
 
     @Test
-    fun tenSecondsOfSpikesReAnchorWithoutCredit() {
+    fun aBurstOfOffTrackFixesEnteredAtSpeedIsRiddenOutAsSpikes() {
+        // 3 m/s with Doppler at 6 m; six consecutive multipath fixes 40 m east of the path agree with each other at
+        // 3 m/s, but the 40 m/s hop into the burst broke the raw chain, so they do not re-anchor the walk on the
+        // excursion (which lost ~8 s per burst): the first fix back on the path is accepted from the old anchor
+        for (i in 0..9) assertTrue(t.addFix(i * 1000L, latPlus(3.0 * i), lon0, 6f, 3f))
+        for (i in 10..15) assertFalse(t.addFix(i * 1000L, latPlus(3.0 * i), lonPlus(40.0), 6f, 3f))
+        assertEquals(6, t.rejectedSpikeCount)
+        assertEquals(0, t.escapedSpikeCount)
+        assertTrue(t.addFix(16_000L, latPlus(48.0), lon0, 6f, 3f))       // 21 m over 7 s from the t=9 anchor: the hop (the chain is > 5 s)
+        assertEquals(48.0, t.distanceMeters, 0.05)
+    }
+
+    @Test
+    fun thirtySecondsOfSpikesReAnchorWithoutCredit() {
         assertTrue(t.addFix(0L, lat0, lon0, 5f, 0f))
-        assertFalse(t.addFix(4000L, latPlus(100.0), lon0, 5f, 0f))        // 25 m/s: spike
-        assertFalse(t.addFix(8000L, latPlus(150.0), lon0, 5f, 0f))        // 18.8 m/s from the anchor, 12.5 from the previous fix: spike, not consistent
-        assertFalse(t.addFix(12_000L, latPlus(200.0), lon0, 5f, 0f))      // 16.7 m/s: spike, 8 s of spikes so far
-        assertTrue(t.addFix(16_000L, latPlus(250.0), lon0, 5f, 0f))       // still a spike, but spikes for 12 s > 10 s: re-anchor here
-        assertEquals(4, t.rejectedSpikeCount)                              // 4 spikes, the last one escaped
+        assertFalse(t.addFix(4000L, latPlus(100.0), lon0, 5f, 0f))        // 25 m/s: spike, and the chain is broken (> 18 m/s)
+        for (k in 2..8) assertFalse(t.addFix(k * 4000L, latPlus(50.0 + 50.0 * k), lon0, 5f, 0f))   // 12.5 m/s from the previous fix each: spike, not agreeing
+        assertEquals(8, t.rejectedSpikeCount)                              // 28 s of spikes so far
+        assertTrue(t.addFix(36_000L, latPlus(500.0), lon0, 5f, 0f))       // still a spike, but spikes for 32 s > 30 s: re-anchor here
+        assertEquals(9, t.rejectedSpikeCount)                              // 9 spikes, the last one escaped
         assertEquals(1, t.escapedSpikeCount)
-        assertEquals(0.0, t.distanceMeters, 0.0)
+        assertEquals(0.0, t.distanceMeters, 0.0)                           // nothing is invented across a broken chain
     }
 
     @Test
@@ -215,42 +283,235 @@ class DefaultGpsDistanceTrackerTest {
     }
 
     @Test
-    fun firstFixWaitExpiresOnTheBestFixSeen() {
-        // only 25–30 m fixes for 15 s: the best of them (25 m at t=5) becomes the anchor, not the first or the last
+    fun firstFixWaitExpiresOnTheFirstHeldFixWhenTheBetterOneIsInsideItsNoise() {
+        // no Doppler, only 25–30 m fixes for 15 s: the best of them (25 m at t=5) is 10 m from the first held fix —
+        // inside the 45 m jitter radius of the pair — and not 3 × better, so the *first* held fix anchors (the walk
+        // since t=0 stays inside the first hop, as if it had anchored at once); anchoring on the t=5 fix lost 10 m
         assertFalse(t.addFix(0L, lat0, lon0, 30f, 0f))
         assertFalse(t.addFix(5000L, latPlus(10.0), lon0, 25f, 0f))
         assertFalse(t.addFix(10_000L, latPlus(20.0), lon0, 28f, 0f))
         assertEquals(3, t.deferredFirstFixCount)
         assertEquals(0, t.acceptedCount)
-        assertFalse(t.addFix(15_000L, latPlus(30.0), lon0, 28f, 0f))   // wait over: anchor = t=5 fix; this one is 20 m < 37.5 m jitter
+        assertFalse(t.addFix(15_000L, latPlus(30.0), lon0, 28f, 0f))   // wait over: anchor = t=0 fix; this one is 30 m < 45 m jitter
         assertEquals(3, t.deferredFirstFixCount)
         assertEquals(1, t.rejectedJitterCount)
-        assertTrue(t.addFix(25_000L, latPlus(80.0), lon0, 5f, 0f))     // 70 m from the 25 m anchor (80 from t=0, 50 from t=15)
-        assertEquals(70.0, t.distanceMeters, 0.5)
+        assertTrue(t.addFix(25_000L, latPlus(80.0), lon0, 5f, 0f))     // 80 m from the t=0 anchor: the whole walk
+        assertEquals(80.0, t.distanceMeters, 0.5)
         assertEquals(1, t.acceptedCount)
     }
 
     @Test
-    fun firstFixWaitExpiresOnTheCurrentFixWhenItIsTheBest() {
-        assertFalse(t.addFix(0L, lat0, lon0, 30f, 0f))
-        assertTrue(t.addFix(15_000L, latPlus(10.0), lon0, 22f, 0f))    // still > 20 m, but the wait is over and it is the best
-        assertEquals(1, t.acceptedCount)
+    fun hopModeWaitCreditsTheHopToTheCandidateAtExpiry() {
+        // no Doppler, 3 m/s: 25 m fixes, a 21 m fix at t=14 (the candidate) 42 m from the first held fix — beyond the
+        // 37.5 m jitter radius, so it is real movement: credited at expiry (capped by the raw chain), the candidate
+        // anchors, and the t=15 fix is jitter from it. Anchoring on the candidate without the credit lost those 42 m
+        // at every start and every resume (−1.1 %)
+        for (i in 0..13) assertFalse(t.addFix(i * 1000L, latPlus(3.0 * i), lon0, 25f, 0f))
+        assertFalse(t.addFix(14_000L, latPlus(42.0), lon0, 21f, 0f))
         assertEquals(0.0, t.distanceMeters, 0.0)
-        assertTrue(t.addFix(35_000L, latPlus(60.0), lon0, 5f, 0f))     // 50 m from the t=15 anchor
-        assertEquals(50.0, t.distanceMeters, 0.5)
+        assertFalse(t.addFix(15_000L, latPlus(45.0), lon0, 25f, 0f))
+        assertEquals(42.0, t.distanceMeters, 0.05)
+        assertEquals(1, t.rejectedJitterCount)
+        assertTrue(t.addFix(28_000L, latPlus(84.0), lon0, 25f, 0f))    // 42 m from the candidate: the next hop
+        assertEquals(84.0, t.distanceMeters, 0.05)
+    }
+
+    @Test
+    fun hopModeWaitCreditsTheHopToADecentFixBeyondTheNoise() {
+        // no Doppler, 3 m/s: 25 m fixes for 14 s, then a 19 m fix 42 m from the first held fix: the wait ends on it
+        // with the 42 m credited (the decent-fix exit credited nothing for a speed-less receiver: −1.1 % per start)
+        for (i in 0..13) assertFalse(t.addFix(i * 1000L, latPlus(3.0 * i), lon0, 25f, 0f))
+        assertTrue(t.addFix(14_000L, latPlus(42.0), lon0, 19f, 0f))
+        assertEquals(42.0, t.distanceMeters, 0.05)
+        assertEquals(1, t.acceptedCount)
+        assertEquals(14, t.deferredFirstFixCount)
+        assertEquals(3.0, t.speedMps, 0.01)                             // rule 6: 42 m / 14 s
+    }
+
+    @Test
+    fun hopModeWaitAnchorsOnTheFirstHeldFixWhenTheDecentFixIsInsideTheNoise() {
+        // no Doppler, 1.2 m/s: 25 m fixes for 10 s, then a 19 m fix 12 m from the first held fix — inside the noise and
+        // not 3 × better: the first held fix anchors and the 19 m fix is jitter from it, so the walk is measured from
+        // t=0 (the baseline's behaviour) instead of losing the 12 m
+        for (i in 0..9) assertFalse(t.addFix(i * 1000L, latPlus(1.2 * i), lon0, 25f, 0f))
+        assertFalse(t.addFix(10_000L, latPlus(12.0), lon0, 19f, 0f))
+        assertEquals(0, t.acceptedCount)
+        assertEquals(1, t.rejectedJitterCount)
+        assertTrue(t.addFix(40_000L, latPlus(48.0), lon0, 5f, 0f))     // 48 m from the t=0 anchor
+        assertEquals(48.0, t.distanceMeters, 0.05)
+    }
+
+    @Test
+    fun hopModeWaitSkipsTheHopToAMuchBetterDecentFix() {
+        // the real walk's case without Doppler: a 60 m first fix 24 m beside the path, then a 17 m fix on it — 3 ×
+        // better, inside the noise: it anchors and the 24 m of the poor fix's scatter are not distance
+        assertFalse(t.addFix(0L, lat0, lonPlus(24.0), 60f, 0f))
+        assertTrue(t.addFix(9000L, lat0, lon0, 17f, 0f))
+        assertEquals(0.0, t.distanceMeters, 0.0)
+        assertEquals(1, t.acceptedCount)
+    }
+
+    @Test
+    fun markGapCreditsTheHopOfAnOpenWaitWithoutDoppler() {
+        // no Doppler, 3 m/s in 25 m: a pause 14 s into the wait credits the 39 m from the first held fix to the last one
+        // (beyond the 37.5 m radius); a pause 10 s in credits nothing — 27 m is inside the noise. A pause cadence of
+        // 14–15 s in 25 m recorded nothing without this; the controller calls markGap() at a pause and at the stop
+        for (i in 0..13) assertFalse(t.addFix(i * 1000L, latPlus(3.0 * i), lon0, 25f, 0f))
+        t.markGap()
+        assertEquals(39.0, t.distanceMeters, 0.05)
+        for (i in 20..29) assertFalse(t.addFix(i * 1000L, latPlus(3.0 * i), lon0, 25f, 0f))
+        t.markGap()
+        assertEquals(39.0, t.distanceMeters, 0.05)
+    }
+
+    // rule 4c: an exact 0 after a Doppler speed is a dropout, bridged with the last speed and confirmed by the position
+
+    @Test
+    fun aDopplerDropoutIsBridgedWithTheLastSpeed() {
+        // 3 m/s at 6 m; one fix with hasSpeed() false (0) 3 m along the path is held inside the jitter radius, folded
+        // at the last speed, and the next fix credits both seconds: 18 m, not 15 (the baseline: 18)
+        for (i in 0..4) assertTrue(t.addFix(i * 1000L, latPlus(3.0 * i), lon0, 6f, 3f))
+        assertEquals(12.0, t.distanceMeters, 0.05)
+        assertFalse(t.addFix(5000L, latPlus(15.0), lon0, 6f, 0f))
+        assertEquals(1, t.bridgedSpeedCount)
+        assertTrue(t.addFix(6000L, latPlus(18.0), lon0, 6f, 3f))
+        assertEquals(18.0, t.distanceMeters, 0.05)
+        assertEquals(3.0, t.speedMps, 1e-6)
+    }
+
+    @Test
+    fun aLongDropoutIsAcceptedOnItsPositionWithTheBridge() {
+        // 3 m/s in 25 m (a 5 m first fix anchors at once), the speed missing for 13 s: the 13th 0 fix is 39 m from the
+        // anchor — beyond the 37.5 m radius — and is accepted crediting the 13 bridged seconds (39 m, consistent with
+        // the hop), reporting 3 m/s
+        for (i in 0..4) assertTrue(t.addFix(i * 1000L, latPlus(3.0 * i), lon0, if (i == 0) 5f else 25f, 3f))
+        for (i in 5..16) assertFalse(t.addFix(i * 1000L, latPlus(3.0 * i), lon0, 25f, 0f))
+        assertTrue(t.addFix(17_000L, latPlus(51.0), lon0, 25f, 0f))
+        assertEquals(51.0, t.distanceMeters, 0.05)
+        assertEquals(13, t.bridgedSpeedCount)
+        assertEquals(3.0, t.speedMps, 1e-6)
+        assertEquals(0, t.rejectedSpikeCount)
+    }
+
+    @Test
+    fun aStopTheReceiverReportsAsZeroIsNotBridged() {
+        // walking 1.2 m/s in 25 m (a 5 m first fix anchors at once), then standing 60 s with the receiver saying exactly
+        // 0 (position scattering ±2 m), then one step: the bridge claims 72 m for the stop, the hop shows 1.2 —
+        // contradicted, nothing of it is credited, and the walk is exact (the plain "hop + accuracy" allowance
+        // credited 25 m per 20 s stop)
+        for (i in 0..4) assertTrue(t.addFix(i * 1000L, latPlus(1.2 * i), lon0, if (i == 0) 5f else 25f, 1.2f))
+        for (i in 5..64) assertFalse(t.addFix(i * 1000L, latPlus(4.8), lonPlus(if (i % 2 == 0) 2.0 else -2.0), 25f, 0f))
+        assertEquals(60, t.bridgedSpeedCount)
+        assertTrue(t.addFix(65_000L, latPlus(6.0), lon0, 25f, 1.2f))
+        assertEquals(6.0, t.distanceMeters, 0.05)
+    }
+
+    @Test
+    fun aBridgedFixAcceptedOnItsPositionCreditsTheHopWhenTheBridgeIsContradicted() {
+        // 3 m/s in 25 m (a 5 m first fix anchors at once), then the receiver loses its speed for good while the runner
+        // slows to 1 m/s: the bridge claims 3 m/s, the position shows 1 m/s — when a fix finally leaves the 37.5 m
+        // radius (38 s later) the bridge is contradicted and the fix credits its hop like any speed-less fix,
+        // reporting the hop's speed
+        for (i in 0..2) assertTrue(t.addFix(i * 1000L, latPlus(3.0 * i), lon0, if (i == 0) 5f else 25f, 3f))
+        for (k in 1..37) assertFalse(t.addFix((2 + k) * 1000L, latPlus(6.0 + k), lon0, 25f, 0f))
+        assertTrue(t.addFix(40_000L, latPlus(44.0), lon0, 25f, 0f))
+        assertEquals(44.0, t.distanceMeters, 0.05)
+        assertEquals(1.0, t.speedMps, 0.01)
+    }
+
+    @Test
+    fun aDropoutAtTheStartIsFilledInByTheFirstSpeed() {
+        // 6 m fixes at 3 m/s whose first three report 0 (no speed yet): the first speed reported fills in the two
+        // seconds before it, and the position (9 m) agrees
+        assertTrue(t.addFix(0L, lat0, lon0, 6f, 0f))
+        assertFalse(t.addFix(1000L, latPlus(3.0), lon0, 6f, 0f))
+        assertFalse(t.addFix(2000L, latPlus(6.0), lon0, 6f, 0f))
+        assertTrue(t.addFix(3000L, latPlus(9.0), lon0, 6f, 3f))
+        assertEquals(9.0, t.distanceMeters, 0.05)
+    }
+
+    @Test
+    fun aSubThresholdSpeedIsNotBridged() {
+        // 0.3 m/s is the receiver's own measurement (rule 4b), not a dropout: 12 + 0.3 + 3 = 15.3 m
+        for (i in 0..4) assertTrue(t.addFix(i * 1000L, latPlus(3.0 * i), lon0, 6f, 3f))
+        assertFalse(t.addFix(5000L, latPlus(15.0), lon0, 6f, 0.3f))
+        assertEquals(0, t.bridgedSpeedCount)
+        assertTrue(t.addFix(6000L, latPlus(18.0), lon0, 6f, 3f))
+        assertEquals(15.3, t.distanceMeters, 0.05)
+    }
+
+    // rule 3 with Doppler: the agreeing-spikes escape is for speed-less receivers; the time escape credits the last speed
+
+    @Test
+    fun agreeingSpikesDoNotReAnchorAReceiverWithDoppler() {
+        // 3 m/s at 5 m; a multipath excursion ramping 15 / 23 / 31 / 39 m east: each fix is a spike from the anchor, the
+        // last three agree with each other at 8.5 m/s on a consistent chain — the speed-less escape's trigger — but
+        // the receiver reports 3 m/s, so the excursion is ridden out and the first fix back on the path is accepted
+        // from the old anchor with the 5 s integral: 42 m, not the excursion's chain
+        for (i in 0..9) assertTrue(t.addFix(i * 1000L, latPlus(3.0 * i), lon0, 5f, 3f))
+        for ((k, east) in doubleArrayOf(15.0, 23.0, 31.0, 39.0).withIndex()) assertFalse(t.addFix((10 + k) * 1000L, latPlus(3.0 * (10 + k)), lonPlus(east), 5f, 3f))
+        assertEquals(4, t.rejectedSpikeCount)
+        assertEquals(0, t.escapedSpikeCount)
+        assertTrue(t.addFix(14_000L, latPlus(42.0), lon0, 5f, 3f))
+        assertEquals(42.0, t.distanceMeters, 0.05)
+    }
+
+    @Test
+    fun theTimeEscapeWithDopplerCreditsTheLastSpeedOverTheInterval() {
+        // a cyclist reporting 12 m/s whose hops measure 12.5 m/s (over the cap: every fix a spike) for over 30 s: the
+        // time escape re-anchors crediting 12 m/s × 32 s = 384 m, capped by the 400 m hop — not the empty integral
+        assertTrue(t.addFix(0L, lat0, lon0, 5f, 12f))
+        for (i in 1..31) assertFalse(t.addFix(i * 1000L, latPlus(12.5 * i), lon0, 5f, 12f))
+        assertEquals(0.0, t.distanceMeters, 0.0)
+        assertTrue(t.addFix(32_000L, latPlus(400.0), lon0, 5f, 12f))
+        assertEquals(1, t.escapedSpikeCount)
+        assertEquals(384.0, t.distanceMeters, 0.05)
+    }
+
+    @Test
+    fun aDuplicatedTimestampIsRejected() {
+        // a second fix with the same timestamp has no interval: its 2 m of scatter used to be credited as a hop
+        assertTrue(t.addFix(0L, lat0, lon0, 6f, 3f))
+        assertTrue(t.addFix(1000L, latPlus(3.0), lon0, 6f, 3f))
+        assertFalse(t.addFix(1000L, latPlus(3.0), lonPlus(2.0), 6f, 3f))
+        assertEquals(3.0, t.distanceMeters, 0.05)
+        assertEquals(1, t.rejectedJitterCount)
+        assertTrue(t.addFix(2000L, latPlus(6.0), lon0, 6f, 3f))
+        assertEquals(6.0, t.distanceMeters, 0.05)
+        // during a wait too
+        t.markGap()
+        assertFalse(t.addFix(10_000L, latPlus(6.0), lon0, 25f, 3f))
+        assertFalse(t.addFix(10_000L, latPlus(8.0), lon0, 25f, 3f))
+        assertEquals(1, t.deferredFirstFixCount)
+        assertEquals(2, t.rejectedJitterCount)
+    }
+
+    @Test
+    fun firstFixWaitExpiresOnTheBestFixHeldBeforeTheCurrentOne() {
+        assertFalse(t.addFix(0L, lat0, lon0, 30f, 0f))
+        // still > 20 m at expiry and better than the candidate — but the candidate anchors (the best fix held before
+        // this one) and this fix is judged from it: 10 m inside the 45 m radius is jitter
+        assertFalse(t.addFix(15_000L, latPlus(10.0), lon0, 22f, 0f))
+        assertEquals(1, t.rejectedJitterCount)
+        assertEquals(0, t.acceptedCount)
+        assertEquals(0.0, t.distanceMeters, 0.0)
+        assertTrue(t.addFix(35_000L, latPlus(60.0), lon0, 5f, 0f))     // 60 m from the t=0 anchor (what anchoring at once gave)
+        assertEquals(60.0, t.distanceMeters, 0.5)
+        assertEquals(1, t.acceptedCount)
     }
 
     @Test
     fun aMuchBetterFixInsideAPoorStartingAnchorsRadiusReplacesItWithoutCredit() {
-        // no Doppler, standing at the start. Only 28–30 m fixes for 15 s, so the wait expires on the 28 m fix (an
-        // uncredited starting anchor); the next fix is 5 m and lands 20 m from it — inside its radius, 5.6 × better —
+        // no Doppler, standing at the start. Only 28–30 m fixes for 15 s, so the wait expires on the 30 m fix (an
+        // uncredited starting anchor); the next fix is 5 m and lands 20 m from it — inside its radius, 6 × better —
         // so it becomes the anchor with no credit (rule 1c): the 20 m are the poor anchor's scatter, not a walk.
         // The slow walk that follows is then measured from the good position with the 5 m radius.
         assertFalse(t.addFix(0L, lat0, lonPlus(20.0), 30f, 0f))
-        assertTrue(t.addFix(15_000L, latPlus(0.0), lonPlus(20.0), 28f, 0f))
-        assertEquals(1, t.acceptedCount)
+        assertFalse(t.addFix(15_000L, latPlus(0.0), lonPlus(20.0), 28f, 0f))    // wait over: the t=0 fix anchors, this one is jitter from it
+        assertEquals(0, t.acceptedCount)
         assertTrue(t.addFix(16_000L, lat0, lon0, 5f, 0f))
         assertEquals(1, t.reAnchoredCount)
+        assertEquals(1, t.acceptedCount)
         assertEquals(0.0, t.distanceMeters, 0.0)                        // the 20 m back to the path is not distance
         assertTrue(t.addFix(26_000L, latPlus(10.0), lon0, 5f, 0f))     // 10 m > 7.5 m radius of the new anchor
         assertEquals(10.0, t.distanceMeters, 0.1)                       // with the 28 m anchor this was 22.4 m of "jitter"
@@ -259,15 +520,17 @@ class DefaultGpsDistanceTrackerTest {
 
     @Test
     fun aMuchBetterFixInsideAPoorStartingAnchorsRadiusCreditsTheDopplerIntegral() {
-        // the same start, but the receiver says the walker was moving at 1.2 m/s: the poor anchor's position is
-        // still not trusted (it is replaced), but the Doppler integral since it is credited, like rule 4 would
-        assertFalse(t.addFix(0L, lat0, lonPlus(20.0), 30f, 1.2f))
-        assertTrue(t.addFix(15_000L, latPlus(18.0), lonPlus(20.0), 28f, 1.2f))    // wait over: this fix anchors, integral restarts
-        assertTrue(t.addFix(16_000L, latPlus(19.2), lon0, 5f, 1.2f))              // 20 m away, 5.6 × better: replaces it
+        // the same start, but the receiver says the walker was moving at 1.2 m/s (30 m fixes 20 m beside the path,
+        // held for 15 s; the fix at expiry says 0.5 m/s and is jitter from the t=0 anchor): the poor anchor's position
+        // is still not trusted (it is replaced by the 5 m fix 27.7 m away, 6 × better), but the Doppler integral
+        // since it — 14 × 1.2 + 0.5 + 1.2 m — is credited, like rule 4 would
+        for (i in 0..14) assertFalse(t.addFix(i * 1000L, latPlus(1.2 * i), lonPlus(20.0), 30f, 1.2f))
+        assertFalse(t.addFix(15_000L, latPlus(18.0), lonPlus(20.0), 28f, 0.5f))    // wait over: the t=0 fix anchors, this one is jitter from it
+        assertTrue(t.addFix(16_000L, latPlus(19.2), lon0, 5f, 1.2f))               // inside the 30 m radius, 6 × better: replaces it
         assertEquals(1, t.reAnchoredCount)
-        assertEquals(1.2, t.distanceMeters, 0.05)                                 // 1.2 m/s × 1 s, not 0 and not 20 m
+        assertEquals(18.5, t.distanceMeters, 0.05)                                 // the integral, not 0 and not the 27.7 m hop
         assertTrue(t.addFix(17_000L, latPlus(20.4), lon0, 5f, 1.2f))
-        assertEquals(2.4, t.distanceMeters, 0.05)
+        assertEquals(19.7, t.distanceMeters, 0.05)
     }
 
     @Test
@@ -505,6 +768,43 @@ class DefaultGpsDistanceTrackerTest {
         assertNull(t.lastAccuracyM)
         assertTrue(t.addFix(0L, latPlus(500.0), lon0, 5f, 1f))
         assertEquals(0.0, t.distanceMeters, 0.0)
+    }
+
+    @Test
+    fun markGapCreditsTheIntegralOfAnOpenWait() {
+        // a pause 10 s into a wait in 25 m accuracy at 3 m/s: the held fixes measured 27 m (9 intervals), credited at
+        // the last held fix (capped by its 27 m hop + 25 m); the 10th second, between the last held fix and the pause,
+        // is lost. A pause every 10 s in 25 m accuracy used to record nothing: the wait restarted every time
+        for (i in 0..9) assertFalse(t.addFix(i * 1000L, latPlus(3.0 * i), lon0, 25f, 3f))
+        t.markGap()
+        assertEquals(27.0, t.distanceMeters, 0.05)
+        assertTrue(t.addFix(20_000L, latPlus(60.0), lon0, 5f, 3f))     // re-anchors: the walk in between is not counted
+        assertEquals(27.0, t.distanceMeters, 0.05)
+        assertTrue(t.addFix(21_000L, latPlus(63.0), lon0, 5f, 3f))
+        assertEquals(30.0, t.distanceMeters, 0.05)
+        // a wait whose receiver reported nothing credits the hop from its first held fix only beyond the noise: 27 m is
+        // inside the 37.5 m radius (see markGapCreditsTheHopOfAnOpenWaitWithoutDoppler)
+        t.markGap()
+        for (i in 30..39) assertFalse(t.addFix(i * 1000L, latPlus(3.0 * i), lon0, 25f, 0f))
+        t.markGap()
+        assertEquals(30.0, t.distanceMeters, 0.05)
+    }
+
+    @Test
+    fun nanSpeedCountsAsZero() {
+        // a NaN reported speed must not poison the integral (distance stayed NaN for the rest of the workout): it counts
+        // as 0, i.e. as a dropout bridged with the last speed (rule 4c)
+        assertTrue(t.addFix(0L, lat0, lon0, 5f, 1.2f))
+        assertFalse(t.addFix(1000L, latPlus(1.2), lon0, 5f, Float.NaN))     // reported as 0: jitter, bridged at 1.2 m/s
+        assertTrue(t.addFix(2000L, latPlus(2.4), lon0, 5f, 1.2f))
+        assertEquals(2.4, t.distanceMeters, 0.05)
+        assertFalse(t.distanceMeters.isNaN())
+        t.markGap()
+        assertFalse(t.addFix(10_000L, latPlus(2.4), lon0, 25f, 1.2f))
+        assertFalse(t.addFix(11_000L, latPlus(3.6), lon0, 25f, Float.NaN))  // during a wait, too
+        assertTrue(t.addFix(12_000L, latPlus(4.8), lon0, 5f, 1.2f))
+        assertEquals(2.4 + 2.4, t.distanceMeters, 0.05)                     // the two held seconds, the NaN one bridged
+        assertEquals(1.2, t.speedMps, 1e-6)
     }
 
     @Test
