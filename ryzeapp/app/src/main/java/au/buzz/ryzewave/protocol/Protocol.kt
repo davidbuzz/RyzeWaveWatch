@@ -523,8 +523,11 @@ object Protocol {
     fun decSportControl(b: ByteArray): SportControl? {
         if (b.size < 4 || b.u8(0) != CMD_SPORT) return null
         val ok = when (b.u8(1)) {
-            SPORT_STOP, SPORT_START, SPORT_RESUME -> b.size == 4
-            SPORT_PAUSE -> b.size == 4 || b.size == 13
+            // The app's own echoes are 4 B; anything the WATCH originates (a button press on its paused screen) —
+            // and its echo of the app's resume — come as the 13-byte form `FD <op> <type> <ivl> hh mm ss cal16 …`:
+            // verified 2026-09-05 (six 13-byte FD 33 and seven 13-byte FD 22 from the wrist). Accept both for every
+            // control op, otherwise a watch resume is dropped as Unknown and the phone stays paused (bug, 2026-09-06).
+            SPORT_STOP, SPORT_START, SPORT_RESUME, SPORT_PAUSE -> b.size == 4 || b.size == 13
             SPORT_UPDATE -> b.size == 7 || b.size == 13
             else -> false
         }

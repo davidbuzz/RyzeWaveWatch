@@ -64,6 +64,21 @@ class PacketParseTest {
      * identifies it — control echoes are 4 bytes, the pause echo 13 — so `FD 11 23 01` / `FD 00 23 01` must stay echoes.
      */
     @Test
+    fun watchOriginatedControlPacketsComeInThe13ByteFormForEveryOp() {
+        // Real packets from the 2026-09-05 17:20 run: the watch's own resume (play pressed on its paused screen) and its
+        // echo of the app's resume are 13 bytes, like its pause; build 9 accepted 13 B for FD 22 only and dropped these.
+        val resume = Packet.parseHex("fd33010100000a000000000000")
+        assertEquals(Packet.SportControlEcho(Protocol.SPORT_RESUME, 1, 1, "fd33010100000a000000000000"), resume)
+        assertEquals(Packet.SportControlEcho(Protocol.SPORT_RESUME, 1, 1, "fd330101000004000000000000"),
+            Packet.parseHex("fd330101000004000000000000"))
+        assertEquals(Packet.SportControlEcho(Protocol.SPORT_PAUSE, 1, 1, "fd22010100001000010001153a"),
+            Packet.parseHex("fd22010100001000010001153a"))
+        assertTrue(Packet.parseHex("fd330101") is Packet.SportControlEcho)              // 4-byte app echo still fine
+        assertTrue(Packet.parseHex("fd000101000005000000000000") is Packet.SportControlEcho) // a 13-byte stop too
+        assertTrue(resume !is Packet.SportRt)                                           // 13 B, not the 14-byte realtime
+    }
+
+    @Test
     fun sportRtIsIdentifiedByLengthNotBySubCommand() {
         val walk = Packet.parseHex("fd235c0000000000000000000000") as Packet.SportRt
         assertEquals(0x23, walk.sportType)

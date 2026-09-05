@@ -461,6 +461,21 @@ class WatchApiImplTest {
     }
 
     @Test
+    fun theWatchsOwn13ByteResumeAndPauseBecomeWorkoutControls() = runBlocking {
+        // Real packets from the 2026-09-05 run: play/pause pressed on the watch's paused screen arrive as the 13-byte
+        // form. Build 9 dropped the 13-byte FD 33, so the phone stayed paused while the watch showed resumed.
+        link.connect(MAC)
+        val events = ArrayList<WatchEvent>()
+        val job = scope.launch { api.events.collect { events += it } }
+        link.rx("fd22010100000a000000000000")
+        assertTrue(eventually { events.any { it == WatchEvent.WorkoutControl(WorkoutControlAction.PAUSE) } })
+        link.rx("fd33010100000a000000000000")
+        assertTrue(eventually { events.any { it == WatchEvent.WorkoutControl(WorkoutControlAction.RESUME) } })
+        assertEquals(2, events.filterIsInstance<WatchEvent.WorkoutControl>().size)
+        job.cancel()
+    }
+
+    @Test
     fun appControlEchoesAreIgnoredButWatchButtonPressesBecomeWorkoutControl() = runBlocking {
         link.connect(MAC)
         val events = ArrayList<WatchEvent>()
