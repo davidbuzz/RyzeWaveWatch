@@ -8,3 +8,4 @@
 - [Ryze app preferences](ryze-app-preferences.md) — app name, four stacked chart cards, Health Connect export, Gradle toolchain
 - [Phone testing approval](phone-testing-approval.md) — install/launch/screenshot on the USB phone is pre-approved
 - [No worktrees without permission](no-worktrees-without-permission.md) — never create git worktrees/parallel checkouts unless Buzz explicitly agrees; prefer not to
+- [No blocking question tool](no-blocking-question-tool.md) — never use AskUserQuestion; ask in plain text and keep working

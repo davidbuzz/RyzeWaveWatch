@@ -14,3 +14,8 @@ Decided 2026-09-04 evening:
 Health Connect permissions can be granted over adb (`pm grant au.buzz.ryzewave android.permission.health.WRITE_HEART_RATE` etc.) on the Moto g05 / Android 15 — no dialog tapping needed for testing.
 
 **How to apply:** keep UI changes consistent with that card style; never regress the Health Connect export; see [[ryze-wave-project]] and [[ryze-wave-distance-motivation]].
+
+- Workout control (2026-09-05): pause/resume/stop must work from the watch buttons AND the app buttons, treated
+  identically (single state machine). The phone speaks "workout paused" / "workout resumed" (text-to-speech) on every
+  pause/resume regardless of source — the phone is in a pocket and its screen can't be seen. Requested after the
+  17:20 run where a watch-side pause/resume was ignored and the app stayed paused for 30 minutes.

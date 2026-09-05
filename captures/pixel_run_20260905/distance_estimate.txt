@@ -1,0 +1,4 @@
+session steps 3933; cadence-split: walk 2415 (x0.746) + run 1518 (x0.994)
+distance estimate (cadence split): 3310 m = 3.31 km
+floor (all walk 0.746): 2934 m; ceil (all run 0.994): 3909 m
+moving span 1859 s; avg cadence 127 spm; avg pace over 3310 m = 9:21 /km
