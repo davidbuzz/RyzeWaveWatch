@@ -75,3 +75,12 @@ The project is a local git repo (initialised 2026-09-05, branch `main`, no remot
 Never commit real coordinates. Any GPS track that becomes a fixture or capture gets its latitude **and** longitude
 shifted by constants of at least 1 km, with a different pair of constants for each log (Buzz, 2026-09-05). Record the
 shift in the file's header comment or the capture's `.md`. Pulled databases stay git-ignored.
+
+## Fast builds and small edits (Buzz, 2026-09-06 — high priority)
+- A small edit must turn into an installed build in seconds: `tools/fastbuild.sh <serial>` runs the incremental
+  `:app:installDebug` (no tests); `tools/fastbuild.sh --test <TestClass>` runs one test class; `--apk` just assembles.
+  The Gradle daemon is kept warm (3 h idle timeout, parallel, incremental Kotlin). **Never `--rerun-tasks`** for routine
+  work; run the full unit suite once before a commit, not on every edit.
+- **Small edits are done directly by Claude, not by an implementer subagent.** Workflows/agents are for large multi-file
+  features and for independent verification. A one-line fix (like the 13-byte FD 33 decoder fix) is: edit, fastbuild,
+  targeted test, install, commit — minutes, not an hour behind a queued job.
