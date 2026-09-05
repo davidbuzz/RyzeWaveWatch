@@ -49,3 +49,5 @@ Established facts:
   (Room v3, fingerprints, stride re-export), sleep card + hypnogram, find-phone ringer (debug trigger), MAC field
   fix, launcher icon, signed release build (keystore git-ignored at ryzeapp/keystore/). 324 unit tests. Track plot
   showed a poor first anchor + Doppler-credit over-count on the real walk (docs/APP.md "Tracker finding").
+- 2026-09-05 15:15: Pixel 9a got the 11:43 debug build (build 8 + tracker refinement, then uncommitted); synced and Health Connect route permission granted. Buzz is back with the watch; it links to the Pixel, so the Moto cannot reach it.
+- 2026-09-05 15:30: tracker refinement (per-fix Doppler integral, first-anchor wait, re-anchor) FAILED independent re-verification: wait-integral dropped (-45 m/start at 3 m/s), speed-less-receiver deadlock at 0 m, creeping-receiver stop cost (+33 % at 25 m), spike speeds integrated. Fix-and-verify loop running; NOT committed. The Pixel's 11:43 build carries the draft tracker — reinstall when the fixed build exists.

@@ -24,6 +24,7 @@ The full command table, packet formats and the pairing handshake are in
 ```
 README.md, CLAUDE.md        this file / notes for Claude Code sessions
 docs/PROTOCOL.md            BLE protocol reference (living document)
+docs/gadgetbridge_upstream.md  Protocol corrections worth sending to the Gadgetbridge GloryFit driver
 docs/PLAN.md                plan for the replacement app (platform, features, distance model, milestones)
 docs/wave_application_research.md   narrative research notes: everything that mattered, tagged by how we know it
 ryzewave/                   our BLE client library + CLI (protocol.py = codec, client.py = bleak I/O)
