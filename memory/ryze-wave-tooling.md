@@ -16,3 +16,5 @@ metadata:
 - adb installed via apt (sudo works without password).
 
 **How to apply:** reuse these instead of re-downloading. Buzz wants project-related clones and notes inside the repo, not under ~/tools or ~/.claude. Related: [[ryze-wave-project]].
+
+- `tools/watch_message.py "text"` (2026-09-06): vibrates the watch (AB find) and shows a text on it via RyzeBridge (C5 chunks, each waiting for its ack); needs ANDROID_SERIAL set to the phone the watch is linked to and RyzeBridge installed there (both phones have it). Encoder: ryzewave/protocol.py enc_notification. Use it to page Buzz on the wrist (e.g. 'new build installed on the Pixel') — he asked for that before going out to exercise.

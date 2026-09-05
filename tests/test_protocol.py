@@ -102,3 +102,16 @@ def test_sport_rt_carries_sport_type():
     d2 = dec_sport_rt(b2)
     assert (d2["calories"], d2["pace_s_per_km"], d2["steps"], d2["count"], d2["distance_m"]) == (123, 330, 4321, 7, 2340.0)
     assert not is_sport_rt(bytes.fromhex("fd112301")) and not is_sport_rt(bytes.fromhex("fd220101000000000000000000"))
+
+
+def test_enc_notification_chunks_and_limits():
+    from ryzewave.protocol import enc_notification
+    pk = enc_notification("Buzz's Ryze Wave: test")          # 22 chars = 44 bytes: 16+16+12
+    assert [p[:2].hex() for p in pk] == ["c500", "c501", "c502", "c5fd"]
+    assert pk[0][2] == 4 and pk[0][3] == 44 and len(pk[0]) == 20 and len(pk[2]) == 14
+    assert b"".join([pk[0][4:]] + [p[2:] for p in pk[1:-1]]).decode("utf-16-be") == "Buzz's Ryze Wave: test"
+    long = enc_notification("x" * 200)
+    assert long[0][3] == 254 and len(long) == 1 + 15 + 1     # cut at 127 chars = 254 bytes = 16 chunks
+    import pytest
+    with pytest.raises(ValueError):
+        enc_notification("hi", ntype=0)

@@ -227,6 +227,21 @@ def enc_bt3_query(nonce: bytes = b"\x00\x00\x00\x00") -> bytes:
     return bytes([CMD_BT3, 0x01, 0x02, 0x00]) + bytes(nonce[:4]).ljust(4, b"\x00")
 
 
+def enc_notification(text: str, ntype: int = 4) -> list[bytes]:
+    """C5 phone notification, verified 2026-09-05: chunk 0 = `C5 00 <type> <total_bytes>` + 16 B of UTF-16BE, then
+    `C5 <idx>` + 16 B each, then `C5 FD`. The watch acks every chunk with `C5 <idx>` and the end with `C5 FD <type> <total>`;
+    send the next chunk only after its ack. total is one byte, so at most 127 UTF-16 code units; type 0 = incoming call
+    (never use for app text), 4 = generic, 3 = SMS (docs/PROTOCOL.md §6)."""
+    if ntype == 0:
+        raise ValueError("type 0 is an incoming call")
+    payload = text[:127].encode("utf-16-be")
+    chunks = [payload[i:i + 16] for i in range(0, len(payload), 16)] or [b""]
+    out = [bytes([CMD_NOTIFICATION, 0x00, ntype & 0xFF, len(payload)]) + chunks[0]]
+    out += [bytes([CMD_NOTIFICATION, i]) + c for i, c in enumerate(chunks[1:], start=1)]
+    out.append(bytes([CMD_NOTIFICATION, 0xFD]))
+    return out
+
+
 def enc_sport_query() -> bytes: return bytes([CMD_SPORT, QUERY])
 
 
