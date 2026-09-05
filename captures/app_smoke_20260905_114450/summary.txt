@@ -1,0 +1,9 @@
+package: au.buzz.ryzewave   waited: 25s
+pid: 15801
+top activity: topResumedActivity=ActivityRecord{47d43e6 u0 au.buzz.ryzewave/.MainActivity t122}
+crashes:
+app log lines:
+09-05 11:45:02.866 I/HealthConnectExporter(15801): nothing to export: 0 candidate records unchanged since their last export (from 1788569653613, 0 sessions unch
+09-05 11:45:02.897 I/ActivityManager( 1870): Background started FGS: Allowed [callingPackage: au.buzz.ryzewave; callingUid: 10378; uidState: TOP ; uidBFSL: [BFS
+09-05 11:45:02.962 I/WatchService(15801): service created
+09-05 11:45:02.977 I/WatchService(15801): Bluetooth is off; waiting

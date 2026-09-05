@@ -7,3 +7,4 @@
 - [pkill self-kill pitfall](pkill-self-kill-pitfall.md) — pkill -f matches the Bash tool shell itself; use pkill -x or the [b]racket trick
 - [Ryze app preferences](ryze-app-preferences.md) — app name, four stacked chart cards, Health Connect export, Gradle toolchain
 - [Phone testing approval](phone-testing-approval.md) — install/launch/screenshot on the USB phone is pre-approved
+- [No worktrees without permission](no-worktrees-without-permission.md) — never create git worktrees/parallel checkouts unless Buzz explicitly agrees; prefer not to

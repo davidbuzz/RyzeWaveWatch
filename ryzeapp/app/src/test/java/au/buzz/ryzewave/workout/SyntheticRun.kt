@@ -33,6 +33,20 @@ object SyntheticRun {
          * The stationary sigma is [jitterSigmaM] either way.
          */
         phi: Double = 0.0,
+        /** True speed along the line (the reported Doppler speed is [dopplerSpeedMps], 0 = no receiver speed). */
+        speedMps: Double = SPEED_MPS,
+        /**
+         * Reported accuracy of fix i: the default is the constant [accuracyM]; a pattern models a phone stepping
+         * between accuracy bands (every 10th fix better, alternating bands, 5 s bands…).
+         */
+        accuracyAt: (Int) -> Float = { accuracyM },
+        /**
+         * Multipath spikes: every [spikeEvery]-th fix (i > 0) is displaced [spikeOffsetM] east of the line and, when
+         * [spikeReportedMps] is given, reports that speed instead of [dopplerSpeedMps]. 0 = no spikes.
+         */
+        spikeEvery: Int = 0,
+        spikeOffsetM: Double = 25.0,
+        spikeReportedMps: Float? = null,
     ): List<SyntheticFix> {
         val rnd = Random(seed)
         val degLonM = DEG_LAT_M * cos(Math.toRadians(LAT0))
@@ -45,17 +59,55 @@ object SyntheticRun {
                 nN = phi * nN + rnd.nextGaussian() * innovation
                 nE = phi * nE + rnd.nextGaussian() * innovation
             }
-            val north = SPEED_MPS * i + nN
-            val east = nE
+            val spike = spikeEvery > 0 && i > 0 && i % spikeEvery == 0
+            val north = speedMps * i + nN
+            val east = nE + if (spike) spikeOffsetM else 0.0
             if (gapFromS >= 0 && i >= gapFromS && i < gapFromS + gapLengthS) continue
             out += SyntheticFix(
                 time = T0 + i * 1000L,
                 lat = LAT0 + north / DEG_LAT_M,
                 lon = LON0 + east / degLonM,
-                accuracyM = accuracyM,
-                speedMps = dopplerSpeedMps,
+                accuracyM = accuracyAt(i),
+                speedMps = if (spike) spikeReportedMps ?: dopplerSpeedMps else dopplerSpeedMps,
             )
         }
         return out
+    }
+
+    /**
+     * A walk with stops: [walkS] seconds at [walkSpeedMps], then [stopS] seconds standing still, repeated for
+     * 20 minutes. While standing the receiver reports [standingReportedMps] (a hand-held phone under trees says
+     * 0.5–0.9 m/s while nothing moves) and the position scatters with the same jitter as when walking. The truth
+     * is the walking time × speed; the list's true length is returned with the fixes.
+     */
+    fun walkWithStops(
+        accuracyM: Float,
+        walkSpeedMps: Double = 1.2,
+        walkS: Int = 60,
+        stopS: Int = 60,
+        standingReportedMps: Float = 0.7f,
+        seed: Long = 42L,
+        jitterSigmaM: Double = JITTER_SIGMA_M,
+    ): Pair<List<SyntheticFix>, Double> {
+        val rnd = Random(seed)
+        val degLonM = DEG_LAT_M * cos(Math.toRadians(LAT0))
+        val out = ArrayList<SyntheticFix>(DURATION_S)
+        var north = 0.0
+        var truth = 0.0
+        for (i in 0 until DURATION_S) {
+            val walking = (i % (walkS + stopS)) < walkS
+            if (i > 0 && walking) {
+                north += walkSpeedMps
+                truth += walkSpeedMps
+            }
+            out += SyntheticFix(
+                time = T0 + i * 1000L,
+                lat = LAT0 + (north + rnd.nextGaussian() * jitterSigmaM) / DEG_LAT_M,
+                lon = LON0 + (rnd.nextGaussian() * jitterSigmaM) / degLonM,
+                accuracyM = accuracyM,
+                speedMps = if (walking) walkSpeedMps.toFloat() else standingReportedMps,
+            )
+        }
+        return out to truth
     }
 }

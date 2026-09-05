@@ -415,3 +415,215 @@ real 146-fix fixture (`app/src/test/resources/pixel_outdoor_walk_20260905_track.
    better fix arrives inside the poor fix's radius).
 
 Expected effect on the walk: 155 m → roughly 130–140 m; the truth is unknown until Buzz gives the route length.
+Implemented in "Tracker refinements (build 14)" below: the replay gives **130.7 m** after the second review's rework (136.4 m with the build-14 rules as installed, 133.7 m with the first draft's unrestricted rule 1c; the section was first numbered build 9, which is "Health Connect hygiene").
+
+### Tracker refinements (build 14, 2026-09-05, installed on the Moto; reworked after the second review — source tree only, not yet built or installed) — 356 unit tests, 0 failures (fresh `--rerun-tasks` run)
+`DefaultGpsDistanceTracker` (KDoc rules 1b, 1c, 3, 4 and 4b) now does what the finding above asked for, and what
+the second review (an adversarial old-vs-new replay against the build-8 tracker, see "The second review" below) found
+missing:
+1. **Doppler credit integrated per fix.** At an accepted fix with reported speed ≥ 1 m/s the credit is the sum of
+   `speed × own dt` over every fix since the last accepted fix that passed the 60 m accuracy gate — including the
+   ones the jitter rule rejected (their position was doubted, not their Doppler speed), but *not* the ones the spike
+   rule rejected (a fix whose position is impossible is not believed about its speed either: the next credible fix's
+   dt spans it), and with a fix that failed the gate simply skipped. Still capped by hop + max(accuracy, anchor
+   accuracy), and still only while consecutive fixes are ≤ 5 s apart (a larger gap breaks the chain → hop, as
+   before). The old rule credited the accepted fix's speed × the whole interval; speeds 0, 0, 0.4, 1.2 m/s over 4 s
+   now credit 1.6 m instead of 4.8 m. **Sub-threshold speeds (0.4–0.99 m/s) are believed only as far as the position
+   confirms them** (rule 4b): when the hop since the integral started is at least as long as the sub-threshold part of
+   the integral the whole integral is credited, otherwise the integral is scaled by hop / sub-threshold part (never
+   below the ≥ 1 m/s part, which is trusted). On the real walk the slow stretches advanced the position and are kept;
+   a receiver saying 0.7 m/s while its owner stands still, whose 42 m claim per 60 s stop is met by a hop of a few
+   metres, credits about the hop. Build 14 as installed relied on the plain cap for this, which allows one accuracy
+   radius per stop (+33 % on a walk with ten stops at 25 m accuracy — see the review).
+2. **First anchor quality.** While nothing has been accepted, a fix worse than `firstFixAccuracyM` = 20 m is held
+   as a candidate (returned as rejected, counted in `deferredFirstFixCount`) and the tracker waits for a ≤ 20 m fix.
+   If none arrives within `firstFixWaitS` = 15 s of the first held fix, the best fix seen so far becomes the anchor
+   (the current fix if it is the best; otherwise the earlier candidate, and the current fix is judged against it).
+   The movement *during* the wait is real — only where it started is doubted — so the Doppler integral runs from the
+   first held fix (a better candidate mid-wait does not restart it) and is credited, capped by the hop from the first
+   held fix + the larger accuracy and by rule 4b, on **every** way out of the wait: a ≤ 20 m fix arriving, the
+   current fix being the best at expiry, or the candidate anchoring at expiry (the credit then lands at the first
+   accepted fix). Build 14 as installed credited it on the last exit only and lost up to (15 s + one interval) ×
+   speed at every start and every resume after a pause — 45 m at 3 m/s, 18 m at 1.2 m/s (the "held seconds are not
+   lost" claim in the earlier version of this section was true for one exit of four). The wait can also never end in
+   a rejection: when the current fix is a spike from the candidate (a 6 m/s cyclist with no Doppler speed is 90 m
+   away after 15 s, more than 2.5 × 15 + two radii) the current fix becomes the anchor instead, crediting nothing
+   beyond the capped integral, so the ride is measured from there rather than deadlocked (every later fix was farther
+   still: 0.0 m after 20 minutes). On the synthetic 25/35 m runs this holds the first 15 fixes and loses nothing; on
+   the real walk the 52 m first fix is skipped and the 17 m fix at +9 s starts the walk, so the 23.8 m hop back to
+   the loop is gone.
+3. **Poor starting anchor replaced** (`reAnchoredCount`, rule 1c): while the anchor is a *starting* anchor worse than
+   20 m — the first fix, the best fix of an expired wait, or the re-anchor after `markGap()` — from which nothing
+   has been credited yet, a fix ≥ 3× better that lands inside its accuracy radius replaces it. The anchor's
+   position is not trusted but the receiver's speed still is: the Doppler integral since the anchor is credited
+   (capped as in rules 4 and 4b, only while the chain is intact and time has passed), so a stationary receiver
+   credits nothing and a walker keeps the metres it walked; with no receiver speed at that fix the reported speed is
+   the credited distance / time (rule 6, which the build-14 branch skipped). *The first draft of this rule fired on any
+   anchor worse than 20 m at any time* and the first review caught it: a phone's accuracy steps between bands every
+   few seconds, and each step down to a ≥ 3× better fix inside the poor anchor's radius replaced the anchor and
+   dropped the fix interval since it — real movement. Measured on the 20-minute 3 m/s Doppler run: 25 m with every
+   10th fix at 8 m 3597 → 3240 m (−10.0 %, 119 re-anchors), 30 / 9 m alternating 3597 → 1800 m (−50.0 %, 599
+   re-anchors), a 1.2 m/s walk with 25 ↔ 8 m bands every 5 s 1438.8 → 1290.0 m (−10.3 %). Once a hop has been
+   credited the anchor is simply the last accepted fix of a run in progress, so it is kept: a poor-but-credited
+   anchor is measured on from by the jitter radius of rule 2 or the Doppler credit of rule 4, exactly as in build
+   8. Rule 1c is still limited to anchors worse than 20 m for the reason the first draft gave (a 9 → 3 m step mid-walk
+   must not re-anchor either). On the real walk the first draft fired once (21 m anchor at +18 s → 6.4 m fix at
+   +24 s, 2.5 m apart — that anchor *had* credited a hop); the narrowed rule fires 0 times there and the 21 m anchor
+   is kept (+2.7 m).
+4. **Plausibility (rule 3) knows the speed the tracker has measured.** The spike bound is now
+   max(reported speed, 2.5 m/s, *the speed of the last accepted fix*) × dt + both radii. Without the last term a
+   receiver with no Doppler speed deadlocked at running/cycling pace: at 5 m accuracy a 6 m/s hop is 12 m over 2 s
+   against an allowance of 2.5 × 2 + 10 = 15 m, position noise rejects one hop in seven, and after a rejection dt
+   grows while the allowance grows 2.5 m per second and the rider 6 — every later fix was a "spike" (build 8 and
+   build 14 alike: 851 of 7194 m at 6 m/s, 54 of 8393 m at 7 m/s). And spikes cannot go on for ever (the escape
+   hatch, `escapedSpikeCount`): when fixes have been rejected as spikes for more than 10 s since the first of them,
+   or three consecutive spikes were each ≤ 12 m/s from the *previous raw fix* (the fixes agree with each other, only
+   the anchor is stale), the current fix becomes the anchor with no hop credited — only the receiver's own capped
+   integral, nothing for a speed-less receiver — so a lost segment costs that segment instead of the rest of the
+   workout.
+
+Real walk (`RealTrackTrackerTest`, replays the 146-fix fixture; the walk was paused at +114 s and resumed at +118 s —
+the three missing fixes and the +117.8 s fix stored as accepted with an unchanged total — so the replay calls
+`markGap()` there as the controller did; the old rules reproduce the stored 155.2 m exactly):
+**155.2 m → 130.7 m** (85 accepted, 58 jitter, 2 accuracy, 1 deferred, 0 re-anchored, 0 spikes; 133.4 m without
+the markGap; build 14 as installed gave 136.4 / 140.9 m, the first draft with the unrestricted rule 1c 133.7 /
+138.2 m). Of the −24.5 m, −23.8 m is the dropped first hop, +2.3 m the per-fix integral replacing last-speed ×
+interval, +2.7 m the kept 21 m anchor at +18 s, and −5.7 m rule 4b on the slow stretches whose position did not
+fully confirm the sub-threshold speeds. The truth is still unknown; the test asserts 120–150 m as a regression
+band, not a truth check. The stored figure on the Pixel/Moto does not change (distance is stored, not recomputed).
+
+Synthetic 20-minute run (3600 m truth), before → after — every asserted bound unchanged (build 8 → build 14; the
+rework changes none of these rows):
+
+| variant | accepted before → after | distance before → after |
+|---|---|---|
+| A 6 m + Doppler (within 2 %) | 1200 → 1200 | 3597.0 m (−0.08 %) → 3597.0 m (−0.08 %) |
+| B 25 m + Doppler (within 5 %) | 1200 → 1185 (15 deferred) | 3597.0 m (−0.08 %) → 3597.0 m (−0.08 %) |
+| B2 35 m + Doppler (within 5 %) | 1200 → 1185 (15 deferred) | 3597.0 m (−0.08 %) → 3597.0 m (−0.08 %) |
+| B3 25 m no Doppler (within 15 %) | 92 → 91 | 3595.0 m (−0.14 %) → 3595.0 m (−0.14 %) |
+| B3' 35 m no Doppler (reported) | 65 → 64 | 3561.5 m (−1.07 %) → 3561.5 m (−1.07 %) |
+| B4 80 m (rejected) | 0 → 0 | 0.0 m → 0.0 m |
+| C 8 m no Doppler (within 5 %) | 259 → 259 | 3655.2 m (+1.53 %) → 3655.2 m (+1.53 %) |
+| D 30 s gap (within 5 %) | 1170 → 1170 | 3601.6 m (+0.04 %) → 3601.6 m (+0.04 %) |
+| D' 60 / 120 / 300 s gaps | unchanged | 3601.3 / 3602.8 / 3601.2 m → same |
+| A jitter sigma 0 / 0.5 / 1 / 2 / 3 m, phi 0.9 / 0.98, seeds 1 / 7 / 99 | unchanged | 3597.0 m (−0.08 %) → same |
+| B / B2 sigma 5 m (238 spikes) | 962 → 950 | 3597.0 m → 3597.0 m |
+| B / B2 sigma 10 m (550 spikes) | 650 → 642 | 3597.0 m → 3597.0 m |
+| B3 25 m no Doppler sigma 5 m (reported) | 90 → 89 | 3643.4 m (+1.21 %) → 3644.9 m (+1.25 %) |
+| B3 25 m no Doppler sigma 10 m (reported) | 98 → 97 | 4119.6 m (+14.43 %) → 4150.4 m (+15.29 %) |
+| B3' 35 m no Doppler sigma 5 / 10 m | 65 → 64 / 64 → 63 | 3597.1 / 3737.3 m → same |
+| controller: 6 m run, 30 s gap, 25 m run, 80 m run | 1200 / 1170 / 1200→1185 / 0 accepted | 3597.0 / 3601.6 / 3597.0 (3.60 km @ 5:33 pushed) / 0.0 m → same |
+
+**Accuracy stepping between bands** (`SyntheticRun.fixes(accuracyAt = …)`, the case the first draft of rule 1c got
+wrong; build 8 → first draft → build 14, `captures/app_tracker14_20260905/old_vs_new.txt`):
+
+| variant | build 8 | first draft (unrestricted 1c) | build 14 |
+|---|---|---|---|
+| E 25 m, every 10th fix 8 m, Doppler (within 1 %) | 3597.0 m (−0.08 %) | 3240.0 m (−10.00 %, 119 re-anchors) | 3597.0 m (−0.08 %, 0) |
+| E 25 m, every 10th fix 8 m from t=5 s, Doppler (within 1 %) | 3597.0 m | 3225.0 m (−10.42 %, 119) | 3582.0 m (−0.50 %: the 5 held fixes before the first 8 m fix, rule 1b) — **3597.0 m after the rework** (the wait credits them) |
+| E 30 / 9 m alternating, Doppler (within 1 %) | 3597.0 m | 1800.0 m (−50.00 %, 599) | 3597.0 m (−0.08 %) |
+| E 9 / 30 m alternating, Doppler | 3597.0 m | 1797.0 m (−50.08 %, 599) | 3594.0 m (−0.17 %) |
+| E2 1.2 m/s walk, 25 ↔ 8 m every 5 s, Doppler (within 1 % of 1438.8 m) | 1438.8 m | 1290.0 m (−10.34 %, 119) | 1432.8 m (−0.42 %) — **1438.8 m after the rework** |
+| E2 1.2 m/s walk, 8 ↔ 25 m every 5 s, Doppler | 1438.8 m | 1296.0 m (−9.92 %, 119) | 1438.8 m (0.00 %) |
+| E3 25 m, every 10th fix 8 m, **no Doppler** (reported, within 5 %) | 3581.5 m (−0.52 %) | 3581.5 m | 3581.5 m (−0.52 %) |
+| E3 25 m, every 10th fix 8 m from t=5 s, no Doppler | 3595.5 m (−0.13 %) | 3583.8 m | 3583.8 m (−0.45 %) |
+| E3 30 / 9 m alternating, no Doppler (reported) | 3631.3 m (+0.87 %) | 3631.3 m | 3631.3 m (+0.87 %) |
+| E3 25 ↔ 8 m every 5 s, no Doppler | 3632.1 m (+0.89 %) | 3617.8 m | 3617.8 m (+0.49 %) |
+| E3 8 ↔ 25 m every 5 s, no Doppler | 3611.7 m (+0.33 %) | 3611.7 m | 3611.7 m (+0.33 %) |
+| E3 6 / 9 / 3 m bands every 4 s, no Doppler | 3794.3 m (+5.40 %) | 3794.3 m | 3794.3 m (+5.40 %, hop-mode over-count at small radii with 2 m independent noise — unchanged since build 4) — 3800.3 m (+5.56 %) after the rework: the last-accepted-speed bound admits 4 hops build 8 rejected as spikes |
+| E3 1.2 m/s walk, 25 ↔ 8 m every 5 s, no Doppler | 1455.9 m (+1.19 %) | 1454.4 m | 1454.4 m (+1.08 %) |
+
+So **hop mode (no Doppler) is unchanged only at constant accuracy**: when the accuracy varies, the first anchor
+rule (1b) shifts the hop phase and the figures differ from build 8 by up to 0.4 % (14 m on 3600 m), all within
+1.1 % of the truth. The first draft's rule 1c did not fire in hop mode on these runs (every 8 m fix arrived outside
+the 25 m radius of the previous 37.5 m hop's anchor, or inside the jitter radius of a good one), so its damage was
+confined to the Doppler runs — where it is now gone.
+
+#### The second review: four regressions against build 8, found by an adversarial replay and fixed (2026-09-05)
+
+A scratch harness replayed the build-8 tracker (git HEAD c7871c0, copied into the test source set) and the working
+tree side by side on truth-known runs; the four findings and the fixed numbers (truth / build 8 / build 14 as
+installed / reworked; the regression tests are `firstAnchorWaitCreditsTheMovementOnEveryExit`,
+`speedlessReceiverAtRunningAndCyclingPaceDoesNotDeadlock`, `creepingReceiverCostsAboutTheHopNotTheAccuracyRadius`,
+`spikesReportingABogusSpeedAreNotIntegrated` and the rule 1b / rule 3 / rule 4b cases in
+`DefaultGpsDistanceTrackerTest`):
+
+1. **The wait dropped its integral on three exits of four** (a ≤ 20 m fix arriving, a better candidate mid-wait, the
+   current fix best at expiry): up to (15 s + one interval) × speed per start and per resume — the perverse case being
+   a *better* fix at expiry losing 45 m while an equal one lost nothing. Reworked: every exit credits the integral
+   since the first held fix, and each of these 3 m/s runs (3597.0 m truth: 25 m then a 15 m fix at t=10; 30 m with
+   a better 25 m candidate at t=5 or t=14; 30 m for 15 s then 25 m; 25 m constant; a pause/resume at t=600 with and
+   without a 15 m fix 10 s later; a 50 m first fix) gives **3597.0 m** (pause/resume 3594.0 m) — equal to build 8 —
+   and the 1.2 m/s versions 1438.8 m (pause/resume 1437.6 m).
+2. **Deadlock for a speed-less receiver at running/cycling speed.** Starting in poor accuracy, the wait pushed the
+   first judged hop to dt = 15 s where rule 3 allowed 2.5 × 15 + two radii; rejected once, every later fix was
+   farther still: **0.0 m** over 20 minutes at 6–7 m/s with 21–30 m fixes (build 8, which anchored at once, was within
+   0.4 %). And build 8 itself deadlocked at 5 m accuracy (851 of 7194 m at 6 m/s, 54 of 8393 m at 7 m/s: one noisy
+   hop in seven rejected, then the allowance never caught the rider). Reworked (no Doppler, 20 minutes):
+
+   | run | build 8 | reworked |
+   |---|---|---|
+   | 6 m/s, 5 m | 120.6 m (−98.3 %); 851.3 m with 40 m for the first 20 s | 7417.2 m (+3.1 %); 7413.0 m |
+   | 6 m/s, 21 / 25 / 30 m | 7199.9 / 7174.2 / 7196.2 m (+0.1 / −0.3 / +0.0 %) | 7106.8 / 7083.4 / 7196.1 m (−1.2 / −1.5 / +0.0 %) |
+   | 6 m/s, 21 / 25 / 30 m, 40 m for the first 20 s | 7197.4 / 7176.1 / 7192.5 m | 7197.5 / 7176.2 / 7196.2 m |
+   | 7 m/s, 5 m | 53.7 m (−99.4 %) | 8504.1 m (+1.3 %) |
+   | 7 m/s, 21 / 25 / 30 m | 8392.3 / 8398.7 / 8362.8 m (−0.0 / +0.1 / −0.4 %) | 8286.5 / 8292.3 / 8257.1 m (−1.3 / −1.2 / −1.6 %) |
+   | 7 m/s, 21 / 25 / 30 m, 40 m for the first 20 s | 8392.2 / 8397.5 / 8364.8 m | 8388.4 / 8398.4 / 8362.2 m |
+   | 6 / 7 m/s, 5 m, Kalman-like noise (phi 0.9) | 1016.7 / 90.5 m | 7222.7 / 8424.8 m (+0.4 / +0.4 %) |
+   | 6 / 7 m/s with Doppler, 5 or 25 m | within 0.1 % | same |
+
+   The −1.2 to −1.6 % at constant 21–30 m is the one wait's hop (90–105 m): at expiry the current fix is a spike
+   from the candidate, so it anchors and a speed-less receiver has nothing to credit for the 15 s (build 8 anchored
+   on the first fix and measured them; the 40 m-start rows, where the candidate's radius makes the hop plausible, are
+   equal to build 8). The +3.1 % at 6 m/s and 5 m is hop mode's own over-count of 1–2 s hops with 2 m independent
+   noise, not the rework: build 8's 4 m/s run at 5 m, which never deadlocked, is +4.95 % with the same noise, and
+   with Kalman-like noise the reworked runs are within 0.4 %. The test bound is 3 % at 21–30 m and 3.5 % at 5 m.
+3. **Creeping receiver.** Integrating sub-threshold speeds (0.7 m/s reported while standing) cost up to one accuracy
+   radius per stop under the plain cap: a 1.2 m/s walk with ten 60 s stops (718.8 m truth) came out **+33.5 %** at
+   25 m accuracy (959.6 m) and +52.6 % at 50 m against build 8's +2.2 % (734.6 m: it fell back to the hop across the
+   long interval), +19.7 % (860.3 m) at 5 m against +13.7 % (817.5 m). Reworked with rule 4b:
+
+   | accuracy | standing receiver reports 0 | 0.5 / 0.7 / 0.9 / 0.95 m/s | build 8 (any) |
+   |---|---|---|---|
+   | 5 m | 802.5 m (+11.6 %) | 819.8 / 819.6 / 819.2 / 819.1 m (+14.0 %) | 817.5 m (+13.7 %) |
+   | 25 m | 718.8 m (0.0 %) | 735.7 / 735.4 / 735.2 / 735.2 m (+2.3 %) | 734.6 m (+2.2 %) |
+   | 50 m | 718.8 m (0.0 %) | 735.7 / 735.4 / 735.2 / 735.2 m (+2.3 %) | 734.6 m (+2.2 %) |
+
+   A creeping receiver now costs about the hop (1.7 m per stop over one reporting 0, the hop's scatter), the same as
+   build 8 charged, and a receiver reporting 0 while standing is exact at 25 / 50 m (the walking second's Doppler,
+   not the scattered hop). The 5 m baseline is hop-mode jitter (±2 m scatter sometimes leaves the 7.5 m radius, ≈ 8 m
+   per stop), unchanged since build 4. The review's own suggestion — cap the credit at the ≥ 1 m/s part + the hop —
+   double-counts the walking second's displacement and came out 1.5 % of the truth over build 8 at every accuracy;
+   a cap of max(≥ 1 m/s part, hop) matched build 8 on the creeper but lost 7 % on an honest 0.8 m/s walker with an
+   occasional 1.05 m/s fix (whose integral ≈ hop, so noise in the hop only ever cuts the credit) and pulled the real
+   walk to 123 m; the proportional rule keeps the creeper at +0.1–0.3 % over build 8, that walker at −2.4 % (build 8
+   +5.0 %) and the real walk at 130.7 m.
+4. **Rule 4 integrated the speed of fixes rejected as spikes.** Every 30th fix 25 m off the path reporting 10 m/s
+   added its 10 m: **+20 %** over the 3 m/s run (build 8 0 %). Reworked: a spike contributes nothing and the next
+   credible fix's dt spans it: **3597.0 m (−0.08 %)** with all 39 spikes rejected, at 6 and 8 m accuracy, with the
+   spikes reporting 3 m/s, with every 10th fix 40 m off (119 spikes), and on the 1.2 m/s walk (1438.8 m).
+
+Every scenario of the earlier old-vs-new table is within 1 % of build 8 or closer to the truth after the rework (the
+two rows that moved are marked in the table above). Known trade-offs of the per-fix integral, reported by
+`perFixIntegralTradeOffsReported` with loose bounds: a Doppler dropout (one fix in 20 reporting 0.3 m/s on a 3 m/s
+run) costs the missing second's speed, −4.5 % (build 8, which credited the last speed over the whole interval,
+−0.1 % — the same rule that turned 33 s of 0–0.5 m/s fixes on the real walk into 38 m); a 1.0 m/s walker whose
+reported speed straddles the threshold (0.9 / 1.1 alternating, 5 m) is measured mostly in hop mode, +9.3 % (build 8
++19.8 %).
+
+Pause/resume (`WorkoutControllerTest`): unchanged — the re-anchor after `markGap()` at 5 m accuracy is immediate;
+a resume in poor accuracy goes through the rule 1b wait and credits the movement during it (synthetic 25 m run with
+a pause at +600 s: 3594.0 m, equal to build 8).
+Tests added: `DefaultGpsDistanceTrackerTest` poorFirstFixDoesNotAnchorTheWalkOffThePath (50 m fix 45 m beside the
+path, then 5 m fixes: 10.8 m, not 55 m), firstFixWaitExpiresOnTheBestFixSeen / …OnTheCurrentFixWhenItIsTheBest,
+aMuchBetterFixInsideAPoorStartingAnchorsRadiusReplacesItWithoutCredit (28 m wait-expiry anchor → 5 m fix 20 m away: 0 m),
+…CreditsTheDopplerIntegral (same at 1.2 m/s: 1.2 m, not 0 or 20), aPoorAnchorThatHasCreditedAHopIsKeptMidWalk (the
+first draft's scenario: 0 re-anchors, 107.7 m for 100 m walked past a 30 m fix scattered 20 m sideways),
+creditedPoorAnchorIsNotReplacedWhileRunningThroughAccuracyBands (25 m with every 10th fix 8 m at 3 m/s: 90.0 m over
+30 s, 0 re-anchors), goodAnchorIsNotReplacedByABetterFix, dopplerCreditIsIntegratedPerFix (0, 0, 0.4, 1.2 m/s →
+1.6 m), dopplerIntegralSkipsAccuracyRejectedFixesAndNeedsAnUnbrokenChain; `SyntheticRunGpsTrackerTest`
+accuracySteppingBetweenBandsWithDopplerIsWithin1Percent, walkWithAccuracyBandsEveryFiveSecondsIsWithin1Percent,
+accuracySteppingBetweenBandsWithoutDopplerReported, stopStartCostOfSubThresholdSpeedsReported; `RealTrackTrackerTest`;
+`rejectsPoorAccuracy` now shows a 60 m first fix held for 15 s. Screenshot of the Pixel walk's detail on the Moto
+after the build-14 install (stored 155 m, no crash): `captures/app_tracker14_20260905/detail.png` (first draft:
+`captures/app_tracker9_20260905/detail.png`).

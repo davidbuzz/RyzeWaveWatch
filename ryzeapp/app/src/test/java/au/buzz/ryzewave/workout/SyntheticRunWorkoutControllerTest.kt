@@ -84,10 +84,10 @@ class SyntheticRunWorkoutControllerTest {
         val id = ctl.start(1)
         assertEquals(1L, id)
         feed(ctl, fixes)
-        // let the clock reach exactly 20:00 and a final tick run
+        // let the clock reach exactly 20:00 and a final tick run (a tick that read the clock just before it moved
+        // pushes 1199 s, so wait for the 1200 s push itself)
         now = SyntheticRun.T0 + 1200_000L
-        val before = watch.updates.size
-        awaitUntil("final tick") { watch.updates.size > before }
+        awaitUntil("final tick at 1200 s") { watch.updates.lastOrNull()?.let { encode(it).duration == 1200 } == true }
         val final = ctl.stop()
         assertNotNull(final)
         final!!
@@ -193,7 +193,8 @@ class SyntheticRunWorkoutControllerTest {
         assertTrue("watch pace ${last.paceSecPerKm} s/km not near 333", abs(last.paceSecPerKm - 333) <= 25)
         assertEquals(1200, final.durationSeconds)
         assertEquals(1200, repo.points().size)
-        assertEquals(1200, repo.points().count { it.accepted })
+        assertEquals(1185, repo.points().count { it.accepted })       // the first 15 s are held: 25 m is too poor for a first anchor
+        assertEquals(15, tracker.deferredFirstFixCount)
     }
 
     /** An 80 m accuracy run is still rejected outright: the watch face stays at 0 rather than showing noise. */
