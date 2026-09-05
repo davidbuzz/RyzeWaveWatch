@@ -25,3 +25,5 @@ captures/**/ryzewave.db*
 captures/**/batterystats.txt
 ryzeapp/keystore/
 ryzeapp/keystore.properties
+captures/**/*.db
+captures/**/*.db-*

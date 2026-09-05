@@ -127,3 +127,38 @@ Status 2026-09-05 18:xx: the per-fix Doppler tracker refinement was REVERTED (th
   ACCESS_BACKGROUND_LOCATION (Play scrutiny), a persistent record, and off-by-default (privacy + battery). NOTE: the
   direct fix for today's failure is simpler — keep recording GPS during a workout even while paused (queued), so a
   missed resume never loses the track. The all-day breadcrumb is a separate, larger opt-in feature.
+
+## Stuck-in-exercise-mode detector — per-sport signature design (2026-09-06)
+
+Four observed signals during an active workout, each reduced to an "active?" boolean over a rolling ~3-5 min window:
+- **steps**: watch session step counter (FD 01 bytes 7-9) rising, or phone TYPE_STEP_COUNTER cadence.
+- **gps**: GPS speed / displacement above noise.
+- **hr**: heart rate elevated above the user's resting baseline (not an absolute number).
+- **motion**: phone/wrist accelerometer variance (significant motion) — needed to tell real low-HR low-step activity
+  (yoga, stretching) from lying still.
+Plus **time of day** and **resting-HR level** as a confidence/urgency modifier, not a trigger.
+
+Per-sport EXPECTED indicators (the workout is "genuinely live" if ANY expected indicator is active):
+| sport | steps | gps | hr | motion |
+|---|---|---|---|---|
+| Outdoor Running / Trail / Walking / Hiking | ✓ | ✓ | ✓ | ✓ |
+| Treadmill / Indoor Running | ✓ | – | ✓ | ✓ |
+| Cycling outdoor / Rowing on water | – | ✓ | ✓ | ✓ |
+| Spinning / stationary bike / Rowing machine | – | – | ✓ | ✓ (cadence) |
+| Yoga / Stretching / low-HR floor work | – | – | – | ✓ |
+| Strength / HIIT | ~ | – | ✓ | ✓ |
+
+Decision: **likely-stuck = none of the sport's expected indicators active for the sustained window.** Because expectations
+are per-sport, the hard cases the user named resolve: a rowing machine (high HR + stroke cadence, no GPS) stays "live" on
+HR; outdoor running/rowing stays live on GPS; yoga stays live on accelerometer motion even with low HR and no steps; only
+a workout where literally nothing moves and HR is flat is flagged.
+
+Confidence/urgency modifier: night (22:00-06:00) + HR at true sleeping levels + zero motion = near-certain accidental →
+short grace, act fast. Daytime with just-no-activity = longer grace, gentler.
+
+Escalation: (1) speak + high-priority notification "Workout running but no activity — tap to stop"; (2) auto-stop after the
+grace period if unacknowledged. Never auto-stop an app-initiated workout without at least the notification. Also speak
+"workout started" on a WATCH-originated start so an accidental start announces itself immediately.
+
+The night guard being built now is the first, highest-value slice (night + resting HR + no GPS). This per-sport detector
+generalises it; build next.
