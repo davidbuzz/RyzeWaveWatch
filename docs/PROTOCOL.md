@@ -183,7 +183,7 @@ Full method→opcode map from the SDK: `captures/sdk_opcode_map.txt`. Highlights
 | `FD 11 <type> <ivl>` / `FD 22 <type> <ivl> hh mm ss …` (13 B) / `FD 00 <type> <ivl>` | workout start / pause / stop; watch echoes the same bytes | V | **Watch-originated presses (pause/play on the watch's paused screen) and the watch's echo of the app's resume come in the 13-byte form `FD <op> <type> <ivl> hh mm ss cal16 …` for every op** (2026-09-05: six 13-byte `FD 33`, seven 13-byte `FD 22`); the app's own echoes are 4 B. `type` = sport id from the watch's own list (§6c; 1 = Outdoor Running, 0x23 = Outdoor Walking, 2 = Cycling — all three started the matching mode on the wrist 2026-09-04/05); ivl = HR report interval s; `FD 33` resume is SDK-documented, not captured. The watch also sends these **unsolicited** when the user presses pause/resume/stop **on the watch** (not just as an echo of a phone command): the app tells the two apart by a short expected-echo window after its own send and drives its own pause/resume/stop from a watch-originated one (`WatchApiImpl` → `WatchEvent.WorkoutControl`), without echoing it back |
 | `FD 44 <type> <ivl> hh mm ss cal16 km km_frac2 pace_min pace_sec` | phone → watch live workout metrics, once per second (echoed back) | V/SDK | distance/pace come from **phone GPS**, this is where the vendor app's bad distance is produced. `km_frac2` is the rounded hundredths; a fraction that rounds to 100 carries into `km` (2999.9 m → `03 00`, not `02 64`); pace above 99:59 /km is sent as `00 00` |
 | `FD <type> <hr> cal16 pace_min pace_sec steps24 count16 km km_frac2` ← (14 B) | realtime workout data from the watch, irregular 1-11 s (~1/s while the sensor has a fresh reading). **Byte 1 is the sport type, not a constant 0x01**: an Outdoor Walking workout (`FD 11 23 01`) pushes `FD 23 5C 00…` (HR 92). Only the 14-byte length identifies this packet (control echoes are 4 B, pause 13 B) | V (type, HR) / SDK (other fields) | verified 2026-09-04 19:37 (type 1, 82-97 bpm) and 2026-09-05 08:23 (type 0x23); during a phone-driven workout the Ryze Wave zeros calories/pace/count/distance, but **steps24 does rise** — verified 0 → 3933 over the 2026-09-05 17:20 run (the watch does NOT put workout steps in the hourly `B1`/`B2` bins), so the app takes `Workout.steps` from the max of this field. Offsets from the vendor SDK's realtime parser |
-| `FD AA` → `FD AA <state> <type>` | query current workout | SDK | |
+| `FD AA` → `FD AA <state> <type>` | query current workout: is a sport screen open on the watch, and which | V | 2026-09-06 via RyzeBridge: `FD AA 00 01` with no workout running (state 0, type 1 = last/default sport). The only way to ask the watch what it is showing; see §11 |
 | `FD FA [since]` | fetch workout history | SDK | |
 | `FD 48 AA` (34F1) → `FD 48 AA 00 <(id, enabled, position)×n>` … `FD 48 AA FD` | sport list: the watch's sport-mode menu, 70 entries on the Ryze Wave | V | ids = §6c; position = menu order (1-based); `FD 48 <…>` writes reorder/hide entries (SDK, not used) |
 | `24 …` | temperature | SDK | |
@@ -268,7 +268,7 @@ is the sport id. (Menu names for those two starts: see docs/APP.md sport picker 
 
 ## 7. Open questions
 - ~~Does our watch set the password bit?~~ No (FL1 = 0x4BA1D4).
-- Which of the SDK-only opcodes does it answer? (start from `A1 01`, `CD 01`, `F9 AA`, `BE 01`, `FD AA`, `AF AA`)
+- Which of the SDK-only opcodes does it answer? (start from `A1 01`, `CD 01`, `F9 AA`, `BE 01`, `AF AA`) — `FD AA` answered 2026-09-06, see §11
 - Sleep stage codes (seen 1-4; 2 dominates, 4 in short bursts — likely 1=deep? 2=light 3=REM? 4=awake) need checking against Ryze Fit's sleep screen for the night of 2026-09-03.
 - Realtime steps/HR (`B1`, `E5`) — when does the watch push them?
 - The unknown SDP UUIDs `0x5536` / `0x2222` on the classic side.
@@ -315,3 +315,23 @@ More BlueZ notes [V]:
 The watch never sends distance for daily steps (the `B2` records carry only step counts), so every daily distance
 figure in the app is this stride formula on the phone. During workouts the phone's GPS track drives distance/pace and
 is pushed to the watch with `FD 44` (see §5), which is where a bad track filter shows up on the watch face too.
+
+## 11. What the watch will and will not tell you about its screen (2026-09-06)
+
+There is no screenshot, framebuffer or "current page" command anywhere in the SDK, the opcode map or any GloryFit
+reference; the watch cannot be screen-scraped over BLE. What exists is narrower:
+
+| Opcode | What it really is | Use for testing |
+|---|---|---|
+| `FD AA` → `FD AA <state> <type>` | "Is a sport open, and which?" `state` 1 = a workout screen is up, 0 = not; `type` = the sport id. **Verified** on this watch. | The closest thing to reading the screen: after starting a sport, ask and check `type` is the one chosen. |
+| `FD 11/22/33/00 …` (13 B, watch-originated) | The watch announces its own start / pause / resume / stop, with the sport id | Implied screen state: the watch is on that sport's page from `FD 11` until `FD 00` |
+| `FD <type> <hr> …` (14 B, ~1 Hz) | Realtime push while a sport is open | Its presence proves the sport screen is live; `type` says which |
+| `E5 11 00 <hr>` (1 Hz, unsolicited) | Streams while the wearer has the HR screen open on the watch | Proves the HR page is up |
+| `DF <1\|2>` (`sendToControlHVScreen`) | Screen *orientation*, horizontal/vertical — not power, not content | nothing |
+| `F9 …` / `F9 AA` (`displayOrHideBraceletInterface`) | Which menu pages are enabled on the watch (a bitmap), not which one is showing | nothing |
+| `CD 01` | UI resource (watch-face pack) version | nothing |
+
+So the honest answer to "can we see what the watch has on screen" is: not the pixels, but the state that matters
+for a test. Start a sport from the phone, then `FD AA` tells you whether the watch actually entered it and which
+one; the 1 Hz realtime pushes confirm it is still there; `FD 00` confirms it left. Seeing the actual face needs a
+camera pointed at the wrist (`tools/watch_cam.sh`).

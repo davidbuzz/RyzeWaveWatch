@@ -117,6 +117,8 @@ tools/app_smoke.sh          build + install + launch + screenshot loop for the a
 tools/pull_app_data.sh      pull the app's database and settings off a phone into captures/
 tools/analyse_workout.py    summarise a pulled workout (distance, pace, HR, track)
 tools/privacy_blur.py       pixelate regions of a screenshot before committing it (see docs/privacy_audit_20260906.md)
+tools/watch_cam.sh          use a phone's camera as a test rig: photograph the watch face, strip metadata, delete from the phone
+tools/all_sports_test.sh    drive every sport through the app's picker on a phone and verify the saved row
 tools/app_tap.sh            tap a UI element on the phone by its text (uiautomator), e.g. tools/app_tap.sh "Sync now"
 tools/app_workout_test.sh   scripted workout on the phone: start, wait, stop, capture FD traffic + screenshots
 tests/                      offline codec tests
