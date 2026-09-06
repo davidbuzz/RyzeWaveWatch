@@ -53,6 +53,9 @@ class DataStoreSettingsStore(private val dataStore: DataStore<Preferences>) : Se
     override val healthConnectEnabled: Flow<Boolean> =
         prefs.map { SettingsKeys.readHealthConnectEnabled(it) }.distinctUntilChanged()
 
+    override val autoConnect: Flow<Boolean> =
+        prefs.map { it[SettingsKeys.AUTO_CONNECT] ?: true }.distinctUntilChanged()
+
     override suspend fun setWatchMac(mac: String?) {
         dataStore.edit { SettingsKeys.writeWatchMac(it, mac) }
     }
@@ -71,6 +74,10 @@ class DataStoreSettingsStore(private val dataStore: DataStore<Preferences>) : Se
 
     override suspend fun setHealthConnectEnabled(on: Boolean) {
         dataStore.edit { SettingsKeys.writeHealthConnectEnabled(it, on) }
+    }
+
+    override suspend fun setAutoConnect(on: Boolean) {
+        dataStore.edit { it[SettingsKeys.AUTO_CONNECT] = on }
     }
 
     override val notificationsEnabled: Flow<Boolean> =
@@ -141,6 +148,7 @@ object SettingsKeys {
     val RUN_STRIDE_M = doublePreferencesKey("run_stride_m")
 
     val HEALTH_CONNECT_ENABLED = booleanPreferencesKey("health_connect_enabled")
+    val AUTO_CONNECT = booleanPreferencesKey("auto_connect")
 
     val NOTIFICATIONS_ENABLED = booleanPreferencesKey("notifications_enabled")
     val NOTIFICATION_PACKAGES = stringSetPreferencesKey("notification_packages")

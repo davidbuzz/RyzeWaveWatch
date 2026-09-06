@@ -969,3 +969,12 @@ flat run / night / rest / unavailable signal), `ActivitySignalsTest`, `StuckWork
 rising steps never warn, withdraw on activity, app-started not auto-stopped by default, stopNow). Debug:
 `au.buzz.ryzewave.debug.WORKOUT` op `watchstart` with `--el window/grace`, `--ez night`, `--ei hr`, `--ez moving`, then
 op `steps --ei n` to feed flat or rising session steps.
+
+
+## Auto-connect switch (2026-09-06)
+
+`SettingsStore.autoConnect` (default true) is the persisted form of the Home screen's Connect/Disconnect: Disconnect
+sets it false and the watch service's connect loop treats `!autoConnect` like the in-memory pause, so the choice
+survives a reinstall or reboot. Motivation: the watch holds ONE BLE link; right after a build was installed on the
+Moto test phone its app reconnected and stole the watch from Buzz's Pixel mid-test (status 147 on the Pixel until the
+Moto was stopped). On the test phone, tap Disconnect once and it stays off the watch until Connect is tapped.

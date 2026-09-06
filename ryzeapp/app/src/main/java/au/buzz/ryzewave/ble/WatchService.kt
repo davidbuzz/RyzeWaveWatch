@@ -121,11 +121,11 @@ class WatchService : Service() {
             ACTION_SYNC -> scope.launch { syncNow("requested") }
             ACTION_CONNECT -> {
                 paused.value = false
-                scope.launch { connectNow() }
+                scope.launch { settings.setAutoConnect(true); connectNow() }
             }
             ACTION_PAUSE -> {
                 paused.value = true
-                scope.launch { safely("pause") { watch.disconnect() } }
+                scope.launch { settings.setAutoConnect(false); safely("pause") { watch.disconnect() } }
             }
         }
         return START_STICKY
@@ -186,7 +186,9 @@ class WatchService : Service() {
 
     private suspend fun connectionLoop() {
         var lastMac: String? = null
-        combine(settings.watchMac, bluetoothOn, paused) { mac, on, p -> Triple(mac, on, p) }
+        // `paused` is the in-memory switch of this process; `autoConnect` is the same choice persisted, so a phone
+        // told to stay off the watch stays off after a reinstall or reboot.
+        combine(settings.watchMac, bluetoothOn, paused, settings.autoConnect) { mac, on, p, auto -> Triple(mac, on, p || !auto) }
             .distinctUntilChanged()
             .collectLatest { (mac, on, isPaused) ->
                 if (mac == null) {

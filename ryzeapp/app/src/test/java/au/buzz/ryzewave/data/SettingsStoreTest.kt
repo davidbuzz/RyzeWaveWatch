@@ -123,4 +123,13 @@ class SettingsStoreTest {
         m[SettingsKeys.WORKOUT_SPORT_TYPE] = 999                    // a stale / corrupt value falls back to the default
         assertEquals(1, SettingsKeys.readWorkoutSportType(m))
     }
+
+    @Test
+    fun autoConnectDefaultsOnAndPersistsOff() = runBlocking<Unit> {
+        assertTrue(store.autoConnect.first())
+        store.setAutoConnect(false)
+        assertFalse(store.autoConnect.first())
+        store.setAutoConnect(true)
+        assertTrue(store.autoConnect.first())
+    }
 }

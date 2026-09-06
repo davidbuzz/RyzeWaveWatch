@@ -86,6 +86,15 @@ interface SettingsStore {
     suspend fun setWorkoutSportType(type: Int) {}
 
     // ---- stuck-workout detector (additive) ----
+    // ---- watch link (additive) ----
+    /**
+     * Whether the app keeps (re)connecting to the watch on its own. Default true. Turned off by the Home screen's
+     * Disconnect button and persisted, so a phone that should stay hands-off (the Moto test phone while Buzz's Pixel
+     * owns the watch's single BLE link) does not grab the watch again after a reinstall or reboot (2026-09-06).
+     */
+    val autoConnect: Flow<Boolean> get() = flowOf(true)
+    suspend fun setAutoConnect(on: Boolean) {}
+
     /** Master switch of the stuck-in-exercise-mode detector (`workout.StuckWorkoutMonitor`). Default true. */
     val stuckDetectorEnabled: Flow<Boolean> get() = flowOf(true)
     /**
