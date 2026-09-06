@@ -1,0 +1,4 @@
+19:50:31 camera rig: 58081JEBF10512 (its copy of the app force-stopped so it cannot take the watch link)
+19:50:31 phone ZY32M7HFFZ, 1 sports, 70s each -> /home/buzz/RyzeWaveWatch/captures/all_sports_20260906_195026
+19:53:00 OK Rower (id 41): saved sport=41 watch=41 photo=bright/dark/bright,bright,bright,bright,dark,dark dur=82s dist=0m steps= points=16
+19:53:00 done: 1 OK, 0 failed -> /home/buzz/RyzeWaveWatch/captures/all_sports_20260906_195026/results.tsv
