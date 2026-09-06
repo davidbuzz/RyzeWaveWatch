@@ -9,6 +9,8 @@
 #
 # Output: captures/all_sports_<ts>/{results.tsv,log.txt,<sport>.png}. Exit 1 if any sport failed.
 # With the watch linked, the app asks it (FD AA) which sport it opened; a disagreement is a failure too.
+# CAM=<other phone's serial> photographs the watch face with that phone's camera at start, mid-run and after stop
+# (tools/watch_cam.sh); the photo column says whether the face was lit (bright) or the screen had gone dark.
 # Needs: the app installed and permitted, location ON (the app refuses to start otherwise), the phone unlocked.
 set -uo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -26,6 +28,21 @@ say() { echo "$(date +%H:%M:%S) $*" | tee -a "$LOG"; }
 mapfile -t ALL < <(grep -oE '0x[0-9A-Fa-f]{2} to "[^"]+"' "$ROOT/ryzeapp/app/src/main/java/au/buzz/ryzewave/protocol/SportTypes.kt" | sed -E 's/0x([0-9A-Fa-f]{2}) to "(.*)"/\1\t\2/')
 declare -A ID_OF; for line in "${ALL[@]}"; do ID_OF["${line#*	}"]=$((16#${line%%	*})); done
 if [ $# -gt 0 ]; then SPORTS=("$@"); else SPORTS=(); for line in "${ALL[@]}"; do SPORTS+=("${line#*	}"); done; fi
+CAMSER="${CAM:-}"
+[ -n "$CAMSER" ] && { adb -s "$CAMSER" shell am force-stop $PKG >/dev/null 2>&1; "$ROOT/tools/watch_cam.sh" open "$CAMSER"; say "camera rig: $CAMSER (its copy of the app force-stopped so it cannot take the watch link)"; }
+snap() {   # $1 = file; prints bright|dark|none
+  [ -n "$CAMSER" ] || { echo none; return; }
+  if "$ROOT/tools/watch_cam.sh" shot "$CAMSER" "$1" >/dev/null 2>&1 && [ -s "$1" ]; then
+    "$ROOT/.venv/bin/python" - "$1" <<'EOF'
+import sys
+from PIL import Image, ImageStat
+im = Image.open(sys.argv[1]).convert("L")
+w, h = im.size
+centre = im.crop((int(w*0.3), int(h*0.3), int(w*0.7), int(h*0.7)))   # the watch is framed in the middle
+print("bright" if ImageStat.Stat(centre).mean[0] > 60 else "dark")
+EOF
+  else echo none; fi
+}
 say "phone $SERIAL, ${#SPORTS[@]} sports, ${SECS}s each -> $OUT"
 
 dump() { adb shell uiautomator dump /sdcard/ui.xml >/dev/null 2>&1; adb shell cat /sdcard/ui.xml > "$S/ui.xml" 2>/dev/null; }
@@ -82,7 +99,7 @@ row_for_start() {   # newest workout row (id, sportType, duration, distance) via
   sqlite3 "$S/db" "select id, sportType, durationSeconds, cast(distanceMeters as int), ifnull(steps,''), (select count(*) from track_point where workoutId=workout.id) from workout order by start desc limit 1;" 2>/dev/null
 }
 
-printf 'sport\tid\tsaved_sport\twatch_says\tduration_s\tdistance_m\tsteps\tpoints\tresult\n' > "$RES"
+printf 'sport\tid\tsaved_sport\twatch_says\tphoto\tduration_s\tdistance_m\tsteps\tpoints\tresult\n' > "$RES"
 fail=0
 adb shell am start -n $PKG/.MainActivity >/dev/null 2>&1; sleep 2
 for name in "${SPORTS[@]}"; do
@@ -94,12 +111,15 @@ for name in "${SPORTS[@]}"; do
   # the picker: a chip row with the popular sports and a "More…" chip that opens the "All sports" dialog.
   # The tab can take a moment to render after a stop, so try twice before giving up.
   if ! tap_text "More…"; then sleep 1.5; tap_text "Workout"; sleep 1; tap_text "More…" || { say "$name: no 'More…' chip on the Workout tab"; dump; }; fi
-  if ! pick_in_dialog "$name"; then say "FAIL $name: not found in the picker"; printf '%s\t%d\t\t\t\t\t\t\tNOT_IN_PICKER\n' "$name" "$id" >> "$RES"; fail=1; tap_text "Close"; continue; fi
+  if ! pick_in_dialog "$name"; then say "FAIL $name: not found in the picker"; printf '%s\t%d\t\t\t\t\t\t\t\tNOT_IN_PICKER\n' "$name" "$id" >> "$RES"; fail=1; tap_text "Close"; continue; fi
   tap_text "Close"; sleep 0.5
-  if ! tap_text "Start workout"; then say "FAIL $name: no Start button (location off?)"; printf '%s\t%d\t\t\t\t\t\t\tNO_START\n' "$name" "$id" >> "$RES"; fail=1; adb exec-out screencap -p > "$OUT/$(echo "$name" | tr ' /' '__').png"; continue; fi
+  if ! tap_text "Start workout"; then say "FAIL $name: no Start button (location off?)"; printf '%s\t%d\t\t\t\t\t\t\t\tNO_START\n' "$name" "$id" >> "$RES"; fail=1; adb exec-out screencap -p > "$OUT/$(echo "$name" | tr ' /' '__').png"; continue; fi
   adb logcat -c 2>/dev/null
-  sleep "$SECS"
-  adb exec-out screencap -p > "$OUT/$(echo "$name" | tr ' /' '__').png"
+  base="$OUT/$(echo "$name" | tr ' /' '__')"
+  sleep 3; p1=$(snap "${base}_1_started.jpg")
+  sleep $((SECS - 3 > 1 ? SECS - 3 : 1))
+  p2=$(snap "${base}_2_running.jpg")
+  adb exec-out screencap -p > "${base}.png"
   # what the WATCH says it is doing (FD AA after start, logged by the app); n/a when no watch is linked
   watch=$(adb logcat -d 2>/dev/null | grep -oE 'watch confirms sport [0-9]+ open|watch reports state=[0-9]+ type=[0-9]+|watch did not answer the sport query' | tail -1)
   case "$watch" in
@@ -109,14 +129,16 @@ for name in "${SPORTS[@]}"; do
     *) wsays="?";;
   esac
   tap_text "Stop"; sleep 3
+  p3=$(snap "${base}_3_stopped.jpg"); photo="$p1/$p2/$p3"
   row=$(row_for_start); IFS='|' read -r rid rsport rdur rdist rsteps rpts <<<"$row"
-  if [ "$rid" = "$before" ]; then say "FAIL $name: no new workout row"; printf '%s\t%d\t\t\t\t\t\t\tNO_ROW\n' "$name" "$id" >> "$RES"; fail=1; continue; fi
+  if [ "$rid" = "$before" ]; then say "FAIL $name: no new workout row"; printf '%s\t%d\t\t\t\t\t\t\t\tNO_ROW\n' "$name" "$id" >> "$RES"; fail=1; continue; fi
   if [ "$rsport" != "$id" ]; then r="WRONG_SPORT"; fail=1
   elif [ "$wsays" != "n/a" ] && [ "$wsays" != "$id" ]; then r="WATCH_DISAGREES"; fail=1
   else r=OK; fi
-  say "$r $name (id $id): saved sport=$rsport watch=$wsays dur=${rdur}s dist=${rdist}m steps=$rsteps points=$rpts"
-  printf '%s\t%d\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' "$name" "$id" "$rsport" "$wsays" "$rdur" "$rdist" "$rsteps" "$rpts" "$r" >> "$RES"
+  say "$r $name (id $id): saved sport=$rsport watch=$wsays photo=$photo dur=${rdur}s dist=${rdist}m steps=$rsteps points=$rpts"
+  printf '%s\t%d\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' "$name" "$id" "$rsport" "$wsays" "$photo" "$rdur" "$rdist" "$rsteps" "$rpts" "$r" >> "$RES"
 done
+[ -n "$CAMSER" ] && "$ROOT/tools/watch_cam.sh" close "$CAMSER"
 say "done: $(grep -c $'\tOK$' "$RES") OK, $(grep -vc -E $'\tOK$|^sport' "$RES") failed -> $RES"
 rm -rf "$S"
 exit $fail

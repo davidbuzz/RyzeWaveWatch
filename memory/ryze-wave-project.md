@@ -81,3 +81,8 @@ Established facts:
   Moto). Buzz hopes for a full end-to-end test of every sport at some point ( eg users supply logs of different sports) and wants "100%": the driver proves
   picker->start->stop->saved row for all 70; it cannot prove the classifications, only real sessions can. Swimming
   cannot get distance at all (GPS is phone-side; the phone stays on the shore). 432 unit tests.
+- 2026-09-06 19:40 trial of the full rig: `CAM=<pixel> tools/all_sports_test.sh <moto> 15 "Rower"` -> saved sport 41,
+  watch confirmed 41 via FD AA, photos bright/dark/bright (watch screen times out mid-run; start and stop frames are
+  the useful ones; the sport metrics page shows HR/kcal/timer but not the sport name). Camera distance is fine as
+  set up; a few degrees off-axis reduces the reflection streak. For the 2026-09-07 run: Moto drives, Pixel films,
+  Pixel's copy of the app is force-stopped by the driver so it cannot steal the watch link.

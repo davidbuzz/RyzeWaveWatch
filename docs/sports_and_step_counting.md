@@ -241,6 +241,12 @@ where the watch disagrees with what was chosen. To see the actual face, `tools/w
 into a camera rig (shutter over adb, metadata stripped, photo deleted from the phone); the watch must be awake,
 which starting a sport does, and the glossy screen wants the camera a few degrees off-axis to avoid reflections.
 
+Trial on 2026-09-06 (`captures/all_sports_trial_20260906/results.tsv`): Rower driven on the Moto, the watch answered
+`FD AA` with sport 41, the Pixel caught the face lit at start (the sport's metrics page: heart rate, calories,
+timer), dark mid-run (the screen times out after a few seconds), and lit again after stop, when the watch returns
+to its sport menu. So expect the start and stop frames to be the useful ones, and note the metrics page does not
+print the sport's name; the watch's own `FD AA` answer is the proof of which sport it entered.
+
 What that proves, and what it does not. It proves the whole chain from picker to watch to database works for every
 sport: selection, start, the location gate, the foreground service, the watch's own confirmation, stop, persistence,
 sport id. It does **not** prove the
