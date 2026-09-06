@@ -172,11 +172,26 @@ adb shell am force-stop com.yc.ryzefit au.buzz.ryzebridge
 
 ## Release build
 
+`tools/make_signed_release.sh` does the whole thing: it refuses to run on a dirty tree (the source zip is built
+from the commit, so uncommitted files would be missing), warns if your commit is not on GitHub yet, runs the unit
+tests, builds, checks the APK is really signed, reports whether it is debuggable, and writes the APK, a source zip
+and a `.sha256` into `dist/`. It stops there unless you ask it to publish.
+
+```bash
+tools/make_signed_release.sh                 # build and verify only
+tools/make_signed_release.sh --publish       # ...and create the GitHub release
+tools/make_signed_release.sh --version 0.2   # override the version read from Gradle
+tools/make_signed_release.sh --notes FILE    # release notes body
+```
+
+Bump `versionName` and `versionCode` in `ryzeapp/app/build.gradle.kts` before each release; publishing refuses to
+overwrite an existing tag. The raw Gradle equivalent is:
+
 ```bash
 cd ryzeapp && JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 ./gradlew :app:assembleRelease
 ```
 
-This is signed only when `ryzeapp/keystore.properties` exists, giving `storeFile` (relative to `ryzeapp/`),
+Either way it is signed only when `ryzeapp/keystore.properties` exists, giving `storeFile` (relative to `ryzeapp/`),
 `storePassword`, `keyAlias` and `keyPassword`. Both the keystore and that properties file are git-ignored and are
 not in this repo; create your own with `keytool -genkeypair` if you need a signed build. Without them the release
 task produces an unsigned APK.

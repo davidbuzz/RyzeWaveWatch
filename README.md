@@ -111,6 +111,7 @@ ryzeapp/                    "Buzz's Ryze Wave": the real Android app (Kotlin/Com
 android/                    RyzeBridge: headless Android app (Java, no Gradle) that relays BLE <-> adb logcat
 tools/bridge.py             drives RyzeBridge over adb and decodes the traffic (info, sync, hr, spo2, keep, raw)
 tools/fastbuild.sh          incremental build + install of the app in seconds (see BUILD.md)
+tools/make_signed_release.sh  signed release APK + source zip + checksums, optionally a GitHub release
 tools/app_smoke.sh          build + install + launch + screenshot loop for the app (captures/app_smoke_<ts>/)
 tools/pull_app_data.sh      pull the app's database and settings off a phone into captures/
 tools/analyse_workout.py    summarise a pulled workout (distance, pace, HR, track)
