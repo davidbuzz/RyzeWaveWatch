@@ -31,3 +31,7 @@ refusal and `stopSelf()` instead of crashing. App launches clean, no BreadcrumbS
    settings + re-verify.
 2. Step-based (stride) pace/distance fallback so pace is never a bare "--:--".
 3. Stop mirroring the watch's junk pause/resume flood (debounce / distinguish a real button press).
+
+## Removed screenshot (2026-09-06 privacy audit)
+`fit_journal2.png` (Google Fit journal with a small map thumbnail of the real walking route and the day's routine)
+was purged from the repo and its history.

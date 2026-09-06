@@ -36,3 +36,7 @@ Requested: spoken "workout paused" / "workout resumed" on the phone for every pa
 Every `track_point` row in `ryzewave.fixed.db` (359 points) is shifted by **+0.0210° latitude (+2.34 km) and
 +0.0170° longitude (+1.68 km)** per the repo rule (CLAUDE.md "GPS data in the repo"); the real coordinates are not
 in the repo. Distances/pace in the `workout` table are unaffected (constant offset).
+
+## Removed screenshots (2026-09-06 privacy audit)
+`fit_gps_track.png` and `fit_menu.png` (Google Fit's map of the 3.31 km loop, 5 Sep 17:20–17:52, avg HR 142) were
+purged from the repo and its history: they showed the route on a real map with street names, start/finish at home.
