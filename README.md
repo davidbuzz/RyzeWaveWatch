@@ -225,8 +225,9 @@ stride model calibrated from GPS walks. Heart rate, SpO2, steps and sleep come f
 - [x] Workout on the phone (00:52): start → watch HR streaming (71 bpm) → stop; GPS was 'poor (±39 m)' indoors so distance stayed 0 (the outdoor sessions below settled it)
 - [x] Build 3 (01:02): workouts exported to Health Connect as Exercise sessions, TX/RX packet log (`adb logcat -s WatchGatt:*`), HR mean unified, chart labels clamped (202 unit tests) — independently verified on the phone
 - [x] Validated outdoors over several real sessions on the Pixel: a 2.5-min walk and a 3-min walk (2026-09-05), a 31-min / 3.31 km walk with HR 142 avg and 166 max (2026-09-05), and a 55-min run (2026-09-06). They confirmed the distance and pace model against a known route and exposed the two bugs since fixed: the location-services gate and the step-based pace fallback
-- [ ] Surface the limb-motion counter as what it is: a stroke count for rowing, swimming and paddling, a pedal
-      cadence for cycling and spinning, rather than discarding it as "steps" the way a stride model must
+- [ ] Show a stroke rate for the sports where the wrist actually tracks the effort (rowing, swimming, paddling,
+      poling), instead of discarding that count as bad "steps". Not for cycling: the hands sit on the bars, so a
+      wrist sees road vibration rather than pedal cadence
 - [ ] Remote camera shutter and music control from the watch
 - [ ] Watch alarms and weather push
 - [ ] Contacts, call log and watch-face upload — researched, see [docs/watch_features_research.md](docs/watch_features_research.md)

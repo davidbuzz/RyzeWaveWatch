@@ -85,14 +85,26 @@ class StrideCalibrationTest {
     // ---------------------------------------------------------------- the sport gates the result
 
     @Test
-    fun limbDrivenSportsCalibrateNothingAndSayWhy() {
-        // The counter still measures something real in these sports - arm strokes when rowing or swimming, pedal
-        // cadence when cycling - but they are not footfalls, so distance divided by them is not a stride.
-        for (sport in listOf(0x02 /* Cycling */, 0x29 /* Rower */, 0x04 /* Swimming */)) {
+    fun rowingAndSwimmingAreStrokeCountsNotSteps() {
+        // The arms move in time with the effort, so the counter is real - a stroke count - but never a stride.
+        for (sport in listOf(0x29 /* Rower */, 0x04 /* Swimming */, 0x17 /* Boating */)) {
             val out = StrideCalibration.calibrate(realRun(), buzz, sport)
             assertNull("sport $sport must not set a walking stride", out.walk)
             assertNull("sport $sport must not set a running stride", out.run)
-            assertTrue(out.message, out.message.contains("limb motion"))
+            assertEquals(SportGait.STROKES, StrideCalibration.sportGait(sport))
+            assertTrue(out.message, out.message.contains("strokes"))
+        }
+    }
+
+    @Test
+    fun cyclingCountsNothingUsefulBecauseTheHandsAreStill() {
+        // A wrist cannot see pedals: the hands sit on the bars, so the counter is road buzz, not cadence.
+        for (sport in listOf(0x02 /* Cycling */, 0x12 /* Spinning */)) {
+            val out = StrideCalibration.calibrate(realRun(), buzz, sport)
+            assertNull(out.walk)
+            assertNull(out.run)
+            assertEquals(SportGait.NONE, StrideCalibration.sportGait(sport))
+            assertTrue(out.message, out.message.contains("hands still"))
         }
     }
 

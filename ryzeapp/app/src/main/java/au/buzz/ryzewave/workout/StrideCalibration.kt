@@ -11,10 +11,16 @@ enum class Gait { WALK, RUN, UNKNOWN }
 /** What a sport is allowed to teach the stride model. */
 enum class SportGait {
     /**
-     * The counter is not counting footfalls here. It still counts something real — repetitive **limb motion** —
-     * but not steps: arm strokes when rowing, swimming or paddling; leg cadence when cycling, spinning or on an
-     * elliptical; poling on skis. That is a useful measurement in its own right, and worth surfacing as a stroke
-     * or cadence count, but distance divided by it is not a stride. Never calibrate from it.
+     * The wrist is following the exercise, but not with the feet: rowing, swimming, paddling and poling move the
+     * arms in time with the effort, so the counter is a genuine **stroke count**. Worth surfacing on its own
+     * terms, but distance divided by it is not a stride, so never calibrate from it.
+     */
+    STROKES,
+
+    /**
+     * The wrist is barely moving and is not watching the part of the body doing the work. A cyclist's hands sit
+     * on the bars, so the counter picks up road buzz and the odd gesture, not pedal cadence — a wrist cannot see
+     * legs. Nothing here is worth reporting as a rate, and certainly not as a stride.
      */
     NONE,
 
@@ -101,9 +107,10 @@ data class CalibrationOutcome(
  * validation set; treat the thresholds as provisional and revisit them as more workouts are recorded.
  *
  * **The sport the user chose gates the result** ([sportGait]). A walking sport can only ever produce a walking
- * stride. Rowing, cycling, swimming and the rest produce nothing — not because their counts are meaningless, but
- * because what is being counted there is *limb motion*: arm strokes, or pedal cadence. Those are real numbers
- * worth having on their own terms, but distance divided by them is not a stride.
+ * stride. The others produce nothing, for two different reasons worth keeping apart: rowing, swimming and
+ * paddling move the arms in time with the effort, so the counter is a real **stroke count** that deserves to be
+ * shown as one; cycling and its like keep the hands still on the bars, where the counter sees road buzz rather
+ * than pedal cadence, because a wrist cannot watch legs. Neither is a stride.
  *
  * Pure Kotlin: no Android, no database, unit-tested against a real recorded run.
  */
@@ -142,21 +149,29 @@ object StrideCalibration {
     private const val FROUDE_TRANSITION = 0.5
 
     /**
-     * Sports where the counter registers limb motion rather than footfalls: arm strokes (rowing, swimming,
-     * paddling), leg cadence (cycling, spinning, elliptical), poling (skiing). Those counts are real and worth
-     * reporting as strokes or cadence, but they are not steps, so calibration must refuse rather than divide
-     * distance by them.
+     * The arms move in time with the effort, so the counter is a real stroke count — just not steps.
+     * These are the sports where a stroke rate would be worth showing the user.
      */
-    private val LIMB_MOTION_SPORTS = setOf(
-        0x02, // Cycling
+    private val STROKE_SPORTS = setOf(
         0x04, // Swimming
+        0x17, // Boating (paddling)
+        0x1F, // Elliptical (moving handles)
+        0x25, // Skiing (poling)
+        0x29, // Rower
+        0x6A, // Surfing (paddling out)
+        0x6B, // Snorkeling
+    )
+
+    /**
+     * The hands are still, or are doing something unrelated to the distance covered. A cyclist grips the bars,
+     * so the wrist sees road vibration rather than pedal cadence; a shooter, angler or archer holds position.
+     * The count here is noise and should not be presented as a rate at all.
+     */
+    private val STILL_HAND_SPORTS = setOf(
+        0x02, // Cycling
         0x12, // Spinning
         0x13, // Yoga
-        0x17, // Boating
         0x1E, // Horse Riding
-        0x1F, // Elliptical
-        0x25, // Skiing
-        0x29, // Rower
         0x35, // Archery
         0x44, // Snowboarding
         0x48, // Fishing
@@ -165,8 +180,6 @@ object StrideCalibration {
         0x51, // Skating
         0x62, // Shooting
         0x65, // Skateboarding
-        0x6A, // Surfing
-        0x6B, // Snorkeling
         0x6F, // Rock Climbing
         0x71, // Bungee Jumping
     )
@@ -186,7 +199,8 @@ object StrideCalibration {
     /** What [sportType] is allowed to teach. An unknown or absent sport is treated leniently as [SportGait.ANY]. */
     fun sportGait(sportType: Int?): SportGait = when (sportType) {
         null -> SportGait.ANY
-        in LIMB_MOTION_SPORTS -> SportGait.NONE
+        in STROKE_SPORTS -> SportGait.STROKES
+        in STILL_HAND_SPORTS -> SportGait.NONE
         in WALKING_SPORTS -> SportGait.WALK_ONLY
         else -> SportGait.ANY
     }
@@ -264,11 +278,18 @@ object StrideCalibration {
     fun calibrate(points: List<TrackPoint>, profile: UserProfile, sportType: Int?): CalibrationOutcome {
         val gate = sportGait(sportType)
         val sportName = sportType?.let { SportTypes.name(it) } ?: "this workout"
+        if (gate == SportGait.STROKES) {
+            return CalibrationOutcome(
+                null, null,
+                "$sportName moves your arms in time with the effort, so the watch is counting strokes, not " +
+                    "steps. That cannot measure a stride, so nothing was changed",
+            )
+        }
         if (gate == SportGait.NONE) {
             return CalibrationOutcome(
                 null, null,
-                "$sportName does not take steps: the counter registers limb motion there (arm strokes, or pedal " +
-                    "cadence), not footfalls, so it cannot measure a stride. Nothing was changed",
+                "$sportName keeps your hands still, so the watch's counter is not tracking your effort at all " +
+                    "and cannot measure a stride. Nothing was changed",
             )
         }
         val all = windows(points, profile)
