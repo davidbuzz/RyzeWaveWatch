@@ -6,7 +6,7 @@ import au.buzz.ryzewave.protocol.SportTypes
  * Which activity [Indicator]s a live workout of each kind is expected to show (docs/PLAN.md, "Stuck-in-exercise-
  * mode detector"). The workout is "genuinely live" when ANY expected indicator is active, so the sets err on the
  * lenient side: an extra expected indicator can only make a false "stuck" verdict less likely, while a missing
- * one could flag a real session (a rowing machine has no GPS, yoga no steps and no elevated HR).
+ * one could flag a real session (a spin bike has no GPS and no steps, yoga neither steps nor elevated HR).
  */
 enum class SportClass(val expected: Set<Indicator>) {
     /** On foot, outdoors: running, walking, hiking, field sports, golf. */

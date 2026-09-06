@@ -19,6 +19,45 @@ watch; and exports everything to Health Connect.
 Screenshots are from real sessions; personal details are pixelated and every GPS coordinate in this repo is
 deliberately displaced (see [docs/privacy_audit_20260906.md](docs/privacy_audit_20260906.md)).
 
+## Things this app does that the vendor app does not
+
+1. **It stops you starting a run with GPS switched off.** Forgetting location services is easy and it silently
+   ruins the whole session, so the Workout screen refuses to start one: the Start button is replaced by a warning
+   and a button that opens the location settings, and it re-checks when you come back. The vendor app shows a
+   dismissible "turn on GPS" dialog and then happily records nothing.
+2. **It notices a workout you started in your sleep.** Knocking the watch in bed can drop it into workout mode and
+   leave it there all night. The app watches heart rate, motion, steps and GPS over a rolling window; if it is the
+   small hours, your heart rate has sat at sleeping level and the phone has not moved, it warns and then ends the
+   session on its own instead of logging a nine-hour "run".
+3. **It knows what each sport should look like.** All 70 of the watch's sport types are grouped by the signals a
+   genuine session produces, so "is this still happening?" is asked the right way per sport: outdoor running expects
+   steps, GPS movement and raised heart rate; a spin bike or elliptical expects heart rate and motion but no GPS and
+   no steps; yoga expects only that the phone moves with you; swimming and fishing are never judged at all. A sport
+   whose signals cannot be measured is never flagged.
+4. **It measures distance when the signal is poor.** The vendor app returned 0.0 km after a twenty-minute run.
+   Ours accepts fixes up to 60 m accuracy and rejects jitter by radius rather than discarding whole fixes, which on
+   the synthetic runs lands within a fraction of a percent when the phone reports Doppler speed and within a couple
+   of percent without it. It also draws the rejected fixes on the track, so you can see what it decided.
+5. **No blank pace for the whole run.** When GPS is unavailable or lost, pace and distance are computed from your
+   steps and a calibrated stride and labelled "(est)", instead of showing nothing until the session ends.
+6. **Stride is yours, not a formula.** Walking and running strides start from your height and can be overridden in
+   Settings, and the two are tracked separately because the watch reports walking and running steps separately.
+7. **Pause, resume and stop work from either end.** Press the button on the watch or in the app and both agree,
+   with spoken cues so you do not have to look, and a session you start on the watch is announced and monitored. The
+   watch's firmware sometimes floods pause and resume in bursts; the app waits 8 seconds for the state to settle
+   instead of chopping your run into fragments.
+8. **It cannot phone home.** The app requests no internet permission at all, so it is incapable of sending your data
+   anywhere; everything lives in a plain SQLite file on your phone that you can copy off over adb. The vendor app
+   requests internet access and talks to a dozen cloud endpoints.
+9. **A "plan B" track that does not need the watch.** An opt-in background breadcrumb records where you went even
+   when the watch drops the link mid-session, and a finished workout can be rebuilt from it afterwards. It keeps
+   14 days and is off unless you turn it on.
+10. **You can fix the sport afterwards.** Started an "outdoor run" that was really a bike ride? Override the type on
+    the finished workout, and the export follows.
+11. **It is auditable.** The protocol it speaks is written down in [docs/PROTOCOL.md](docs/PROTOCOL.md) and its
+    behaviour in [docs/APP.md](docs/APP.md), so nothing it sends to your watch or writes to Health Connect is a
+    black box.
+
 Build it and put it on your phone: **[BUILD.md](BUILD.md)**. The app's design and behaviour: [docs/APP.md](docs/APP.md).
 
 ---
