@@ -2,8 +2,9 @@
 
 Gradle project in `ryzeapp/` (Kotlin 1.9.22, AGP 8.6.0, compileSdk 35, minSdk 26, Compose BOM 2024.02.02,
 Room 2.6.1 via KSP, Health Connect client 1.1.0-alpha11, play-services-location 21.1.0). Package `au.buzz.ryzewave`.
-Build: `cd ryzeapp && ./gradlew :app:assembleDebug` (SDK in `../tools/android-sdk`, see `local.properties`).
-Install: `adb install -r app/build/outputs/apk/debug/app-debug.apk`.
+Build and install: see **[BUILD.md](../BUILD.md)** (prerequisites, `tools/fastbuild.sh`, permission grants,
+release signing, troubleshooting). The short form is `cd ryzeapp && JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+./gradlew :app:assembleDebug` then `adb install -r app/build/outputs/apk/debug/app-debug.apk`.
 
 ### Release build and signing (2026-09-05)
 `cd ryzeapp && ./gradlew :app:assembleRelease` writes `app/build/outputs/apk/release/app-release.apk`, signed with the

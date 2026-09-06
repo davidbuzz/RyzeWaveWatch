@@ -23,6 +23,7 @@ The full command table, packet formats and the pairing handshake are in
 
 ```
 README.md, CLAUDE.md        this file / notes for Claude Code sessions
+BUILD.md                    how to build the apps and install them on a phone
 docs/PROTOCOL.md            BLE protocol reference (living document)
 docs/gadgetbridge_upstream.md  Protocol corrections worth sending to the Gadgetbridge GloryFit driver
 docs/PLAN.md                plan for the replacement app (platform, features, distance model, milestones)
@@ -52,6 +53,9 @@ apk/                        Ryze Fit XAPK + jadx output (git-ignored, ~1 GB)
 ```
 
 ## Getting started
+
+Building the Android app and putting it on a phone: **[BUILD.md](BUILD.md)**. The rest of this section is the
+Python client, which talks to the watch from the laptop.
 
 ```bash
 python3 -m venv .venv && .venv/bin/pip install bleak pytest
