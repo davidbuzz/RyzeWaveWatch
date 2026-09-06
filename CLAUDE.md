@@ -84,3 +84,11 @@ shift in the file's header comment or the capture's `.md`. Pulled databases stay
 - **Small edits are done directly by Claude, not by an implementer subagent.** Workflows/agents are for large multi-file
   features and for independent verification. A one-line fix (like the 13-byte FD 33 decoder fix) is: edit, fastbuild,
   targeted test, install, commit — minutes, not an hour behind a queued job.
+
+## Privacy before publishing (Buzz, 2026-09-06)
+The repo is destined to be public. Before committing any capture: run every screenshot through
+`tools/privacy_blur.py` (status bar, the Settings profile card, app drawers / notification shades / app lists), strip
+`data/app/~~` package-scan lines from logcats, never commit a pulled `.db` or the real user-info packet bytes
+(profile placeholders in docs/tests are 175 cm / 75 kg / age 40), never write the phones' serial numbers
+(use `PIXEL_SERIAL` / `MOTO_SERIAL`), and shift GPS as per "GPS data in the repo". No IMEIs, phone numbers, real
+names or emails anywhere. Third-party app names (dating, banking, insurer, gov-ID, LinkedIn promos) must not appear.
