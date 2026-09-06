@@ -33,6 +33,11 @@ his own distance handling and UI. Worth upstreaming the protocol findings later 
 
 ## 3. Distance, done properly
 
+**Status: built and validated outdoors** (`workout/DefaultGpsDistanceTracker.kt`, `workout/DefaultStrideModel.kt`,
+`ui/WorkoutMetrics.kt`). Calibrated walking/running strides are user-overridable in Settings, the GPS tracker
+rejects poor and jittery fixes, and when GPS is unavailable pace and distance fall back to steps x stride and are
+labelled as estimates. What follows is the reasoning that led there.
+
 The vendor app never gets distance from the watch. Two separate calculations, both on the phone:
 
 **a) Daily distance from steps** (`PedometerUtils.calculateDistance`): `km = steps × height_cm × k / 100000`

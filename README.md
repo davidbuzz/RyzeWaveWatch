@@ -171,9 +171,9 @@ stride model calibrated from GPS walks. Heart rate, SpO2, steps and sleep come f
 - [x] Health Connect export verified on the phone (172 records: steps, HR, SpO2, distance, sleep; attributed to "Buzz's Ryze Wave" in Health Connect)
 - [x] Review + fix pass: 36 findings, 33 fixed (BLE link-loss race, export cursor, GPS spike filter, permission gating, …); build 00:36 installed and connected
 - [x] Build 2 (00:41): profile-edit revert, SpO2 chip overflow, export-button layout, midnight rollover fixed and independently verified on the phone (200 unit tests)
-- [x] Workout on the phone (00:52): start → watch HR streaming (71 bpm) → stop; GPS was 'poor (±39 m)' indoors so distance stayed 0 — an outdoor walk is the remaining real-world test
+- [x] Workout on the phone (00:52): start → watch HR streaming (71 bpm) → stop; GPS was 'poor (±39 m)' indoors so distance stayed 0 (the outdoor sessions below settled it)
 - [x] Build 3 (01:02): workouts exported to Health Connect as Exercise sessions, TX/RX packet log (`adb logcat -s WatchGatt:*`), HR mean unified, chart labels clamped (202 unit tests) — independently verified on the phone
-- [x] Outdoor GPS sessions validated distance, pace and stride: a 2.5-min walk (2026-09-05) and a 55-min run (2026-09-06), which also exposed the two bugs since fixed — the location-services gate and the step-based pace fallback
+- [x] Validated outdoors over several real sessions on the Pixel: a 2.5-min walk and a 3-min walk (2026-09-05), a 31-min / 3.31 km walk with HR 142 avg and 166 max (2026-09-05), and a 55-min run (2026-09-06). They confirmed the distance and pace model against a known route and exposed the two bugs since fixed: the location-services gate and the step-based pace fallback
 - [ ] Remote camera shutter and music control from the watch
 - [ ] Watch alarms and weather push
 - [ ] Contacts, call log and watch-face upload — researched, see [docs/watch_features_research.md](docs/watch_features_research.md)
