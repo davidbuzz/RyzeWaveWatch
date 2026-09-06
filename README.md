@@ -12,12 +12,12 @@ the phone and reports distance and pace from it, falling back to a step-and-stri
 recognises all 70 of the watch's sport types; forwards phone notifications to the watch; rings the phone from the
 watch; and exports everything to Health Connect.
 
-| Live workout | GPS track and summary | Heart rate and SpO2 | Dashboard |
-|---|---|---|---|
-| ![Live workout with per-second heart rate](captures/app_workout_20260905_010143/3_running.png) | ![Workout detail with GPS track](captures/app_track_20260905/detail_top.png) | ![Heart rate and blood oxygen history](captures/app_polish_20260905/hr_card_after.png) | ![Home dashboard](captures/app_sleepguard_20260906/01_dashboard.png) |
+| The watch | Live workout | GPS track and summary | Heart rate and SpO2 | Dashboard |
+|---|---|---|---|---|
+| ![The Ryze Wave watch on the wrist](docs/images/ryze_wave_watch.jpg) | ![Live workout with per-second heart rate](captures/app_workout_20260905_010143/3_running.png) | ![Workout detail with GPS track](captures/app_track_20260905/detail_top.png) | ![Heart rate and blood oxygen history](captures/app_polish_20260905/hr_card_after.png) | ![Home dashboard](captures/app_sleepguard_20260906/01_dashboard.png) |
 
-Screenshots are from real sessions; personal details are pixelated and every GPS coordinate in this repo is
-deliberately displaced (see [docs/privacy_audit_20260906.md](docs/privacy_audit_20260906.md)).
+The photo and screenshots are from real use; image metadata is stripped, personal details are pixelated and
+every GPS coordinate in this repo is deliberately displaced (see [docs/privacy_audit_20260906.md](docs/privacy_audit_20260906.md)).
 
 ## Things this app does that the vendor app does not
 
