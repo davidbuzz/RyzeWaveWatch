@@ -11,7 +11,7 @@
 2026-09-04 19:25:42,171 W disconnected from 78:02:B7:37:91:E5
 2026-09-04 19:25:59,141 W disconnected from 78:02:B7:37:91:E5
 2026-09-04 19:26:16,558 W disconnected from 78:02:B7:37:91:E5
-/home/buzz/RyzeWaveWatch/.venv/lib/python3.12/site-packages/bleak/backends/bluezdbus/client.py:646: UserWarning: Using default MTU value. Call _acquire_mtu() or set _mtu_size first to avoid this warning.
+<repo>/.venv/lib/python3.12/site-packages/bleak/backends/bluezdbus/client.py:646: UserWarning: Using default MTU value. Call _acquire_mtu() or set _mtu_size first to avoid this warning.
   warnings.warn(
 2026-09-04 19:26:30,640 I connected, mtu=23
 2026-09-04 19:26:32,525 I features: FL1=0x4BA1D4 FL2=0x005D78 FL3=0xFED921 FL4=0x756EDF FL5=0x0C3943 FL6=0x642A21 FL7=0x00080A password=False sync_ts=True sleep_v2=True sport_sync=True
@@ -19,7 +19,7 @@
 2026-09-04 19:26:37,744 I watch does not require a password
 19:26:37.744 connected after 171.9s; features FL1=0x4BA1D4 FL2=0x005D78 FL3=0xFED921 FL4=0x756EDF FL5=0x0C3943 FL6=0x642A21 FL7=0x00080A password=False sync_ts=True sleep_v2=True sport_sync=True
 Traceback (most recent call last):
-  File "/home/buzz/RyzeWaveWatch/tools/linktest.py", line 103, in <module>
+  File "<repo>/tools/linktest.py", line 103, in <module>
     asyncio.run(main())
   File "/usr/lib/python3.12/asyncio/runners.py", line 194, in run
     return runner.run(main)
@@ -30,19 +30,19 @@ Traceback (most recent call last):
   File "/usr/lib/python3.12/asyncio/base_events.py", line 687, in run_until_complete
     return future.result()
            ^^^^^^^^^^^^^^^
-  File "/home/buzz/RyzeWaveWatch/tools/linktest.py", line 68, in main
+  File "<repo>/tools/linktest.py", line 68, in main
     print(f"{ts()} time ack {(await w.set_time()).hex()}", flush=True)
                               ^^^^^^^^^^^^^^^^^^
-  File "/home/buzz/RyzeWaveWatch/ryzewave/client.py", line 240, in set_time
+  File "<repo>/ryzewave/client.py", line 240, in set_time
     return await self.request(P.enc_set_time(t), P.CMD_TIME)
            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/buzz/RyzeWaveWatch/ryzewave/client.py", line 202, in request
+  File "<repo>/ryzewave/client.py", line 202, in request
     await self.write(cmd, channel)
-  File "/home/buzz/RyzeWaveWatch/ryzewave/client.py", line 184, in write
+  File "<repo>/ryzewave/client.py", line 184, in write
     await self._client.write_gatt_char(ch, data, response=not self._write_props.get(ch, True))
-  File "/home/buzz/RyzeWaveWatch/.venv/lib/python3.12/site-packages/bleak/__init__.py", line 826, in write_gatt_char
+  File "<repo>/.venv/lib/python3.12/site-packages/bleak/__init__.py", line 826, in write_gatt_char
     characteristic = _resolve_characteristic(char_specifier, self.services)
                                                              ^^^^^^^^^^^^^
-  File "/home/buzz/RyzeWaveWatch/.venv/lib/python3.12/site-packages/bleak/__init__.py", line 722, in services
+  File "<repo>/.venv/lib/python3.12/site-packages/bleak/__init__.py", line 722, in services
     raise BleakError("Service Discovery has not been performed yet")
 bleak.exc.BleakError: Service Discovery has not been performed yet

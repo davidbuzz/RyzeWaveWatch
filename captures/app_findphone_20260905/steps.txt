@@ -21,4 +21,4 @@ Broadcasting: Intent { act=au.buzz.ryzewave.debug.FIND_PHONE flg=0x400000 cmp=au
 Broadcast completed: result=0
 09:48:23 notification id=1002 present after watch stop: 0
 09:48:23 alarm volume after: 09-05 09:47:24:660 setStreamVolume(stream:STREAM_ALARM index:7 flags:0x0 oldIndex:6) from au.buzz.ryzewave
-09:48:23 done -> /home/buzz/RyzeWaveWatch/captures/app_findphone_20260905
+09:48:23 done -> <repo>/captures/app_findphone_20260905

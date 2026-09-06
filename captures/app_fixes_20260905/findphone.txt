@@ -1,7 +1,7 @@
 == ring 1 from adb (shell holds DUMP), stop from the 'watch' 2 s later
 Broadcasting: Intent { act=au.buzz.ryzewave.debug.FIND_PHONE flg=0x400000 cmp=au.buzz.ryzewave/.debug.DebugEventReceiver (has extras) }
 Broadcast completed: result=0
-saved /home/buzz/RyzeWaveWatch/captures/app_fixes_20260905/findphone_ringing.png (144578 bytes)
+saved <repo>/captures/app_fixes_20260905/findphone_ringing.png (144578 bytes)
 Broadcasting: Intent { act=au.buzz.ryzewave.debug.FIND_PHONE flg=0x400000 cmp=au.buzz.ryzewave/.debug.DebugEventReceiver (has extras) }
 Broadcast completed: result=0
 == ring 2 at once, stopped 1 s later

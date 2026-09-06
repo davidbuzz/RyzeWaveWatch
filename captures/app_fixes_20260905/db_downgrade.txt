@@ -9,7 +9,7 @@ row counts (checkpointed copy): {'steps_hour': 20, 'hr_sample': 350, 'spo2_sampl
 v4 copy user_version: 4
 == push the user_version=4 copy (a build without a 4->3 migration must fail loudly, not wipe the tables)
 md5 pushed: 6d2501762db8ea96302129382303d115  local: 06c319d8fddfd071b65157a56fd26261
-saved /home/buzz/RyzeWaveWatch/captures/app_fixes_20260905/db_downgrade_launch.png (116296 bytes)
+saved <repo>/captures/app_fixes_20260905/db_downgrade_launch.png (116296 bytes)
 -- crash buffer:
 -- main buffer:
 09-05 11:00:02.942  1870  3215 I ActivityManager: Background started FGS: Allowed [callingPackage: au.buzz.ryzewave; callingUid: 10378; uidState: TOP ; uidBFSL: [BFSL]; intent: Intent { cmp=au.buzz.ryzewave/.ble.WatchService }; code:PROC_STATE_TOP; tempAllowLi
@@ -18,7 +18,7 @@ saved /home/buzz/RyzeWaveWatch/captures/app_fixes_20260905/db_downgrade_launch.p
 pid after launch: 14072
 == restore the real database (user_version 3, checkpointed)
 md5 restored: 6d2501762db8ea96302129382303d115  local: e73a8a0efa777686e8ebdea345b40604
-saved /home/buzz/RyzeWaveWatch/captures/app_fixes_20260905/db_restored_dashboard.png (116296 bytes)
+saved <repo>/captures/app_fixes_20260905/db_restored_dashboard.png (116296 bytes)
 crash lines after restore: 0
 user_version after restore: 3
 row counts after restore: {'steps_hour': 20, 'hr_sample': 350, 'spo2_sample': 167, 'sleep_stage': 62, 'workout': 1, 'track_point': 146, 'sync_cursor': 6, 'hc_export': 229}
@@ -28,7 +28,7 @@ ledger companions: []
   377,  929          TextView       0.12 km
 == second attempt (the first push failed: the remote shell took the redirection; the WAL removal cost the last 4 hc_export rows, restored below from the checkpointed copy)
 pushed v4.db: phone 9ee46563c0948345b4ab534abcf475c6 local 06c319d8fddfd071b65157a56fd26261 MISMATCH
-saved /home/buzz/RyzeWaveWatch/captures/app_fixes_20260905/db_downgrade_launch.png (555129 bytes)
+saved <repo>/captures/app_fixes_20260905/db_downgrade_launch.png (555129 bytes)
 -- crash buffer:
 09-05 11:01:01.892 14320 14320 E AndroidRuntime: FATAL EXCEPTION: main
 09-05 11:01:01.892 14320 14320 E AndroidRuntime: java.lang.IllegalStateException: A migration from 4 to 3 was required but not found. Please provide the necessary Migration path via RoomDatabase.Builder.addMigration(Migration ...) or allow for destructive migrations via one of the RoomDatabase.Build
@@ -48,7 +48,7 @@ saved /home/buzz/RyzeWaveWatch/captures/app_fixes_20260905/db_downgrade_launch.p
 pid after launch: 14320
 == restore the complete checkpointed database (user_version 3)
 pushed restore.db: phone b8ecec9dd2c7340935ee4589d6697e7d local e73a8a0efa777686e8ebdea345b40604 MISMATCH
-saved /home/buzz/RyzeWaveWatch/captures/app_fixes_20260905/db_restored_dashboard.png (116255 bytes)
+saved <repo>/captures/app_fixes_20260905/db_restored_dashboard.png (116255 bytes)
 crash lines after restore: 0
 user_version after restore: 3
 row counts after restore: {'steps_hour': 20, 'hr_sample': 350, 'spo2_sample': 167, 'sleep_stage': 62, 'workout': 1, 'track_point': 146, 'sync_cursor': 6, 'hc_export': 233}

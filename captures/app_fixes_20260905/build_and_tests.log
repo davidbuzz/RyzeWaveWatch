@@ -52,7 +52,7 @@
 > Task :app:processDebugUnitTestJavaRes UP-TO-DATE
 > Task :app:testDebugUnitTest
 
-[Incubating] Problems report is available at: file:///home/buzz/RyzeWaveWatch/ryzeapp/build/reports/problems/problems-report.html
+[Incubating] Problems report is available at: file://<repo>/ryzeapp/build/reports/problems/problems-report.html
 
 Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
 

@@ -1,4 +1,4 @@
-smoke test done -> /home/buzz/RyzeWaveWatch/captures/app_smoke_20260905_083900
+smoke test done -> <repo>/captures/app_smoke_20260905_083900
 package: au.buzz.ryzewave   waited: 25s
 pid: 25338
 top activity: topResumedActivity=ActivityRecord{d276551 u0 au.buzz.ryzewave/.MainActivity t95}
