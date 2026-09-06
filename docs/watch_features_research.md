@@ -9,7 +9,7 @@ Read-only reverse-engineering of the decompiled Ryze Fit SDK + Gadgetbridge, ans
 
 # Ryze Wave — BLE Feature Planned-Work Report
 
-Scope: synthesis of the per-feature reverse-engineering findings (decompiled Ryze Fit SDK + Gadgetbridge + our docs). **Nothing has been exchanged with the watch yet**, so every opcode layout below is a hypothesis from the SDK/GB until a logcat capture confirms it. "Risk" throughout means *brick/data-loss* risk unless stated; none of the feasible items touch the OTA/DFU UUIDs.
+Scope: synthesis of the per-feature reverse-engineering findings (decompiled Ryze Fit SDK + Gadgetbridge + our docs). **Nothing has been exchanged with the watch yet for these particular features** (the exercise/sync protocol in `docs/PROTOCOL.md` *is* hardware-verified), so every opcode layout below is a hypothesis from the SDK/GB until a logcat capture confirms it. "Risk" throughout means *brick/data-loss* risk unless stated; none of the feasible items touch the OTA/DFU UUIDs.
 
 ---
 

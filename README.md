@@ -14,7 +14,7 @@ so we can replace the vendor "Ryze Fit" app with our own.
 | Radio | Bluetooth 5.2 dual-mode |
 | Classic BT (BR/EDR) | HFP / A2DP / AVRCP / PBAP / SPP — audio, calling, answer/hang-up. Standard profiles, nothing to reverse. |
 | BLE GATT | Custom services **0x55FF** (cmd: `33F1` write / `33F2` notify), **0x56FF** (data: `34F1` / `34F2`), **0x57FF** ("Alipay"/payments: `35F1` / `35F2`). All health data, notifications and settings go here. |
-| Open-source reference | Gadgetbridge "GloryFit" driver (PR #5063) speaks the same protocol. It did **not** work for us out of the box; most likely cause is the `D5` password/pairing handshake described in [docs/PROTOCOL.md](docs/PROTOCOL.md). |
+| Open-source reference | Gadgetbridge "GloryFit" driver (PR #5063) speaks the same protocol, but did **not** work with this watch out of the box. The `D5` password handshake was the first suspicion and turned out **not** to be required here (feature bitmap `FL1=0x4BA1D4`, password bit clear); the real gaps are the missing live-HR and SpO2 commands and the year-byte fix, listed in [docs/PLAN.md](docs/PLAN.md) and [docs/gadgetbridge_upstream.md](docs/gadgetbridge_upstream.md). |
 
 The full command table, packet formats and the pairing handshake are in
 [docs/PROTOCOL.md](docs/PROTOCOL.md).
@@ -28,11 +28,18 @@ docs/PROTOCOL.md            BLE protocol reference (living document)
 docs/gadgetbridge_upstream.md  Protocol corrections worth sending to the Gadgetbridge GloryFit driver
 docs/PLAN.md                plan for the replacement app (platform, features, distance model, milestones)
 docs/wave_application_research.md   narrative research notes: everything that mattered, tagged by how we know it
+docs/watch_features_research.md     the watch's non-exercise features (voice, contacts, music, games, faces) and what we could do with them
+docs/privacy_audit_20260906.md      what was scrubbed from this repo before publishing, and the rules that now apply
+memory/                     Claude Code's notes for this project (one fact per file, index in MEMORY.md)
 ryzewave/                   our BLE client library + CLI (protocol.py = codec, client.py = bleak I/O)
 ryzeapp/                    "Buzz's Ryze Wave": the real Android app (Kotlin/Compose/Room/Health Connect), spec in docs/APP.md
 android/                    RyzeBridge: headless Android app (Java, no Gradle) that relays BLE <-> adb logcat
 tools/bridge.py             drives RyzeBridge over adb and decodes the traffic (info, sync, hr, spo2, keep, raw)
+tools/fastbuild.sh          incremental build + install of the app in seconds (see BUILD.md)
 tools/app_smoke.sh          build + install + launch + screenshot loop for the app (captures/app_smoke_<ts>/)
+tools/pull_app_data.sh      pull the app's database and settings off a phone into captures/
+tools/analyse_workout.py    summarise a pulled workout (distance, pace, HR, track)
+tools/privacy_blur.py       pixelate regions of a screenshot before committing it (see docs/privacy_audit_20260906.md)
 tools/app_tap.sh            tap a UI element on the phone by its text (uiautomator), e.g. tools/app_tap.sh "Sync now"
 tools/app_workout_test.sh   scripted workout on the phone: start, wait, stop, capture FD traffic + screenshots
 tests/                      offline codec tests
@@ -58,7 +65,7 @@ Building the Android app and putting it on a phone: **[BUILD.md](BUILD.md)**. Th
 Python client, which talks to the watch from the laptop.
 
 ```bash
-python3 -m venv .venv && .venv/bin/pip install bleak pytest
+python3 -m venv .venv && .venv/bin/pip install -r requirements-dev.txt
 .venv/bin/python -m pytest tests            # offline codec tests
 sudo tools/le_only.sh on                    # Linux/BlueZ: force the LE bearer (see docs/PROTOCOL.md §8); `off` restores dual mode
 bluetoothctl trust 78:02:B7:37:91:E5        # once: lets BlueZ cache the (slow) GATT discovery
@@ -133,7 +140,7 @@ stride model calibrated from GPS walks. Heart rate, SpO2, steps and sleep come f
 - [x] Full history sync through the phone bridge (steps, HR, SpO2, sleep); record timing verified against the clock
 - [ ] Laptop BlueZ link drops every 5-20 s (supervision timeout) — parked, see `captures/bluez_linkdrop_notes.md`
 - [x] Phone notifications to the watch (build 6); find-phone ringer (build 8); [ ] camera, music control
-- [x] Two-way pause/resume/stop with spoken cues (build 9), stuck-workout detector (build 10), GPS breadcrumb plan B (build 11)
+- [x] Two-way pause/resume/stop with spoken cues (build 9), stuck-workout detector (build 10), GPS breadcrumb plan B (build 11 of 2026-09-06 — see the build-number note in docs/APP.md)
 - [x] Platform decided: native Kotlin app in `ryzeapp/` (docs/APP.md)
 - [x] First build 2026-09-05 00:02: green build, 187 unit tests, installed on the Moto g05, connects, syncs (steps/HR/SpO2/sleep), dashboard + history charts render
 - [x] Health Connect export verified on the phone (172 records: steps, HR, SpO2, distance, sleep; attributed to "Buzz's Ryze Wave" in Health Connect)
@@ -161,7 +168,7 @@ Fresh clone bootstrap:
 ```bash
 git submodule update --init --depth 1 tools/Gadgetbridge-tools
 git -c protocol.version=2 submodule update --init --depth 1 --filter=blob:none tools/Gadgetbridge   # then sparse-checkout the three device dirs
-python3 -m venv .venv && .venv/bin/pip install bleak pytest pillow
+python3 -m venv .venv && .venv/bin/pip install -r requirements-dev.txt
 android/sdk-install.sh && echo "sdk.dir=$PWD/tools/android-sdk" > ryzeapp/local.properties
 ```
 Then build the Android app as described in [BUILD.md](BUILD.md).

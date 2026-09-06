@@ -18,9 +18,9 @@ state inside the repo.
 
 ## Ground truth vs. inference
 - **Verified on the watch**: MAC, BT name, classic SDP profiles (from `bluetoothctl info`).
-- **From Gadgetbridge / dissector** (tested on other GloryFit watches, not ours): packet formats in `docs/PROTOCOL.md`.
+- **From Gadgetbridge / dissector** (tested on other GloryFit watches): packet formats in `docs/PROTOCOL.md` that are *not* marked `[V]`.
 - **From the decompiled Ryze Fit SDK** (`apk/jadx-out/sources/com/yc/pedometer/sdk/`): opcode table, D5 pairing handshake, feature bitmap.
-- Nothing has been exchanged with the watch yet. Until a capture exists, treat every packet layout as a hypothesis.
+- **Verified on hardware**: the packet layouts marked `[V]` in `docs/PROTOCOL.md` were confirmed against the watch from 2026-09-04 onwards (info, sync, live HR, SpO2, sleep, workouts). Items marked `[SDK]` or `[GB]` are still hypotheses until a capture proves them.
 
 ## Where things live
 - Decompiled app: `apk/jadx-out/sources/`. Key files:
@@ -44,7 +44,7 @@ state inside the repo.
 - The watch's classic-BT audio link is independent of BLE; don't try to "fix" HFP/A2DP.
 
 ## The app (ryzeapp/)
-- Gradle project, spec in `docs/APP.md`; build/install/troubleshooting reference is `BUILD.md` (keep it current when the toolchain changes). Build: `cd ryzeapp && JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 ./gradlew :app:assembleDebug --console=plain` (the default `java` is a JRE-only 21) (config ~20 s, deps cached in ~/.gradle from MyPulseApp). Install: `adb install -r app/build/outputs/apk/debug/app-debug.apk`, then `pm grant` BLUETOOTH_CONNECT/SCAN, ACCESS_FINE_LOCATION, POST_NOTIFICATIONS and the 12 `android.permission.health.*` permissions (pm grant works for Health Connect on Android 14+); `tools/app_smoke.sh` does all of it.
+- Gradle project, spec in `docs/APP.md`; build/install/troubleshooting reference is `BUILD.md` (keep it current when the toolchain changes). Build: `cd ryzeapp && JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 ./gradlew :app:assembleDebug --console=plain` (the default `java` is a JRE-only 21) (config ~20 s, deps cached in ~/.gradle from MyPulseApp). Install: `adb install -r app/build/outputs/apk/debug/app-debug.apk`, then `pm grant` BLUETOOTH_CONNECT/SCAN, ACCESS_FINE_LOCATION, ACCESS_COARSE_LOCATION, ACCESS_BACKGROUND_LOCATION, POST_NOTIFICATIONS, ACTIVITY_RECOGNITION and the 7 `android.permission.health.WRITE_*` permissions (the app never reads from Health Connect) (pm grant works for Health Connect on Android 14+); `tools/app_smoke.sh` does all of it.
 - Core contracts in `ryzeapp/app/src/main/java/au/buzz/ryzewave/core/`; `App.graph` is the service locator (`GraphFactory`).
 - Force-stop Ryze Fit and RyzeBridge before testing the app (`adb shell am force-stop com.yc.ryzefit au.buzz.ryzebridge`); all three share the phone's GATT link.
 

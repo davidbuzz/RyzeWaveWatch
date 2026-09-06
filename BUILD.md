@@ -19,23 +19,35 @@ JDK is pinned in `ryzeapp/gradle.properties`:
 org.gradle.java.home=/usr/lib/jvm/java-17-openjdk-amd64
 ```
 
-Change that line if your JDK 17 lives elsewhere. Scripts also export `JAVA_HOME` to the same path. Gradle itself
-comes from the wrapper (8.14.4), so you do not install it.
-
-**Android SDK, inside the repo.** `ryzeapp/local.properties` points at `tools/android-sdk`, which is git-ignored.
-Create it with:
+Change that line if your JDK 17 lives elsewhere. That property wins over `JAVA_HOME`, so on another machine either
+edit it or override it per-invocation, which is what CI does:
 
 ```bash
-android/sdk-install.sh          # cmdline-tools + platform 34 + build-tools 34, into tools/android-sdk
+./gradlew -Dorg.gradle.java.home="$JAVA_HOME" :app:assembleDebug
 ```
 
-Then check `ryzeapp/local.properties` reads `sdk.dir=<repo>/tools/android-sdk`. If you moved the repo, fix that
-line and stop the Gradle daemons (`cd ryzeapp && ./gradlew --stop`), because they cache the old path.
+`tools/fastbuild.sh` relies on the pinned property; `tools/app_smoke.sh` exports `JAVA_HOME` as well. Gradle itself
+comes from the wrapper (8.14.4), so you do not install it.
+
+**Android SDK, inside the repo.** The SDK is git-ignored, so a clone has none. Install it:
+
+```bash
+android/sdk-install.sh          # cmdline-tools + platforms 34/35 + build-tools 34/35, into tools/android-sdk
+```
+
+`ryzeapp/local.properties` tells Gradle where it went, and is git-ignored too. Write it:
+
+```bash
+echo "sdk.dir=$PWD/tools/android-sdk" > ryzeapp/local.properties
+```
+
+If you later move the repo, fix that line and stop the Gradle daemons (`cd ryzeapp && ./gradlew --stop`), because
+they cache the old path.
 
 **Python venv** (only for the CLI and the helper tools):
 
 ```bash
-python3 -m venv .venv && .venv/bin/pip install bleak pytest pillow
+python3 -m venv .venv && .venv/bin/pip install -r requirements-dev.txt
 ```
 
 ## The fast path: edit, build, install
@@ -82,15 +94,17 @@ for p in BLUETOOTH_CONNECT BLUETOOTH_SCAN ACCESS_FINE_LOCATION ACCESS_COARSE_LOC
 done
 for p in STEPS HEART_RATE OXYGEN_SATURATION DISTANCE SLEEP EXERCISE EXERCISE_ROUTE; do
   adb shell pm grant $PKG android.permission.health.WRITE_$p
-  adb shell pm grant $PKG android.permission.health.READ_$p
 done
 ```
 
 The `android.permission.health.*` ones are platform permissions on Android 14+, so `pm grant` works for Health
-Connect (verified on Android 15). `WRITE_EXERCISE_ROUTE` carries the workout's GPS track and has no `READ_` twin.
+Connect (verified on Android 15 and 16). The app only ever writes, so there is no `READ_` permission to grant:
+those seven `WRITE_` are exactly what the manifest declares. `WRITE_EXERCISE_ROUTE` carries the workout's GPS
+track.
 
-`tools/app_smoke.sh` does build, install, all of the grants, launch, wait, logcat and a screenshot in one go, into
-`captures/app_smoke_<timestamp>/`:
+`tools/app_smoke.sh` does build, install, the grants, launch, wait, logcat and a screenshot in one go, into
+`captures/app_smoke_<timestamp>/`. It grants everything above except `ACCESS_BACKGROUND_LOCATION`, which the
+breadcrumb service needs, so grant that one by hand if you are testing breadcrumbs:
 
 ```bash
 tools/app_smoke.sh              # build first

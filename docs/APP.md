@@ -6,6 +6,11 @@ Build and install: see **[BUILD.md](../BUILD.md)** (prerequisites, `tools/fastbu
 release signing, troubleshooting). The short form is `cd ryzeapp && JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
 ./gradlew :app:assembleDebug` then `adb install -r app/build/outputs/apk/debug/app-debug.apk`.
 
+### A note on build numbers
+Build numbers were reused: the series ran 1..13 on 2026-09-05, then restarted at 9 on 2026-09-06. A build is
+therefore identified by **number *and* date** — "build 11, 2026-09-05" is the find-my-phone ringer, "build 11,
+2026-09-06" is the GPS breadcrumb. Sections below are in chronological order regardless of number.
+
 ### Release build and signing (2026-09-05)
 Summary in [BUILD.md](../BUILD.md); the detail is here.
 `cd ryzeapp && JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 ./gradlew :app:assembleRelease` writes `app/build/outputs/apk/release/app-release.apk`, signed with the
