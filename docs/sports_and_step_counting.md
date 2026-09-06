@@ -91,6 +91,29 @@ to the permissive default and were safe only because such sessions carry no GPS 
 | `0x72` | Long Jump | A short run-up, then a single jump | Partly — real steps, but few | Yes, `ANY` |
 | `0x73` | Marathon | Swings with the stride for hours | **Yes** — footfalls | Yes, `ANY` |
 
+## Why GPS is required for every sport, including the ones in this table that count nothing
+
+Read down the third column and the wrist looks unreliable: it counts footfalls in some sports, strokes in others,
+repetitions in others, and road vibration in the rest. What it counts changes with the sport, with where the watch
+is worn, and with what the wearer happens to be doing with their hands.
+
+GPS does not change with any of that. It measures where the body went, and it measures it the same way whether the
+wearer is running, cycling, skating, paddling or swimming lengths of an open-air pool. That is why the app refuses
+to start a workout with location services off, for **every** sport rather than only the ones that obviously travel:
+it is the one dataset that does not depend on which limb is moving, and where it is available at all it tends to be
+available reliably and continuously for the whole session.
+
+That makes it the reference the rest is checked against. Two consequences worth stating plainly:
+
+- **A gate in the last column never disables GPS.** Cycling calibrates no stride, but it still records a full track,
+  a real distance and a real speed. The refusal is only about deriving a stride from a wrist count; nothing about
+  the sport stops the phone measuring the route. Nothing in the workout code branches on sport type before starting
+  the tracker.
+- **GPS is what proved the wrist counts wrong in the first place.** The stride bug was only visible because the
+  same session had an independent distance to compare against: 772 GPS metres against 874 wrist counts said the
+  blended 0.883 m stride belonged to neither gait. Without the satellite measurement there would have been no way
+  to tell a good stride from a bad one, in any sport.
+
 ## What this table changed
 
 - **21 sports gained an explicit gate.** Volleyball, sit-ups, jumping jacks, free training, strength training,

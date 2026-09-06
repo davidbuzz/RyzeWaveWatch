@@ -23,3 +23,11 @@ Google Fit had no track either. This must be impossible to repeat. See [[ryze-ap
 check. An app cannot toggle system location silently; send the user to `Settings.ACTION_LOCATION_SOURCE_SETTINGS` and
 re-verify on return. Also add a step-based (stride) pace/distance fallback so pace is never a bare "--:--" (Buzz: "we
 can do better").
+
+**The wider reason (Buzz, 2026-09-06):** GPS is enforced for *every* sport, not only the obviously travelling ones,
+because it is the only dataset that does not depend on which limb is moving. The wrist counter measures footfalls
+in running, strokes in rowing, repetitions in the gym and road buzz on a bike, but GPS measures where the body went
+in all of them, and where it is available at all it is reliably available for the whole session. It is therefore
+the reference every other measurement is validated against — the stride bug of 2026-09-06 was only detectable
+because GPS distance could be compared with the wrist's step count. See [[ryze-wave-distance-motivation]] and
+docs/sports_and_step_counting.md.
