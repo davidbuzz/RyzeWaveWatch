@@ -83,13 +83,14 @@ pick_in_dialog() {
   dump; box=$(dialog_box); [ -z "$box" ] && return 1
   read -r x top bottom <<<"$box"
   for _ in 1 2 3 4 5 6 7 8; do adb shell input swipe "$x" "$((top + 80))" "$x" "$((bottom - 80))" 200; done; sleep 0.6   # to the top
-  while [ $tries -lt 20 ]; do
+  while [ $tries -lt 28 ]; do
     dump; xy=$(find_exact "$name")
     if [ -n "$xy" ]; then tap_xy $xy; return 0; fi
     box=$(dialog_box); [ -z "$box" ] && return 1
     read -r x top bottom <<<"$box"
-    # drag up inside the list. A quick 300 ms drag scrolls the Compose list; a slow 600 ms one was ignored.
-    adb shell input swipe "$x" "$((bottom - 80))" "$x" "$((top + 80))" 300; sleep 0.7
+    # drag up inside the list by about half its height, so consecutive views overlap and no row can fall in
+    # the gap between two dumps. A quick 300 ms drag scrolls the Compose list; a slow 600 ms one was ignored.
+    adb shell input swipe "$x" "$((top + (bottom - top) * 3 / 4))" "$x" "$((top + (bottom - top) / 4))" 300; sleep 0.8
     tries=$((tries + 1))
   done
   return 1
@@ -112,7 +113,15 @@ for name in "${SPORTS[@]}"; do
   if [ -z "$id" ]; then say "SKIP unknown sport '$name'"; continue; fi
   before=$(row_for_start | cut -d'|' -f1)
   adb shell input keyevent KEYCODE_WAKEUP >/dev/null 2>&1
+  tap_text "Close" >/dev/null 2>&1   # a dialog left open by an earlier failure would hide everything below
   tap_text "Workout"; sleep 1
+  # A workout still running (from an interrupted run, or a stop that never took) hides the sport picker entirely.
+  # Stop it first, and prove it stopped, before trying to pick anything.
+  dump
+  if grep -qE 'text="[^"]* · (Running|Paused)"' "$S/ui.xml"; then
+    say "$name: a workout is still running from before - stopping it first"
+    for k in 1 2 3 4; do tap_text "Stop" || true; sleep 2; dump; grep -q 'text="Start workout"' "$S/ui.xml" && break; done
+  fi
   # the picker: a chip row with the popular sports and a "More…" chip that opens the "All sports" dialog.
   # The tab can take a moment to render after a stop, so try twice before giving up.
   if ! tap_text "More…"; then sleep 1.5; tap_text "Workout"; sleep 1; tap_text "More…" || { say "$name: no 'More…' chip on the Workout tab"; dump; }; fi
