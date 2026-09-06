@@ -103,6 +103,20 @@ class DataStoreSettingsStore(private val dataStore: DataStore<Preferences>) : Se
     override suspend fun setWorkoutSportType(type: Int) {
         dataStore.edit { SettingsKeys.writeWorkoutSportType(it, type) }
     }
+
+    override val stuckDetectorEnabled: Flow<Boolean> =
+        prefs.map { it[SettingsKeys.STUCK_DETECTOR_ENABLED] ?: true }.distinctUntilChanged()
+
+    override val stuckAutoStopAppWorkouts: Flow<Boolean> =
+        prefs.map { it[SettingsKeys.STUCK_AUTO_STOP_APP] ?: false }.distinctUntilChanged()
+
+    override suspend fun setStuckDetectorEnabled(on: Boolean) {
+        dataStore.edit { it[SettingsKeys.STUCK_DETECTOR_ENABLED] = on }
+    }
+
+    override suspend fun setStuckAutoStopAppWorkouts(on: Boolean) {
+        dataStore.edit { it[SettingsKeys.STUCK_AUTO_STOP_APP] = on }
+    }
 }
 
 /**
@@ -133,6 +147,9 @@ object SettingsKeys {
     val NOTIFICATIONS_FORWARD_ALL = booleanPreferencesKey("notifications_forward_all")
 
     val WORKOUT_SPORT_TYPE = intPreferencesKey("workout_sport_type")
+
+    val STUCK_DETECTOR_ENABLED = booleanPreferencesKey("stuck_detector_enabled")
+    val STUCK_AUTO_STOP_APP = booleanPreferencesKey("stuck_auto_stop_app_workouts")
 
     /** Normalised MAC (trimmed, upper case) or null when unset / blank. */
     fun readWatchMac(p: Preferences): String? = p[WATCH_MAC]?.trim()?.takeIf { it.isNotEmpty() }

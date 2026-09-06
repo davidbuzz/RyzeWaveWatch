@@ -6,6 +6,9 @@ import java.util.Locale
 /** Lifecycle of the current workout. STOPPED is also the idle state before anything has been started. */
 enum class WorkoutPhase { RUNNING, PAUSED, STOPPED }
 
+/** Who ended the workout: the app's button, the watch's button, or the stuck-workout detector's auto-stop. */
+enum class StopReason { USER, WATCH, NO_ACTIVITY }
+
 /**
  * Live view of the workout, published by [WorkoutController.state] once per second and on every GPS fix /
  * HR sample. After [WorkoutController.stop] the phase is STOPPED and the final numbers stay in place so the
@@ -48,6 +51,8 @@ data class WorkoutState(
     val hostError: String? = null,
     /** Bumped on every [error] / [hostError] change, so a UI transition can notice a fresh failure. */
     val errorSeq: Int = 0,
+    /** Why the last workout ended (set with the STOPPED phase); null while active or before any workout. */
+    val stopReason: StopReason? = null,
 ) {
     /** Everything worth showing, host problems first. */
     val message: String? get() = listOfNotNull(hostError, error).joinToString(" · ").ifEmpty { null }

@@ -85,6 +85,17 @@ interface SettingsStore {
     val workoutSportType: Flow<Int> get() = flowOf(DEFAULT_WORKOUT_SPORT_TYPE)
     suspend fun setWorkoutSportType(type: Int) {}
 
+    // ---- stuck-workout detector (additive) ----
+    /** Master switch of the stuck-in-exercise-mode detector (`workout.StuckWorkoutMonitor`). Default true. */
+    val stuckDetectorEnabled: Flow<Boolean> get() = flowOf(true)
+    /**
+     * Also auto-stop an *app-started* workout that shows no activity after the grace (a watch-started one is always
+     * auto-stopped while the detector is on; an app-started one otherwise only gets the warning). Default false.
+     */
+    val stuckAutoStopAppWorkouts: Flow<Boolean> get() = flowOf(false)
+    suspend fun setStuckDetectorEnabled(on: Boolean) {}
+    suspend fun setStuckAutoStopAppWorkouts(on: Boolean) {}
+
     companion object {
         const val DEFAULT_WORKOUT_SPORT_TYPE = 1
     }

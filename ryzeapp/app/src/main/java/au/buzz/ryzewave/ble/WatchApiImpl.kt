@@ -484,6 +484,11 @@ class WatchApiImpl(
         _events.tryEmit(e)
     }
 
+    /** Debug/test hook: publishes a live heart-rate sample on [liveHr] as if the watch had streamed it. */
+    fun injectHr(bpm: Int) {
+        _liveHr.tryEmit(HrSample(System.currentTimeMillis(), bpm, SampleSource.WORKOUT))
+    }
+
     // ------------------------------------------------------------------ notifications
 
     /** One notification burst at a time: chunks of a second message must not interleave with the first. */

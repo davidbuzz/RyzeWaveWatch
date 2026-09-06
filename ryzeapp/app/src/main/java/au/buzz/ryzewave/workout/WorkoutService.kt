@@ -16,17 +16,15 @@ import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.location.Location
-import android.media.AudioAttributes
 import android.os.Build
 import android.os.IBinder
 import android.os.Looper
 import android.os.PowerManager
-import android.speech.tts.TextToSpeech
 import android.util.Log
-import java.util.Locale
 import androidx.core.app.NotificationCompat
 import androidx.core.app.ServiceCompat
 import androidx.core.content.ContextCompat
+import au.buzz.ryzewave.App
 import au.buzz.ryzewave.R
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationAvailability
@@ -67,10 +65,9 @@ class WorkoutService : Service() {
     private var sessionJob: Job? = null
 
     // Spoken workout cues (pause/resume/start/stop), driven by the controller's state so they cover the app
-    // buttons and the watch's buttons alike, each exactly once (see StateAnnouncer).
+    // buttons and the watch's buttons alike, each exactly once (see StateAnnouncer). Spoken through the
+    // process-wide engine (App.graph.speaker), which the stuck-workout detector shares.
     private val announcer = StateAnnouncer()
-    private var tts: TextToSpeech? = null
-    @Volatile private var ttsReady = false
 
     // Phone step counter (TYPE_STEP_COUNTER): its tally, paused-time excluded, becomes Workout.phoneSteps.
     private val phoneSteps = PhoneStepCounter()
@@ -104,7 +101,6 @@ class WorkoutService : Service() {
         fused = LocationServices.getFusedLocationProviderClient(this)
         notifications = getSystemService(NotificationManager::class.java)
         createChannel()
-        initTts()
         startSessionObserver()
         startStepCounter()
     }
@@ -136,7 +132,6 @@ class WorkoutService : Service() {
         stateJob?.cancel()
         sessionJob?.cancel()
         stopStepCounter()
-        shutdownTts()
         stopLocationUpdates()
         releaseWakeLock()
         if (controller.state.value.isActive) {
@@ -366,47 +361,8 @@ class WorkoutService : Service() {
 
     // ---- spoken cues + phone steps -------------------------------------------------------------------
 
-    private fun initTts() {
-        try {
-            tts = TextToSpeech(this) { status ->
-                ttsReady = status == TextToSpeech.SUCCESS
-                if (!ttsReady) {
-                    Log.w(TAG, "TTS init failed (status $status)")
-                    return@TextToSpeech
-                }
-                tts?.setAudioAttributes(
-                    AudioAttributes.Builder()
-                        .setUsage(AudioAttributes.USAGE_ALARM)          // audible from a pocket, over music
-                        .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
-                        .build(),
-                )
-                runCatching { tts?.language = Locale.getDefault() }
-            }
-        } catch (e: Exception) {
-            Log.w(TAG, "TTS unavailable: ${e.message}")
-        }
-    }
-
     private fun speak(text: String) {
-        Log.i(TAG, "announce: \"$text\"")               // always logged at INFO, even when TTS is not ready
-        val engine = tts ?: return
-        if (!ttsReady) return
-        try {
-            engine.speak(text, TextToSpeech.QUEUE_ADD, null, "workout:$text")
-        } catch (e: Exception) {
-            Log.d(TAG, "speak failed: ${e.message}")
-        }
-    }
-
-    private fun shutdownTts() {
-        try {
-            tts?.stop()
-            tts?.shutdown()
-        } catch (e: Exception) {
-            Log.d(TAG, "tts shutdown: ${e.message}")
-        }
-        tts = null
-        ttsReady = false
+        App.graph.speaker.speak(text)              // logs every utterance at INFO, even when TTS is not ready
     }
 
     /** One collector of the controller's state: speaks the phase transitions and pauses the phone step counter. */
@@ -417,7 +373,7 @@ class WorkoutService : Service() {
             controller.state.collect { st ->
                 if (st.state != lastPhase) {
                     lastPhase = st.state
-                    announcer.onPhase(st.state)?.let { speak(it) }
+                    announcer.onPhase(st.state, st.stopReason)?.let { speak(it) }
                     phoneSteps.setPaused(st.state == WorkoutPhase.PAUSED)
                 }
             }

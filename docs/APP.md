@@ -940,3 +940,32 @@ detector (docs/PLAN.md) is the planned superset.
 361 unit tests. Verified on the Moto: the buggy night went from 3 h 33 m to 8 h 10 m asleep (bed 22:15, rise 07:00,
 35 min real awake, 4 h 37 m unstaged), Health Connect export OK; the guard flagged an injected 02:00 start at 58 bpm and
 auto-stopped it after the grace, and allowed a daytime start.
+
+
+## Build 10 (2026-09-06): stuck-in-exercise-mode detector (per-sport), spoken "workout started"
+
+Supersedes the build-9 night guard. `workout/StuckWorkoutMonitor` watches every workout — the app's own and one the
+watch started by itself (`WorkoutControl(START)`) — and reduces what it sees to four indicators over a rolling 4-minute
+window (`ActivitySignals`): **steps** (watch session counter from the `FD 01` pushes, or the phone step counter,
+rising), **gps** (tracker distance +10 m or Doppler ≥ 0.7 m/s), **hr** (≥ resting baseline + 15; baseline =
+10th percentile of the last 24 h of periodic samples, `RestingHrBaseline`, fallback 65), **motion** (phone accelerometer
+|a| variance ≥ 0.15 over 5 s blocks, `AndroidMotionSampler`/`MotionVariance`). Each indicator is ACTIVE / INACTIVE /
+UNKNOWN (unavailable). `SportSignature` maps all 70 sport ids to the indicators a live session should show (MOVEMENT:
+all four; INDOOR_STEPS: steps+hr+motion; RIDE: gps+hr+motion; STATIONARY_CARDIO: hr+motion; FLOOR_WORK (yoga): motion
+only; STRENGTH: steps+hr+motion; UNMONITORED (swimming, fishing, archery…): never judged). `StuckModeDetector`: live if
+ANY expected indicator is active; likely-stuck if the window is covered, nothing expected is active and at least one
+expected indicator was actually measured; urgency HIGH (2-min grace) at night with HR at sleeping level and a still
+phone (the former night guard), else NORMAL (10-min grace). Escalation: speak "Workout running but no activity
+detected. Tap to stop." + high-priority notification with Stop; after the grace, auto-stop through the normal path
+(watch-started always; app-started only with the Settings switch "auto-stop app-started workouts", default off) and
+speak "workout stopped, no activity"; activity resuming withdraws the warning. Watch-originated starts are spoken
+("workout started"); app starts too, via the service. Settings: detector master switch (default on).
+
+Salvaged from a terminated workflow and finished directly (Buzz: "we want the code and the edits from that job that
+make sense, but not as a subtask"). One real bug found by the new tests: the fired grace timer cancelled its own
+coroutine mid-stop (the stop path cancels `autoStop`), so an app-started workout never reached STOPPED; the timer now
+detaches itself first. Tests: `SportSignatureTest`, `StuckModeDetectorTest` (yoga / rowing machine / phone-in-bag /
+flat run / night / rest / unavailable signal), `ActivitySignalsTest`, `StuckWorkoutMonitorTest` (warn → auto-stop,
+rising steps never warn, withdraw on activity, app-started not auto-stopped by default, stopNow). Debug:
+`au.buzz.ryzewave.debug.WORKOUT` op `watchstart` with `--el window/grace`, `--ez night`, `--ei hr`, `--ez moving`, then
+op `steps --ei n` to feed flat or rising session steps.

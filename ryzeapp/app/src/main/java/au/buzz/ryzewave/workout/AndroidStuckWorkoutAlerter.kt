@@ -10,28 +10,29 @@ import au.buzz.ryzewave.R
 import au.buzz.ryzewave.ble.WatchService
 
 /**
- * Android side of [NightWorkoutGuardController.NightWorkoutAlerter]: a high-priority heads-up notification when
- * a workout the watch started overnight looks accidental, with a Stop action (and a body tap) that goes to
- * [WatchService], which calls [au.buzz.ryzewave.workout.NightWorkoutGuardController.stopNow]. The notification is
- * removed on [clear] (the user's Stop, or the auto-stop after the grace period).
+ * Android side of [StuckWorkoutMonitor.Alerter]: a high-priority heads-up notification when a running workout
+ * shows no activity, with a Stop action (and a body tap) that goes to [WatchService], which calls
+ * [StuckWorkoutMonitor.stopNow]. Removed on [clear] (the user's Stop, activity resuming, or the auto-stop).
  */
-class AndroidNightWorkoutAlerter(private val context: Context) : NightWorkoutGuardController.NightWorkoutAlerter {
+class AndroidStuckWorkoutAlerter(private val context: Context) : StuckWorkoutMonitor.Alerter {
 
-    override fun warn() {
+    override fun warn(urgency: Urgency, title: String, text: String) {
         val nm = notificationManager() ?: return
         try {
+            nm.deleteNotificationChannel(LEGACY_CHANNEL_ID)      // the night-guard channel this replaces
             nm.createNotificationChannel(
-                NotificationChannel(CHANNEL_ID, "Accidental workout guard", NotificationManager.IMPORTANCE_HIGH).apply {
-                    description = "Warns when the watch starts a workout while you may be asleep"
+                NotificationChannel(CHANNEL_ID, "Stuck-workout detector", NotificationManager.IMPORTANCE_HIGH).apply {
+                    description = "Warns when a running workout shows no activity (e.g. the watch was bumped in your sleep)"
                     setShowBadge(true)
                     lockscreenVisibility = Notification.VISIBILITY_PUBLIC
                 },
             )
-            val stop = WatchService.nightWorkoutStopIntent(context)
+            val stop = WatchService.stuckWorkoutStopIntent(context)
+            val body = if (urgency == Urgency.HIGH) "$text before it spoils your sleep tracking" else text
             val n = Notification.Builder(context, CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_watch)
-                .setContentTitle("Workout started while you may be asleep")
-                .setContentText("Tap to stop it before it spoils your sleep tracking")
+                .setContentTitle(title)
+                .setContentText(body)
                 .setCategory(Notification.CATEGORY_REMINDER)
                 .setPriority(Notification.PRIORITY_HIGH)
                 .setVisibility(Notification.VISIBILITY_PUBLIC)
@@ -41,7 +42,7 @@ class AndroidNightWorkoutAlerter(private val context: Context) : NightWorkoutGua
                 .addAction(Notification.Action.Builder(Icon.createWithResource(context, R.drawable.ic_watch), "Stop", stop).build())
                 .build()
             nm.notify(NOTIFICATION_ID, n)
-            Log.i(TAG, "accidental-night-workout notification posted")
+            Log.i(TAG, "no-activity notification posted ($urgency): \"$title\" / \"$body\"")
         } catch (e: Exception) {
             Log.w(TAG, "notification failed: ${e.message ?: e.javaClass.simpleName}")
         }
@@ -50,6 +51,7 @@ class AndroidNightWorkoutAlerter(private val context: Context) : NightWorkoutGua
     override fun clear() {
         try {
             notificationManager()?.cancel(NOTIFICATION_ID)
+            Log.i(TAG, "no-activity notification cleared")
         } catch (e: Exception) {
             Log.w(TAG, "cancel notification: ${e.message}")
         }
@@ -58,8 +60,9 @@ class AndroidNightWorkoutAlerter(private val context: Context) : NightWorkoutGua
     private fun notificationManager(): NotificationManager? = context.getSystemService(NotificationManager::class.java)
 
     companion object {
-        const val TAG = "NightWorkoutGuard"
-        const val CHANNEL_ID = "night_workout_guard"
+        const val TAG = "StuckWorkout"
+        const val CHANNEL_ID = "stuck_workout"
+        const val LEGACY_CHANNEL_ID = "night_workout_guard"
         const val NOTIFICATION_ID = 1003
     }
 }

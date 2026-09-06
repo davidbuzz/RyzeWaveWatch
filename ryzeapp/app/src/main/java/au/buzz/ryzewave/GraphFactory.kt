@@ -10,13 +10,15 @@ import au.buzz.ryzewave.findphone.AndroidFindPhoneAlerter
 import au.buzz.ryzewave.findphone.FindPhoneRinger
 import au.buzz.ryzewave.health.HealthConnectExporter
 import au.buzz.ryzewave.notify.NotificationForwarder
+import au.buzz.ryzewave.core.SampleSource
 import au.buzz.ryzewave.ui.WorkoutBridgeHolder
-import au.buzz.ryzewave.workout.AndroidNightWorkoutAlerter
+import au.buzz.ryzewave.workout.AndroidMotionSampler
+import au.buzz.ryzewave.workout.AndroidSpeaker
+import au.buzz.ryzewave.workout.AndroidStuckWorkoutAlerter
 import au.buzz.ryzewave.workout.DefaultStrideModel
-import au.buzz.ryzewave.workout.NightWorkoutGuard
-import au.buzz.ryzewave.workout.NightWorkoutGuardController
+import au.buzz.ryzewave.workout.RestingHrBaseline
+import au.buzz.ryzewave.workout.StuckWorkoutMonitor
 import au.buzz.ryzewave.workout.WorkoutController
-import au.buzz.ryzewave.workout.WorkoutPhase
 import au.buzz.ryzewave.workout.WorkoutSession
 import au.buzz.ryzewave.workout.WorkoutUiBridge
 import kotlinx.coroutines.CoroutineName
@@ -113,27 +115,35 @@ object GraphFactory {
         )
         scope.launch { watch.events.collect { findPhone.onEvent(it) } }
 
-        // Accidental-night-workout guard: a workout the *watch* started overnight, with the wearer's HR still at
-        // rest and no GPS movement, is almost certainly an accidental touch that would block sleep detection for
-        // the rest of the night. It warns (high-priority notification with a Stop action) and auto-stops the
-        // watch's exercise mode after a grace period. App-initiated workouts are never touched (see the guard).
-        val nightGuard = NightWorkoutGuardController(
+        // Stuck-in-exercise-mode detector (docs/PLAN.md): every workout — the app's own and one the watch started by
+        // itself — is judged against its sport's expected activity signature over a rolling window. No expected
+        // signal for the whole window → spoken warning + high-priority notification with Stop, then an auto-stop
+        // after a grace (short at night with the wearer's HR at sleeping level: the former night workout guard).
+        // App-started workouts are only auto-stopped when the Settings switch says so. Lives in the process the
+        // BLE foreground service keeps alive, so it works with the screen off; speech goes through the shared engine.
+        val speaker = AndroidSpeaker(app)
+        val stuckMonitor = StuckWorkoutMonitor(
             watch = watch,
+            controller = controller,
             scope = scope,
-            alerter = AndroidNightWorkoutAlerter(app),
-            isAppWorkoutActive = { WorkoutSession.state.value.state != WorkoutPhase.STOPPED },
-            recentRestingHr = {
+            alerter = AndroidStuckWorkoutAlerter(app),
+            speaker = speaker::speak,
+            motion = AndroidMotionSampler(app),
+            restingBaseline = {
                 val now = System.currentTimeMillis()
-                NightWorkoutGuard.restingHr(
-                    repo.hrBetween(now - NightWorkoutGuardController.RECENT_HR_WINDOW_MS, now).first(),
-                )
+                RestingHrBaseline.of(repo.hrBetween(now - RestingHrBaseline.LOOKBACK_MS, now).first())
             },
-            log = { Log.i("NightWorkoutGuard", it) },
+            periodicHr = { from, to ->
+                repo.hrBetween(from, to).first().filter { it.source == SampleSource.AUTO || it.source == SampleSource.HISTORY }
+            },
+            detectorEnabled = { settings.stuckDetectorEnabled.first() },
+            autoStopAppWorkouts = { settings.stuckAutoStopAppWorkouts.first() },
+            log = { Log.i(AndroidStuckWorkoutAlerter.TAG, it) },
         )
 
         return Graph(
             repo = repo, settings = settings, watch = watch, health = health, notifications = notifications,
-            findPhone = findPhone, nightGuard = nightGuard,
+            findPhone = findPhone, speaker = speaker, stuckMonitor = stuckMonitor,
         )
     }
 }

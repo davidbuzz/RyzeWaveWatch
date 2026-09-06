@@ -105,11 +105,11 @@ class WatchService : Service() {
             Log.i(TAG, "find phone: stop tapped (${if (stopped) "stopped" else "was not ringing"})")
             return if (foreground) START_STICKY else START_NOT_STICKY
         }
-        if (intent?.action == ACTION_STOP_NIGHT_WORKOUT) {
-            // The accidental-night-workout notification's Stop action: stop the watch's exercise mode now.
-            // Handled even when this instance could not go foreground, so the user's tap always lands.
-            Log.i(TAG, "night workout: stop tapped")
-            App.graph.nightGuard.stopNow()
+        if (intent?.action == ACTION_STOP_STUCK_WORKOUT) {
+            // The stuck-workout notification's Stop action: stop the workout (app session or the watch's own
+            // exercise mode) now. Handled even when this instance could not go foreground, so the tap always lands.
+            Log.i(TAG, "stuck workout: stop tapped")
+            App.graph.stuckMonitor.stopNow()
             return if (foreground) START_STICKY else START_NOT_STICKY
         }
         if (!foreground) return START_NOT_STICKY
@@ -364,8 +364,8 @@ class WatchService : Service() {
         const val ACTION_PAUSE = "au.buzz.ryzewave.ble.action.PAUSE"
         /** From the find-my-phone notification (Stop action, tap, swipe): silence the ringer. */
         const val ACTION_FIND_PHONE_STOP = "au.buzz.ryzewave.ble.action.FIND_PHONE_STOP"
-        /** From the accidental-night-workout notification (Stop action / tap): stop the watch's exercise mode. */
-        const val ACTION_STOP_NIGHT_WORKOUT = "au.buzz.ryzewave.ble.action.STOP_NIGHT_WORKOUT"
+        /** From the stuck-workout notification (Stop action / tap): stop the workout that shows no activity. */
+        const val ACTION_STOP_STUCK_WORKOUT = "au.buzz.ryzewave.ble.action.STOP_STUCK_WORKOUT"
         const val SYNC_INTERVAL_MS = 30 * 60_000L
         const val RETRY_MS = 5 * 60_000L
         private val TIME_FMT: DateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm")
@@ -407,10 +407,10 @@ class WatchService : Service() {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
         )
 
-        /** PendingIntent for the accidental-night-workout notification's Stop action (see [ACTION_STOP_NIGHT_WORKOUT]). */
-        fun nightWorkoutStopIntent(context: Context): PendingIntent = PendingIntent.getForegroundService(
+        /** PendingIntent for the stuck-workout notification's Stop action (see [ACTION_STOP_STUCK_WORKOUT]). */
+        fun stuckWorkoutStopIntent(context: Context): PendingIntent = PendingIntent.getForegroundService(
             context, 3,
-            Intent(context, WatchService::class.java).setAction(ACTION_STOP_NIGHT_WORKOUT),
+            Intent(context, WatchService::class.java).setAction(ACTION_STOP_STUCK_WORKOUT),
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
         )
 

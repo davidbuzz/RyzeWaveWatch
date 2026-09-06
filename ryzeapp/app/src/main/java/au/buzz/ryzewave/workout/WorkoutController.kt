@@ -235,10 +235,13 @@ class WorkoutController(
      * Ends the workout whether it is RUNNING or PAUSED: stops the ticker and HR stream, tells the watch
      * (`FD 00 <type> 01`, unless [fromWatch] — the watch already stopped itself), flushes the buffers and writes
      * the final [Workout] row (end, active-time duration, distance, avg/max HR, calories, steps). Returns that
-     * row, or null when nothing was running.
+     * row, or null when nothing was running. [reason] is published as [WorkoutState.stopReason] (defaults to
+     * WATCH / USER by [fromWatch]); the stuck-workout detector passes [StopReason.NO_ACTIVITY] so the spoken
+     * cue says why.
      */
-    suspend fun stop(fromWatch: Boolean = false): Workout? = control.withLock {
+    suspend fun stop(fromWatch: Boolean = false, reason: StopReason? = null): Workout? = control.withLock {
         if (_state.value.state == WorkoutPhase.STOPPED) return@withLock null
+        val why = reason ?: if (fromWatch) StopReason.WATCH else StopReason.USER
         val now = clock()
         runningSince?.let { activeMsBefore += max(0L, now - it) }
         runningSince = null
@@ -258,6 +261,7 @@ class WorkoutController(
                 state = WorkoutPhase.STOPPED, elapsedSeconds = elapsed, distanceMeters = distance,
                 calories = calories, speedMps = 0.0,
                 paceSecPerKm = if (distance > 0.0 && elapsed > 0) elapsed / distance * 1000.0 else 0.0,
+                stopReason = why,
             )
         }
         if (!fromWatch) watchCall("stopWorkout") { watch.stopWorkout() }

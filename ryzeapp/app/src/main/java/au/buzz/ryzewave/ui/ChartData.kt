@@ -198,10 +198,6 @@ object ChartData {
         val o = (minOf(aEnd, bEnd) - maxOf(aStart, bStart)).toDouble()
         return (o / len).coerceIn(0.0, 1.0)
     }
-
-    /** Steps taken in a window, from hourly records, pro-rated by overlap with each hour. */
-    fun stepsInWindow(hours: List<StepsHour>, from: Long, to: Long): Double =
-        hours.sumOf { h -> overlapFraction(h.hourStart, h.hourStart + HOUR_MS, from, to) * h.total }
 }
 
 /** Minimal GPX 1.1 writer: one track of the accepted fixes. */

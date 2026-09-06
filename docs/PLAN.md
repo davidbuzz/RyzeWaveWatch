@@ -160,5 +160,4 @@ Escalation: (1) speak + high-priority notification "Workout running but no activ
 grace period if unacknowledged. Never auto-stop an app-initiated workout without at least the notification. Also speak
 "workout started" on a WATCH-originated start so an accidental start announces itself immediately.
 
-The night guard being built now is the first, highest-value slice (night + resting HR + no GPS). This per-sport detector
-generalises it; build next.
+Built as build 10 (2026-09-06) — see docs/APP.md; the night guard is now its HIGH-urgency case.

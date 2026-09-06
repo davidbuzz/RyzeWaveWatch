@@ -10,7 +10,7 @@ import au.buzz.ryzewave.core.WatchEvent
 import au.buzz.ryzewave.core.WorkoutControlAction
 import au.buzz.ryzewave.health.HealthConnectMapping
 import au.buzz.ryzewave.health.SleepReconstruction
-import au.buzz.ryzewave.workout.NightWorkoutGuardController
+import au.buzz.ryzewave.workout.StuckWorkoutMonitor
 import au.buzz.ryzewave.workout.WorkoutService
 import java.time.ZoneId
 import java.time.ZonedDateTime
@@ -92,20 +92,24 @@ class DebugEventReceiver : BroadcastReceiver() {
     }
 
     /**
-     * Simulate the watch starting a workout by itself and drive the night-workout guard. Emits the real
-     * `WorkoutControl(START)` event (the guard evaluates it with the live clock / HR — daytime → allowed) and
-     * also forces the guard with explicit night inputs so the notification + auto-stop fire deterministically.
+     * Simulate the watch starting a workout by itself and drive the stuck-workout detector deterministically:
+     * optional extras force the detector's inputs for this session — `--el window <ms>` (judging window),
+     * `--el grace <ms>` (auto-stop grace), `--ez night true|false` (force the night classification instead of the
+     * clock), `--ei hr <bpm>` (feed this HR every evaluation; default 58 = sleeping), `--ez moving true` (feed GPS
+     * movement). Then the real `WorkoutControl(START)` event is emitted; realtime pushes with a flat or rising step
+     * count can follow through the `rt` op to exercise the steps indicator.
      */
     private fun onWatchStart(watch: WatchApiImpl?, intent: Intent) {
+        val override = StuckWorkoutMonitor.DebugOverride(
+            windowMs = if (intent.hasExtra(EXTRA_WINDOW)) intent.getLongExtra(EXTRA_WINDOW, 0L) else null,
+            graceMs = if (intent.hasExtra(EXTRA_GRACE)) intent.getLongExtra(EXTRA_GRACE, 0L) else null,
+            night = if (intent.hasExtra(EXTRA_NIGHT)) intent.getBooleanExtra(EXTRA_NIGHT, true) else null,
+            hrBpm = if (intent.hasExtra(EXTRA_HR)) intent.getIntExtra(EXTRA_HR, 0) else 58,
+            moving = intent.getBooleanExtra(EXTRA_MOVING, false),
+        )
+        Log.i(TAG, "debug watchstart: $override")
+        App.graph.stuckMonitor.debugOverride(override)
         inject(watch, WatchEvent.WorkoutControl(WorkoutControlAction.START))
-        val zone = ZoneId.systemDefault()
-        val defaultNight = ZonedDateTime.now(zone).toLocalDate().atTime(2, 30).atZone(zone).toInstant().toEpochMilli()
-        val at = intent.getLongExtra(EXTRA_AT, defaultNight)
-        val hr = if (intent.hasExtra(EXTRA_HR)) intent.getIntExtra(EXTRA_HR, 0) else 58
-        val moving = intent.getBooleanExtra(EXTRA_MOVING, false)
-        val grace = intent.getLongExtra(EXTRA_GRACE, NightWorkoutGuardController.GRACE_MS)
-        Log.i(TAG, "debug watchstart: forcing night-workout guard at=$at hr=$hr moving=$moving grace=$grace ms")
-        App.graph.nightGuard.debugForceStart(at, hr, moving, grace)
     }
 
     /**
@@ -179,6 +183,8 @@ class DebugEventReceiver : BroadcastReceiver() {
         const val EXTRA_AT = "at"
         const val EXTRA_HR = "hr"
         const val EXTRA_MOVING = "moving"
+        const val EXTRA_WINDOW = "window"
+        const val EXTRA_NIGHT = "night"
         const val EXTRA_GRACE = "grace"
     }
 }

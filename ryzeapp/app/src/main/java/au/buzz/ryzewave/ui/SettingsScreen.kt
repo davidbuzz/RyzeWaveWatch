@@ -81,6 +81,8 @@ fun SettingsScreen(vm: SettingsViewModel = viewModel()) {
     val notificationsEnabled by vm.notificationsEnabled.collectAsStateWithLifecycle()
     val allowedPackages by vm.allowedPackages.collectAsStateWithLifecycle()
     val forwardAll by vm.forwardAllNotifications.collectAsStateWithLifecycle()
+    val stuckEnabled by vm.stuckDetectorEnabled.collectAsStateWithLifecycle()
+    val stuckAutoStopApp by vm.stuckAutoStopAppWorkouts.collectAsStateWithLifecycle()
     val installedApps by vm.installedApps.collectAsStateWithLifecycle()
     val notificationAccess by vm.notificationAccess.collectAsStateWithLifecycle()
     val health = LocalHealthPermissionHost.current
@@ -137,7 +139,39 @@ fun SettingsScreen(vm: SettingsViewModel = viewModel()) {
                 onToggle = vm::setNotificationsEnabled, onForwardAll = vm::setForwardAllNotifications,
                 onAppToggle = vm::setPackageAllowed, onTest = vm::sendTestNotification,
             )
+            StuckDetectorSection(
+                enabled = stuckEnabled, autoStopApp = stuckAutoStopApp,
+                onToggle = vm::setStuckDetectorEnabled, onAutoStopApp = vm::setStuckAutoStopAppWorkouts,
+            )
         }
+    }
+}
+
+// ---- stuck-workout detector ---------------------------------------------------------------------------------
+
+@Composable
+private fun StuckDetectorSection(
+    enabled: Boolean,
+    autoStopApp: Boolean,
+    onToggle: (Boolean) -> Unit,
+    onAutoStopApp: (Boolean) -> Unit,
+) {
+    SectionCard("Stuck-workout detector") {
+        SwitchRow("Detect a workout with no activity", enabled, onChange = onToggle)
+        Text(
+            "Warns (spoken + notification with Stop) when a running workout shows none of the activity its sport " +
+                "should — steps, GPS movement, raised heart rate or phone motion — for 4 minutes. A workout the " +
+                "watch started by itself is stopped after a grace period (2 minutes at night with your heart rate at " +
+                "sleeping level, otherwise 10).",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        SwitchRow("Also auto-stop app-started workouts", autoStopApp, enabled = enabled, onChange = onAutoStopApp)
+        Text(
+            "Off: a workout you started in the app only gets the warning and keeps running until you stop it.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
     }
 }
 

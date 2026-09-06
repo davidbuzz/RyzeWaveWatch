@@ -582,6 +582,23 @@ class SettingsViewModel(
         null
     }
 
+    // ---- stuck-workout detector ----
+
+    val stuckDetectorEnabled: StateFlow<Boolean> =
+        graph.settings.stuckDetectorEnabled.stateIn(viewModelScope, started(), true)
+    val stuckAutoStopAppWorkouts: StateFlow<Boolean> =
+        graph.settings.stuckAutoStopAppWorkouts.stateIn(viewModelScope, started(), false)
+
+    fun setStuckDetectorEnabled(on: Boolean) = task("Stuck-workout detector", exclusive = false) {
+        graph.settings.setStuckDetectorEnabled(on)
+        null
+    }
+
+    fun setStuckAutoStopAppWorkouts(on: Boolean) = task("Stuck-workout detector", exclusive = false) {
+        graph.settings.setStuckAutoStopAppWorkouts(on)
+        null
+    }
+
     fun sendTestNotification() = task("Test notification") {
         if (!status.value.isConnected()) return@task "Watch not connected"
         if (graph.notifications.sendTest()) "Test notification acknowledged by the watch"

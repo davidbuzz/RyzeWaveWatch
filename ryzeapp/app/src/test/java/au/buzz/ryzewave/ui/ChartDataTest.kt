@@ -127,15 +127,6 @@ class ChartDataTest {
     }
 
     @Test
-    fun stepsInWindowProRatesHours() {
-        val hours = listOf(StepsHour(day + 9 * h, 600, 600, 0), StepsHour(day + 10 * h, 300, 300, 0))
-        // 09:30 → 10:20 = half of hour 9 + a third of hour 10
-        val steps = ChartData.stepsInWindow(hours, day + 9 * h + 30 * m, day + 10 * h + 20 * m)
-        assertEquals(400.0, steps, 0.01)
-        assertEquals(0.0, ChartData.stepsInWindow(hours, day + 12 * h, day + 13 * h), 0.0)
-    }
-
-    @Test
     fun fillDaysZeroFillsAndOrdersOldestFirst() {
         val today = Fmt.dayStart()
         val yesterday = Fmt.plusDays(today, -1)
