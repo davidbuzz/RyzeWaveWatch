@@ -7,7 +7,8 @@ release signing, troubleshooting). The short form is `cd ryzeapp && JAVA_HOME=/u
 ./gradlew :app:assembleDebug` then `adb install -r app/build/outputs/apk/debug/app-debug.apk`.
 
 ### Release build and signing (2026-09-05)
-`cd ryzeapp && ./gradlew :app:assembleRelease` writes `app/build/outputs/apk/release/app-release.apk`, signed with the
+Summary in [BUILD.md](../BUILD.md); the detail is here.
+`cd ryzeapp && JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 ./gradlew :app:assembleRelease` writes `app/build/outputs/apk/release/app-release.apk`, signed with the
 `release` signing config in `app/build.gradle.kts`. That config is only created when `ryzeapp/keystore.properties`
 exists; it reads `storeFile` (relative to `ryzeapp/`), `storePassword`, `keyAlias` and `keyPassword` from it. The
 keystore is `ryzeapp/keystore/release.jks` (PKCS12, one RSA-2048 key, alias `ryzewave`, `CN=Buzz's Ryze Wave`,

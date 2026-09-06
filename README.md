@@ -49,7 +49,7 @@ tools/Gadgetbridge-tools/   Gadgetbridge-tools clone, branch jr-gb-dissector (gi
 tools/jadx/                 jadx 1.5.6 decompiler (git-ignored)
 captures/                   btsnoop logs and derived notes (logs are git-ignored)
 apk/                        Ryze Fit XAPK + jadx output (git-ignored, ~1 GB)
-.venv/                      python venv with bleak
+.venv/                      python venv (bleak, pytest, pillow)
 ```
 
 ## Getting started
@@ -65,7 +65,7 @@ bluetoothctl trust 78:02:B7:37:91:E5        # once: lets BlueZ cache the (slow) 
 .venv/bin/python -m ryzewave info           # watch must NOT be connected to the phone (adb shell svc bluetooth disable)
 .venv/bin/python -m ryzewave sync|hr|spo2|workout|time|find|scan|raw HEX
 ```
-Passwords accepted during pairing are stored in `captures/devices.json` (inside the repo).
+Pairing state is cached at runtime in `captures/devices.json`; it is not tracked and is not part of the repo.
 
 ## Phone as the BLE radio (RyzeBridge)
 
@@ -75,7 +75,7 @@ driven entirely over adb, so all protocol work stays in Python:
 
 ```bash
 android/sdk-install.sh          # once: cmdline-tools + platform 34 + build-tools 34 into tools/android-sdk (~300 MB)
-android/build.sh                # aapt2 + javac + d8 + apksigner, then adb install + pm grant BLUETOOTH_*
+android/build.sh                # aapt2 + javac + d8 + apksigner, then adb install + pm grant BLUETOOTH_* (details: BUILD.md)
 tools/bridge.py info            # connect, feature bitmap, version, battery
 tools/bridge.py sync|hr 30|spo2|workout 60|keep 120|gatt|bt3 on|spo2auto 10|hrauto on|raw "connect;write a2;until a2 3000"
 adb logcat -s RyzeBridge:*      # raw view: TX/RX lines in hex
@@ -161,9 +161,10 @@ Fresh clone bootstrap:
 ```bash
 git submodule update --init --depth 1 tools/Gadgetbridge-tools
 git -c protocol.version=2 submodule update --init --depth 1 --filter=blob:none tools/Gadgetbridge   # then sparse-checkout the three device dirs
-python3 -m venv .venv && .venv/bin/pip install bleak pytest
+python3 -m venv .venv && .venv/bin/pip install bleak pytest pillow
 android/sdk-install.sh && echo "sdk.dir=$PWD/tools/android-sdk" > ryzeapp/local.properties
 ```
+Then build the Android app as described in [BUILD.md](BUILD.md).
 
 ## References
 

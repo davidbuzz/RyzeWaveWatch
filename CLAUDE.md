@@ -44,7 +44,7 @@ state inside the repo.
 - The watch's classic-BT audio link is independent of BLE; don't try to "fix" HFP/A2DP.
 
 ## The app (ryzeapp/)
-- Gradle project, spec in `docs/APP.md`. Build: `cd ryzeapp && JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 ./gradlew :app:assembleDebug --console=plain` (the default `java` is a JRE-only 21) (config ~20 s, deps cached in ~/.gradle from MyPulseApp). Install: `adb install -r app/build/outputs/apk/debug/app-debug.apk`, then `pm grant` BLUETOOTH_CONNECT/SCAN, ACCESS_FINE_LOCATION, POST_NOTIFICATIONS and the 12 `android.permission.health.*` permissions (pm grant works for Health Connect on Android 14+); `tools/app_smoke.sh` does all of it.
+- Gradle project, spec in `docs/APP.md`; build/install/troubleshooting reference is `BUILD.md` (keep it current when the toolchain changes). Build: `cd ryzeapp && JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 ./gradlew :app:assembleDebug --console=plain` (the default `java` is a JRE-only 21) (config ~20 s, deps cached in ~/.gradle from MyPulseApp). Install: `adb install -r app/build/outputs/apk/debug/app-debug.apk`, then `pm grant` BLUETOOTH_CONNECT/SCAN, ACCESS_FINE_LOCATION, POST_NOTIFICATIONS and the 12 `android.permission.health.*` permissions (pm grant works for Health Connect on Android 14+); `tools/app_smoke.sh` does all of it.
 - Core contracts in `ryzeapp/app/src/main/java/au/buzz/ryzewave/core/`; `App.graph` is the service locator (`GraphFactory`).
 - Force-stop Ryze Fit and RyzeBridge before testing the app (`adb shell am force-stop com.yc.ryzefit au.buzz.ryzebridge`); all three share the phone's GATT link.
 
@@ -67,7 +67,7 @@ Claude Code's persistent memory for this project lives **in the repo** at `memor
 tooling keeps working; edit the files here, never under `~/.claude`.
 
 ## Git
-The project is a local git repo (initialised 2026-09-05, branch `main`, no remote yet). `tools/Gadgetbridge` and
+The project is a local git repo (initialised 2026-09-05, branch `main`; no remote configured here — Buzz pushes to his own private GitHub repo himself, see [[never-git-push]]). `tools/Gadgetbridge` and
 `tools/Gadgetbridge-tools` are submodules. Commit only when Buzz asks; never push — the GitHub remote will be a
 *private* repo that Buzz creates after checking the layout himself.
 
