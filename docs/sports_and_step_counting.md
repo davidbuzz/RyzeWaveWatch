@@ -247,6 +247,14 @@ timer), dark mid-run (the screen times out after a few seconds), and lit again a
 to its sport menu. So expect the start and stop frames to be the useful ones, and note the metrics page does not
 print the sport's name; the watch's own `FD AA` answer is the proof of which sport it entered.
 
+A second trial (Rower, 82 s, stopped from the phone, six frames from ~2 s after the Stop tap) found no "done"
+summary page at all: the face went straight to the sport menu and stayed lit about eight seconds. Buzz did see a
+summary with the sport's name after his real outdoor run that afternoon, so the page exists but is not shown for
+this case. The two candidate explanations, both untested: the watch shows it only when the session was stopped
+**from the watch** (a phone-sent `FD 00` ends it silently), or only when the session has real content (distance,
+steps, more than a minute). Either is a two-minute test with `STOP_BURST` running: stop one session on the watch's
+own button, and one long walk from the phone. Until then the summary is not something the driver can rely on.
+
 What that proves, and what it does not. It proves the whole chain from picker to watch to database works for every
 sport: selection, start, the location gate, the foreground service, the watch's own confirmation, stop, persistence,
 sport id. It does **not** prove the
