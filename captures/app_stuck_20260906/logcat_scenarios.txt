@@ -1,0 +1,20 @@
+=== scenario 1: watch-started, FLAT steps, window 20 s, grace 15 s, daytime, hr 58
+Broadcast completed: result=0
+09-06 10:12:27.550 I/adbd    ( 1428): adbd service requested 'shell,v2,raw:am broadcast -n au.buzz.ryzewave/.debug.DebugEventReceiver -a au.buzz.ryzewave.debug.WORKOUT --es op
+09-06 10:12:27.627 I/DebugEvent(14088): debug watchstart: DebugOverride(windowMs=20000, graceMs=15000, night=false, hrBpm=58, moving=false)
+09-06 10:12:27.627 I/StuckWorkout(14088): debug override for the next session: DebugOverride(windowMs=20000, graceMs=15000, night=false, hrBpm=58, moving=false)
+09-06 10:12:27.659 I/StuckWorkout(14088): watching watch-originated workout: unknown sport (UNKNOWN: steps, gps, hr, motion), window 20 s, debug DebugOverride(windowMs=20000, 
+09-06 10:12:29.847 I/WorkoutSpeech(14088): TTS ready; speaking 1 queued utterance(s)
+09-06 10:12:57.782 I/StuckWorkout(14088): watch Outdoor Running steps=none(watch 100→100, phone -) gps=?(0 fixes) hr=none(max 58 vs rest 65, sleeping) motion=none(max var 0.
+09-06 10:12:57.782 I/StuckWorkout(14088): LIKELY STUCK (NORMAL): no activity: steps+hr+motion measured none, gps unknown; NORMAL; warning, auto-stop in 15 s unless activity re
+09-06 10:12:57.783 I/WorkoutSpeech(14088): announce: "Workout running but no activity detected. Tap to stop."
+09-06 10:12:57.784 I/StuckWorkout(14088): grace timer started: 15000 ms
+09-06 10:12:57.797 I/StuckWorkout(14088): no-activity notification posted (NORMAL): "Workout running but no activity detected" / "Tap to stop it"
+09-06 10:13:12.787 I/StuckWorkout(14088): grace timer fired after 15 s
+09-06 10:13:12.787 I/StuckWorkout(14088): grace (15 s) elapsed without acknowledgement or activity: auto-stopping the workout
+09-06 10:13:12.788 I/StuckWorkout(14088): stopping the watch workout (auto-stop, no activity)
+09-06 10:13:12.799 I/StuckWorkout(14088): stopped watching the watch workout: auto-stop, no activity
+=== scenario 2: watch-started, RISING steps
+09-06 10:13:52.756 I/StuckWorkout(14088): watch Outdoor Running steps=ACTIVE(watch 140→300, phone -) gps=?(0 fixes) hr=none(max 58 vs rest 65, sleeping) motion=none(max var 
+crashes: 0
+exit 0
