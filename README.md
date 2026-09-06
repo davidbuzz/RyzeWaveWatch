@@ -60,6 +60,10 @@ deliberately displaced (see [docs/privacy_audit_20260906.md](docs/privacy_audit_
 
 Build it and put it on your phone: **[BUILD.md](BUILD.md)**. The app's design and behaviour: [docs/APP.md](docs/APP.md).
 
+Not affiliated with, endorsed by, or supported by Ryze Above or the makers of the Ryze Fit app. "Ryze" and "Ryze
+Wave" are their trademarks, used here only to say which watch this talks to. Use it at your own risk: it is not a
+medical device and nothing it records should be treated as medical data.
+
 ---
 
 ## If you want to hack on this app
