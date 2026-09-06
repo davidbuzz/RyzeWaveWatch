@@ -111,6 +111,55 @@ tools/app_smoke.sh              # build first
 tools/app_smoke.sh --no-build 25   # install what is already built, wait 25 s
 ```
 
+## Backing up and restoring your data
+
+The app keeps everything in one SQLite database in its own private storage. Release builds are deliberately
+debuggable (see the `release` block in `ryzeapp/app/build.gradle.kts`), so `adb` can reach it with `run-as`. No
+root needed. Enable USB debugging on the phone first.
+
+**Back up.** The database uses write-ahead logging, so most of your recent data lives in the `-wal` file, not in
+the `.db`. Copying only the `.db` gives you a nearly empty backup. Take all three files, then fold the log in:
+
+```bash
+PKG=au.buzz.ryzewave
+for f in ryzewave.db ryzewave.db-wal ryzewave.db-shm; do
+  adb exec-out run-as $PKG cat databases/$f > "$f"        # -wal/-shm may not exist; that is fine
+done
+sqlite3 ryzewave.db "PRAGMA wal_checkpoint(TRUNCATE);"    # merges the log into the .db
+rm -f ryzewave.db-wal ryzewave.db-shm                     # now ryzewave.db is complete on its own
+sqlite3 ryzewave.db "pragma integrity_check;"             # should print: ok
+```
+
+Your GPX exports are separate and need no `run-as`:
+
+```bash
+adb pull /sdcard/Android/data/au.buzz.ryzewave/files/gpx ./gpx
+```
+
+**Restore.** Stop the app first, or it will overwrite what you push. The `-wal` and `-shm` must be deleted, or
+SQLite will replay a log that no longer matches the database:
+
+```bash
+PKG=au.buzz.ryzewave
+adb shell am force-stop $PKG
+adb push ryzewave.db /data/local/tmp/restore.db
+adb shell "run-as $PKG cp /data/local/tmp/restore.db databases/ryzewave.db"
+adb shell "run-as $PKG rm -f databases/ryzewave.db-wal databases/ryzewave.db-shm"
+adb shell rm -f /data/local/tmp/restore.db
+```
+
+Then open the app. Restoring a database from a *newer* build than the one installed will fail, because Room
+refuses to open a schema it does not know; install that version or newer first.
+
+Working from this repo, `tools/pull_app_data.sh <serial> <name>` does the whole backup, checkpoint included, and
+writes a row-count summary to `captures/<name>/`.
+
+**What this does not cover.** Uninstalling the app erases the database, and reinstalling does not bring it back.
+Take a backup before an uninstall, including before installing a release build over a development one, since the
+different signing key forces an uninstall. Settings live separately in a DataStore file
+(`run-as $PKG cat files/datastore/settings.preferences_pb`), and the watch itself still holds roughly the last
+week of history, so a fresh install refills much of the recent data on the next sync.
+
 ## Two phones, one watch
 
 The watch accepts a single BLE link. With both phones attached, whichever has auto-connect enabled holds it and the

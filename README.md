@@ -47,8 +47,9 @@ every GPS coordinate in this repo is deliberately displaced (see [docs/privacy_a
    watch's firmware sometimes floods pause and resume in bursts; the app waits 8 seconds for the state to settle
    instead of chopping your run into fragments.
 8. **It cannot phone home.** The app requests no internet permission at all, so it is incapable of sending your data
-   anywhere; everything lives in a plain SQLite file on your phone that you can copy off over adb. The vendor app
-   requests internet access and talks to a dozen cloud endpoints.
+   anywhere; everything lives in a plain SQLite file on your phone that you can copy off over adb (see
+   [BUILD.md](BUILD.md#backing-up-and-restoring-your-data)). The vendor app requests internet access and talks to
+   a dozen cloud endpoints.
 9. **A "plan B" track that does not need the watch.** An opt-in background breadcrumb records where you went even
    when the watch drops the link mid-session, and a finished workout can be rebuilt from it afterwards. It keeps
    14 days and is off unless you turn it on.
