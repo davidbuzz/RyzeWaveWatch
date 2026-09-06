@@ -2,6 +2,7 @@ package au.buzz.ryzewave.data
 
 import android.content.Context
 import androidx.room.withTransaction
+import au.buzz.ryzewave.core.Breadcrumb
 import au.buzz.ryzewave.core.DailySummary
 import au.buzz.ryzewave.core.HealthRepository
 import au.buzz.ryzewave.core.HrSample
@@ -141,6 +142,17 @@ class RoomHealthRepository(
         if (points.isEmpty()) return
         db.trackPoints().upsert(points.map(TrackPoint::toEntity))
     }
+
+    // ---- breadcrumb
+    override suspend fun insertBreadcrumbs(points: List<Breadcrumb>) {
+        if (points.isEmpty()) return
+        db.breadcrumbs().upsert(points.map { BreadcrumbEntity(it.time, it.lat, it.lon, it.accuracyM, it.speedMps, it.altitudeM, it.activity) })
+    }
+
+    override suspend fun breadcrumbsBetween(from: Long, to: Long): List<Breadcrumb> =
+        db.breadcrumbs().between(from, to).map { Breadcrumb(it.time, it.lat, it.lon, it.accuracyM, it.speedMps, it.altitudeM, it.activity) }
+
+    override suspend fun pruneBreadcrumbsBefore(before: Long): Int = db.breadcrumbs().deleteBefore(before)
 
     // ---- reads
 

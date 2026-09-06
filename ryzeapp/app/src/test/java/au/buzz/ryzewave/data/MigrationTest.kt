@@ -30,4 +30,15 @@ class MigrationTest {
         // no nullable column may carry a NOT NULL/default (that would break Room's schema match)
         assertTrue(sql.none { it.contains("workout") && it.contains("not null") })
     }
+
+    @Test
+    fun migration4to5CreatesTheBreadcrumbTable() {
+        assertEquals(4, Db.MIGRATION_4_5.startVersion)
+        assertEquals(5, Db.MIGRATION_4_5.endVersion)
+        val sql = Db.MIGRATION_4_5_SQL.single().replace("`", "").lowercase()
+        assertTrue(sql.startsWith("create table if not exists breadcrumb"))
+        for (col in listOf("time integer not null", "lat real not null", "lon real not null", "accuracym real not null", "speedmps real not null", "altitudem real", "activity text", "primary key(time)")) {
+            assertTrue("missing $col", sql.contains(col))
+        }
+    }
 }

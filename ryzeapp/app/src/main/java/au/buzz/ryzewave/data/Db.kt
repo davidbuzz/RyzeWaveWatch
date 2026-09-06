@@ -128,6 +128,18 @@ data class TrackPointEntity(
     @ColumnInfo(defaultValue = "0") val paused: Boolean = false,
 )
 
+/** Always-on GPS breadcrumb (Settings opt-in); added in schema version 5 (see [Db.MIGRATION_4_5]). */
+@Entity(tableName = "breadcrumb")
+data class BreadcrumbEntity(
+    @PrimaryKey val time: Long,
+    val lat: Double,
+    val lon: Double,
+    val accuracyM: Float,
+    val speedMps: Float,
+    val altitudeM: Double?,
+    val activity: String?,
+)
+
 @Entity(tableName = "sync_cursor")
 data class SyncCursorEntity(
     @PrimaryKey val kind: String,
@@ -329,6 +341,21 @@ interface TrackPointDao {
 }
 
 @Dao
+interface BreadcrumbDao {
+    @Upsert
+    suspend fun upsert(rows: List<BreadcrumbEntity>)
+
+    @Query("SELECT * FROM breadcrumb WHERE time BETWEEN :from AND :to ORDER BY time")
+    suspend fun between(from: Long, to: Long): List<BreadcrumbEntity>
+
+    @Query("DELETE FROM breadcrumb WHERE time < :before")
+    suspend fun deleteBefore(before: Long): Int
+
+    @Query("SELECT COUNT(*) FROM breadcrumb")
+    suspend fun count(): Int
+}
+
+@Dao
 interface SyncCursorDao {
     @Upsert
     suspend fun upsert(row: SyncCursorEntity)
@@ -365,8 +392,9 @@ interface HcExportDao {
         TrackPointEntity::class,
         SyncCursorEntity::class,
         HcExportEntity::class,
+        BreadcrumbEntity::class,
     ],
-    version = 4,
+    version = 5,
     exportSchema = false,
 )
 abstract class Db : RoomDatabase() {
@@ -378,6 +406,7 @@ abstract class Db : RoomDatabase() {
     abstract fun trackPoints(): TrackPointDao
     abstract fun syncCursors(): SyncCursorDao
     abstract fun hcExport(): HcExportDao
+    abstract fun breadcrumbs(): BreadcrumbDao
 
     companion object {
         const val NAME = "ryzewave.db"
@@ -412,6 +441,18 @@ abstract class Db : RoomDatabase() {
             "ALTER TABLE `track_point` ADD COLUMN `paused` INTEGER NOT NULL DEFAULT 0",
         )
 
+        /** Schema version 5: the always-on GPS breadcrumb table (docs/PLAN.md, opt-in). */
+        val MIGRATION_4_5_SQL: List<String> = listOf(
+            "CREATE TABLE IF NOT EXISTS `breadcrumb` (`time` INTEGER NOT NULL, `lat` REAL NOT NULL, `lon` REAL NOT NULL, " +
+                "`accuracyM` REAL NOT NULL, `speedMps` REAL NOT NULL, `altitudeM` REAL, `activity` TEXT, PRIMARY KEY(`time`))",
+        )
+
+        val MIGRATION_4_5: Migration = object : Migration(4, 5) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                for (sql in MIGRATION_4_5_SQL) db.execSQL(sql)
+            }
+        }
+
         val MIGRATION_3_4: Migration = object : Migration(3, 4) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 for (sql in MIGRATION_3_4_SQL) db.execSQL(sql)
@@ -430,7 +471,7 @@ abstract class Db : RoomDatabase() {
         fun get(context: Context): Db =
             instance ?: synchronized(this) {
                 instance ?: Room.databaseBuilder(context.applicationContext, Db::class.java, NAME)
-                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
+                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
                     .build()
                     .also { instance = it }
             }

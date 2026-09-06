@@ -38,6 +38,12 @@ interface HealthRepository {
     suspend fun trackPointsOnce(workoutId: Long): List<TrackPoint> = trackPoints(workoutId).first()
     suspend fun dailySummaries(days: Int): List<DailySummary>
 
+    // ---- always-on GPS breadcrumb (additive; opt-in feature, see workout/BreadcrumbGate)
+    suspend fun insertBreadcrumbs(points: List<Breadcrumb>) {}
+    suspend fun breadcrumbsBetween(from: Long, to: Long): List<Breadcrumb> = emptyList()
+    /** Deletes breadcrumbs older than [before]; returns how many. */
+    suspend fun pruneBreadcrumbsBefore(before: Long): Int = 0
+
     // ---- sync bookkeeping / export cursor
     suspend fun lastSyncTime(kind: String): Long?
     suspend fun setLastSyncTime(kind: String, time: Long)
@@ -86,6 +92,11 @@ interface SettingsStore {
     suspend fun setWorkoutSportType(type: Int) {}
 
     // ---- stuck-workout detector (additive) ----
+    // ---- always-on GPS breadcrumb (additive) ----
+    /** Opt-in: record a GPS breadcrumb while the phone detects movement, outside workouts. Default false. */
+    val breadcrumbEnabled: Flow<Boolean> get() = flowOf(false)
+    suspend fun setBreadcrumbEnabled(on: Boolean) {}
+
     // ---- watch link (additive) ----
     /**
      * Whether the app keeps (re)connecting to the watch on its own. Default true. Turned off by the Home screen's

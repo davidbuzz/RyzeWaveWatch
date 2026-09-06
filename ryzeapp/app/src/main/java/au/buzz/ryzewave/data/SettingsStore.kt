@@ -53,6 +53,9 @@ class DataStoreSettingsStore(private val dataStore: DataStore<Preferences>) : Se
     override val healthConnectEnabled: Flow<Boolean> =
         prefs.map { SettingsKeys.readHealthConnectEnabled(it) }.distinctUntilChanged()
 
+    override val breadcrumbEnabled: Flow<Boolean> =
+        prefs.map { it[SettingsKeys.BREADCRUMB_ENABLED] ?: false }.distinctUntilChanged()
+
     override val autoConnect: Flow<Boolean> =
         prefs.map { it[SettingsKeys.AUTO_CONNECT] ?: true }.distinctUntilChanged()
 
@@ -74,6 +77,10 @@ class DataStoreSettingsStore(private val dataStore: DataStore<Preferences>) : Se
 
     override suspend fun setHealthConnectEnabled(on: Boolean) {
         dataStore.edit { SettingsKeys.writeHealthConnectEnabled(it, on) }
+    }
+
+    override suspend fun setBreadcrumbEnabled(on: Boolean) {
+        dataStore.edit { it[SettingsKeys.BREADCRUMB_ENABLED] = on }
     }
 
     override suspend fun setAutoConnect(on: Boolean) {
@@ -149,6 +156,7 @@ object SettingsKeys {
 
     val HEALTH_CONNECT_ENABLED = booleanPreferencesKey("health_connect_enabled")
     val AUTO_CONNECT = booleanPreferencesKey("auto_connect")
+    val BREADCRUMB_ENABLED = booleanPreferencesKey("breadcrumb_enabled")
 
     val NOTIFICATIONS_ENABLED = booleanPreferencesKey("notifications_enabled")
     val NOTIFICATION_PACKAGES = stringSetPreferencesKey("notification_packages")

@@ -6,6 +6,7 @@ import android.content.Intent
 import android.util.Log
 import au.buzz.ryzewave.App
 import au.buzz.ryzewave.ble.WatchApiImpl
+import au.buzz.ryzewave.ble.WatchService
 import au.buzz.ryzewave.core.WatchEvent
 import au.buzz.ryzewave.core.WorkoutControlAction
 import au.buzz.ryzewave.health.HealthConnectMapping
@@ -67,6 +68,21 @@ class DebugEventReceiver : BroadcastReceiver() {
             }
             ACTION_WORKOUT -> onWorkout(context, intent)
             ACTION_SLEEP -> onSleep(intent)
+            ACTION_LINK -> {
+                // `--ez auto false` keeps this phone off the watch (persisted; e.g. the test phone while the Pixel owns
+                // the watch's single BLE link); `--ez auto true` restores normal auto-connect.
+                val auto = intent.getBooleanExtra("auto", true)
+                val pending = goAsync()
+                scope.launch {
+                    try {
+                        App.graph.settings.setAutoConnect(auto)
+                        if (auto) WatchService.connect(context) else WatchService.pause(context)
+                        Log.i(TAG, "LINK: autoConnect=$auto")
+                    } finally {
+                        pending.finish()
+                    }
+                }
+            }
             else -> Log.i(TAG, "ignored ${intent.action}")
         }
     }
@@ -171,6 +187,7 @@ class DebugEventReceiver : BroadcastReceiver() {
         const val TAG = "DebugEvent"
         const val ACTION_FIND_PHONE = "au.buzz.ryzewave.debug.FIND_PHONE"
         const val ACTION_WORKOUT = "au.buzz.ryzewave.debug.WORKOUT"
+        const val ACTION_LINK = "au.buzz.ryzewave.debug.LINK"
         const val ACTION_SLEEP = "au.buzz.ryzewave.debug.SLEEP"
         const val EXTRA_START = "start"
         const val EXTRA_OP = "op"

@@ -116,3 +116,18 @@ data class WatchStatus(
 )
 
 data class SyncResult(val steps: Int, val hr: Int, val spo2: Int, val sleep: Int, val error: String? = null)
+
+/**
+ * One point of the always-on GPS breadcrumb (opt-in, Settings): a fix the phone took on its own while it detected
+ * movement, outside any workout, so a workout whose own tracking failed can be reconstructed from it.
+ * [activity] is the phone's detected activity name ("WALKING", "RUNNING", "ON_BICYCLE", …) if known.
+ */
+data class Breadcrumb(
+    val time: Long,
+    val lat: Double,
+    val lon: Double,
+    val accuracyM: Float,
+    val speedMps: Float,
+    val altitudeM: Double? = null,
+    val activity: String? = null,
+)

@@ -11,6 +11,7 @@
                 <action android:name="au.buzz.ryzewave.debug.FIND_PHONE" />
                 <action android:name="au.buzz.ryzewave.debug.WORKOUT" />
                 <action android:name="au.buzz.ryzewave.debug.SLEEP" />
+                <action android:name="au.buzz.ryzewave.debug.LINK" />
             </intent-filter>
         </receiver>
     </application>
