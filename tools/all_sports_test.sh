@@ -104,7 +104,7 @@ row_for_start() {   # newest workout row (id, sportType, duration, distance) via
   sqlite3 "$S/db" "select id, sportType, durationSeconds, cast(distanceMeters as int), ifnull(steps,''), (select count(*) from track_point where workoutId=workout.id), case when endTime is null then 'RUNNING' else 'ended' end from workout order by start desc limit 1;" 2>/dev/null
 }
 
-printf 'sport\tid\tsaved_sport\twatch_says\tphoto\tduration_s\tdistance_m\tsteps\tpoints\tresult\n' > "$RES"
+printf 'sport\tid\tsaved_sport\twatch_says\trt_pushes\tphoto\tduration_s\tdistance_m\tsteps\tpoints\tresult\n' > "$RES"
 fail=0
 adb shell am start -n $PKG/.MainActivity >/dev/null 2>&1; sleep 2
 for name in "${SPORTS[@]}"; do
@@ -116,16 +116,21 @@ for name in "${SPORTS[@]}"; do
   # the picker: a chip row with the popular sports and a "More…" chip that opens the "All sports" dialog.
   # The tab can take a moment to render after a stop, so try twice before giving up.
   if ! tap_text "More…"; then sleep 1.5; tap_text "Workout"; sleep 1; tap_text "More…" || { say "$name: no 'More…' chip on the Workout tab"; dump; }; fi
-  if ! pick_in_dialog "$name"; then say "FAIL $name: not found in the picker"; printf '%s\t%d\t\t\t\t\t\t\t\tNOT_IN_PICKER\n' "$name" "$id" >> "$RES"; fail=1; tap_text "Close" || adb shell input keyevent KEYCODE_BACK; continue; fi
+  if ! pick_in_dialog "$name"; then say "FAIL $name: not found in the picker"; printf '%s\t%d\t\t\t\t\t\t\t\t\tNOT_IN_PICKER\n' "$name" "$id" >> "$RES"; fail=1; tap_text "Close" || adb shell input keyevent KEYCODE_BACK; continue; fi
   tap_text "Close"; sleep 0.5
-  if ! tap_text "Start workout"; then say "FAIL $name: no Start button (location off?)"; printf '%s\t%d\t\t\t\t\t\t\t\tNO_START\n' "$name" "$id" >> "$RES"; fail=1; adb exec-out screencap -p > "$OUT/$(echo "$name" | tr ' /' '__').png"; continue; fi
+  if ! tap_text "Start workout"; then say "FAIL $name: no Start button (location off?)"; printf '%s\t%d\t\t\t\t\t\t\t\t\tNO_START\n' "$name" "$id" >> "$RES"; fail=1; adb exec-out screencap -p > "$OUT/$(echo "$name" | tr ' /' '__').png"; continue; fi
   adb logcat -c 2>/dev/null
   base="$OUT/$(echo "$name" | tr ' /' '__')"
   sleep 3; p1=$(snap "${base}_1_started.jpg")
   sleep $((SECS - 3 > 1 ? SECS - 3 : 1))
   p2=$(snap "${base}_2_running.jpg")
   adb exec-out screencap -p > "${base}.png"
-  # what the WATCH says it is doing (FD AA after start, logged by the app); n/a when no watch is linked
+  # what the WATCH says it is doing, two independent ways:
+  #  1. its answer to FD AA right after the start (logged by the app as "watch confirms sport N open")
+  #  2. its own 1 Hz realtime pushes, FD <type> <hr> ... (14 bytes): every one carries the sport id it is running
+  hex_id=$(printf '%02x' "$id")
+  pushes=$(adb logcat -d 2>/dev/null | grep -oE "RX 33F2 fd${hex_id}[0-9a-f]{24}$" | wc -l)
+  other=$(adb logcat -d 2>/dev/null | grep -oE 'RX 33F2 fd[0-9a-f]{26}$' | grep -vcE "fd${hex_id}" )
   watch=$(adb logcat -d 2>/dev/null | grep -oE 'watch confirms sport [0-9]+ open|watch reports state=[0-9]+ type=[0-9]+|watch did not answer the sport query' | tail -1)
   case "$watch" in
     "watch confirms sport $id open") wsays="$id";;
@@ -148,13 +153,14 @@ for name in "${SPORTS[@]}"; do
   [ "$stopped" = 1 ] || say "WARN $name: Stop tap did not take after 4 tries"
   photo="$p1/$p2/$p3"
   row=$(row_for_start); IFS='|' read -r rid rsport rdur rdist rsteps rpts rend <<<"$row"
-  if [ "$rid" = "$before" ]; then say "FAIL $name: no new workout row"; printf '%s\t%d\t\t\t\t\t\t\t\tNO_ROW\n' "$name" "$id" >> "$RES"; fail=1; continue; fi
+  if [ "$rid" = "$before" ]; then say "FAIL $name: no new workout row"; printf '%s\t%d\t\t\t\t\t\t\t\t\tNO_ROW\n' "$name" "$id" >> "$RES"; fail=1; continue; fi
   if [ "$rend" != "ended" ]; then r="NOT_STOPPED"; fail=1
   elif [ "$rsport" != "$id" ]; then r="WRONG_SPORT"; fail=1
   elif [ "$wsays" != "n/a" ] && [ "$wsays" != "$id" ]; then r="WATCH_DISAGREES"; fail=1
+  elif [ "$other" -gt 0 ]; then r="WATCH_STREAMED_OTHER_SPORT"; fail=1
   else r=OK; fi
-  say "$r $name (id $id): saved sport=$rsport watch=$wsays photo=$photo dur=${rdur}s dist=${rdist}m steps=$rsteps points=$rpts"
-  printf '%s\t%d\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' "$name" "$id" "$rsport" "$wsays" "$photo" "$rdur" "$rdist" "$rsteps" "$rpts" "$r" >> "$RES"
+  say "$r $name (id $id): saved sport=$rsport watch=$wsays rt_pushes=$pushes(other:$other) photo=$photo dur=${rdur}s dist=${rdist}m steps=$rsteps points=$rpts"
+  printf '%s\t%d\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' "$name" "$id" "$rsport" "$wsays" "$pushes" "$photo" "$rdur" "$rdist" "$rsteps" "$rpts" "$r" >> "$RES"
 done
 [ -n "$CAMSER" ] && "$ROOT/tools/watch_cam.sh" close "$CAMSER"
 say "done: $(grep -c $'\tOK$' "$RES") OK, $(grep -vc -E $'\tOK$|^sport' "$RES") failed -> $RES"

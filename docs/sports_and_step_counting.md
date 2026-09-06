@@ -235,9 +235,19 @@ stops it, then reads the stored row back over `adb` and checks the sport that wa
 works on the release build because release builds are debuggable, and it prints a results table and a screenshot
 per sport. A full pass of all 70 at 20 s each takes about forty minutes.
 
-With the watch linked it also proves the **watch** entered the sport: after every start the app asks it `FD AA`
-("is a sport open, and which?") and the driver reads the answer back into a `watch_says` column, failing any sport
-where the watch disagrees with what was chosen. To see the actual face, `tools/watch_cam.sh` turns a second phone
+With the watch linked it also proves the **watch** entered the sport, three independent ways, all from the binary
+traffic rather than from anything on a screen:
+
+1. **The saved row.** The app's own database records the sport id that was chosen (`saved_sport`).
+2. **The watch's answer.** After every start the app asks `FD AA` ("is a sport open, and which?") and the driver reads
+   the reply back (`watch_says`).
+3. **The watch's realtime stream.** While a sport is open the watch pushes `FD <type> <hr> …` about once a second, and
+   every one of those 14-byte packets carries the sport id it is running (`rt_pushes` counts them; any push carrying
+   a *different* id fails the sport).
+
+A sport passes only when all three agree and the stop was verified. The camera is optional on top of that; a photo
+proves a lit sport screen, but the metrics page does not name the sport and the "done" summary is not shown for
+these short phone-stopped sessions, so the photos are corroboration, not the proof. To see the actual face, `tools/watch_cam.sh` turns a second phone
 into a camera rig (shutter over adb, metadata stripped, photo deleted from the phone); the watch must be awake,
 which starting a sport does, and the glossy screen wants the camera a few degrees off-axis to avoid reflections.
 
