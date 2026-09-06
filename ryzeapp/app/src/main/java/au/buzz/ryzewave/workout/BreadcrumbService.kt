@@ -100,7 +100,7 @@ class BreadcrumbService : Service() {
         super.onCreate()
         fused = LocationServices.getFusedLocationProviderClient(this)
         ensureChannel()
-        startInForeground()
+        if (!startInForeground()) return         // refused (location off / ineligible): do not wire anything up
         registerTransitions()
         requestMotionTrigger()
         ticker = scope.launch {
@@ -257,11 +257,20 @@ class BreadcrumbService : Service() {
         .setPriority(NotificationCompat.PRIORITY_MIN)
         .build()
 
-    private fun startInForeground() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            ServiceCompat.startForeground(this, NOTIFICATION_ID, notification(), ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION)
-        } else {
-            startForeground(NOTIFICATION_ID, notification())
+    /** Returns false (and stops the service) if the platform refuses the location foreground service. */
+    private fun startInForeground(): Boolean {
+        return try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                ServiceCompat.startForeground(this, NOTIFICATION_ID, notification(), ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION)
+            } else {
+                startForeground(NOTIFICATION_ID, notification())
+            }
+            true
+        } catch (e: Exception) {
+            // e.g. SecurityException "Starting FGS with type location" when started while ineligible / location off.
+            Log.w(TAG, "cannot start the location foreground service: ${e.message}; stopping")
+            stopSelf()
+            false
         }
     }
 
@@ -284,7 +293,9 @@ class BreadcrumbService : Service() {
         }
 
         fun stop(context: Context) {
-            context.startService(Intent(context, BreadcrumbService::class.java).setAction(ACTION_STOP))
+            // stopService never creates the service (a start-with-ACTION would run onCreate -> startForeground and
+            // crash when it is not meant to be running); it is a no-op if the service is not up.
+            context.stopService(Intent(context, BreadcrumbService::class.java))
         }
     }
 }
