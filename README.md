@@ -105,6 +105,7 @@ docs/PLAN.md                plan for the replacement app (platform, features, di
 docs/wave_application_research.md   narrative research notes: everything that mattered, tagged by how we know it
 docs/watch_features_research.md     the watch's non-exercise features (voice, contacts, music, games, faces) and what we could do with them
 docs/privacy_audit_20260906.md      what was scrubbed from this repo before publishing, and the rules that now apply
+docs/sports_and_step_counting.md    all 70 sports: what the wrist sees in each, and whether its count means anything
 memory/                     Claude Code's notes for this project (one fact per file, index in MEMORY.md)
 ryzewave/                   our BLE client library + CLI (protocol.py = codec, client.py = bleak I/O)
 ryzeapp/                    "Buzz's Ryze Wave": the real Android app (Kotlin/Compose/Room/Health Connect), spec in docs/APP.md

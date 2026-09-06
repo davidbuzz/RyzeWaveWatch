@@ -109,6 +109,19 @@ class StrideCalibrationTest {
     }
 
     @Test
+    fun repetitionSportsRefuseDeliberatelyNotByAccident() {
+        // Gym work, martial arts and dance count repetitions of the wrist, not travel. These used to fall through
+        // to the permissive default and were only safe because such sessions carry no GPS distance.
+        for (sport in listOf(0x14 /* Sit-ups */, 0x22 /* Boxing */, 0x61 /* HIIT */, 0x6D /* Push-up */)) {
+            assertEquals("sport $sport", SportGait.REPS, StrideCalibration.sportGait(sport))
+            val out = StrideCalibration.calibrate(realRun(), buzz, sport)
+            assertNull(out.walk)
+            assertNull(out.run)
+            assertTrue(out.message, out.message.contains("repetitions"))
+        }
+    }
+
+    @Test
     fun aWalkingSportOnlyEverTeachesTheWalkingStride() {
         // Same track, declared as Outdoor Walking: the fast windows must not become a running stride.
         val out = StrideCalibration.calibrate(realRun(), buzz, 0x23)
