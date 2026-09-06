@@ -110,8 +110,14 @@ class HealthConnectMappingTest {
             0x61 to ExerciseSessionRecord.EXERCISE_TYPE_HIGH_INTENSITY_INTERVAL_TRAINING,
             0x1F to ExerciseSessionRecord.EXERCISE_TYPE_ELLIPTICAL,
             0x29 to ExerciseSessionRecord.EXERCISE_TYPE_ROWING_MACHINE,
-            0x05 to ExerciseSessionRecord.EXERCISE_TYPE_OTHER_WORKOUT,   // Badminton
-            0x19 to ExerciseSessionRecord.EXERCISE_TYPE_OTHER_WORKOUT,   // Free Training
+            0x05 to ExerciseSessionRecord.EXERCISE_TYPE_BADMINTON,                // every sport now has its closest type
+            0x0B to ExerciseSessionRecord.EXERCISE_TYPE_SOCCER,
+            0x22 to ExerciseSessionRecord.EXERCISE_TYPE_BOXING,
+            0x4B to ExerciseSessionRecord.EXERCISE_TYPE_GOLF,
+            0x6A to ExerciseSessionRecord.EXERCISE_TYPE_SURFING,
+            0x63 to ExerciseSessionRecord.EXERCISE_TYPE_MARTIAL_ARTS,
+            0x71 to ExerciseSessionRecord.EXERCISE_TYPE_OTHER_WORKOUT,            // Bungee: no Health Connect type
+            0x19 to ExerciseSessionRecord.EXERCISE_TYPE_EXERCISE_CLASS,  // Free Training
             0x7F to ExerciseSessionRecord.EXERCISE_TYPE_OTHER_WORKOUT,   // not in the watch's list
         )
         for ((id, type) in expected) assertEquals("sport 0x%02X".format(id), type, HealthConnectMapping.exerciseTypeFor(id))

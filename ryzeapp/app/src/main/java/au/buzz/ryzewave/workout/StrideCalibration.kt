@@ -18,6 +18,13 @@ enum class SportGait {
     STROKES,
 
     /**
+     * Court and racket sports: chassé steps, lunges and shuffles between swings. The feet are moving, and the
+     * counter will happily add up the shuffles and the swings, but none of it is a walking or running gait, so a
+     * stride measured from it would describe nothing. Refuse, and say why.
+     */
+    COURT,
+
+    /**
      * Repetition work: sit-ups, presses, punches, dance. The wrist rises and falls once per repetition, so the
      * counter is a **rep count** of sorts. It is not travel, and these sessions rarely go anywhere, so a stride
      * measured here would be nonsense.
@@ -165,8 +172,7 @@ object StrideCalibration {
         0x1F, // Elliptical (moving handles)
         0x25, // Skiing (poling)
         0x29, // Rower
-        0x6A, // Surfing (paddling out)
-        0x6B, // Snorkeling
+        0x6A, // Surfing (paddling out is most of a session)
     )
 
     /**
@@ -174,8 +180,17 @@ object StrideCalibration {
      * normally have no GPS distance at all, which used to hide them behind the permissive default; naming them
      * makes the refusal deliberate instead of accidental.
      */
-    private val REP_SPORTS = setOf(
+    /** Racket and net sports: shuffles, lunges and swings, no gait. */
+    private val COURT_SPORTS = setOf(
+        0x05, // Badminton
+        0x07, // Tennis
         0x0D, // Volleyball
+        0x41, // Racquetball
+        0x60, // Pickleball
+    )
+
+    private val REP_SPORTS = setOf(
+        0x0C, // Baseball: mostly standing, bat swings and throws, under 100 m of running a game
         0x14, // Sit-ups
         0x18, // Jumping Jacks
         0x19, // Free Training
@@ -188,10 +203,12 @@ object StrideCalibration {
         0x37, // Aerobic Combo
         0x39, // Street Dancing
         0x3A, // Kick Boxing
+        0x40, // Bowling: a four-step approach and a swing every half minute
         0x50, // Core Training
         0x55, // Kickboxing Aerobics
         0x58, // Wrestling
         0x59, // Fencing
+        0x5A, // Softball: as baseball, plus the pitcher's windmill
         0x61, // HIIT
         0x63, // Judo
         0x6C, // Pull-up
@@ -216,6 +233,7 @@ object StrideCalibration {
         0x51, // Skating
         0x62, // Shooting
         0x65, // Skateboarding
+        0x6B, // Snorkeling: arms relaxed at the sides, the fins do the work
         0x6F, // Rock Climbing
         0x71, // Bungee Jumping
     )
@@ -236,6 +254,7 @@ object StrideCalibration {
     fun sportGait(sportType: Int?): SportGait = when (sportType) {
         null -> SportGait.ANY
         in STROKE_SPORTS -> SportGait.STROKES
+        in COURT_SPORTS -> SportGait.COURT
         in REP_SPORTS -> SportGait.REPS
         in STILL_HAND_SPORTS -> SportGait.NONE
         in WALKING_SPORTS -> SportGait.WALK_ONLY
@@ -320,6 +339,13 @@ object StrideCalibration {
                 null, null,
                 "$sportName moves your arms in time with the effort, so the watch is counting strokes, not " +
                     "steps. That cannot measure a stride, so nothing was changed",
+            )
+        }
+        if (gate == SportGait.COURT) {
+            return CalibrationOutcome(
+                null, null,
+                "$sportName is shuffles, lunges and swings rather than a walking or running gait, so a stride " +
+                    "measured from it would mean nothing. Nothing was changed",
             )
         }
         if (gate == SportGait.REPS) {

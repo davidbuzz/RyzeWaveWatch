@@ -105,7 +105,7 @@ object GpxWriter {
      */
     fun sportName(workout: Workout): String {
         val avgSpeed = if (workout.durationSeconds > 0) workout.distanceMeters / workout.durationSeconds else 0.0
-        return SportTypes.name(SportTypes.effectiveId(workout.sportType, avgSpeed))
+        return SportTypes.name(SportTypes.effectiveId(workout.sportType, avgSpeed, workout.start))
     }
 
     fun iso(epochMs: Long): String =

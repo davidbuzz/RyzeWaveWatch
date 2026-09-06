@@ -126,15 +126,18 @@ object HealthConnectMapping {
     fun averageSpeedMps(workout: Workout): Double =
         if (workout.durationSeconds > 0 && workout.distanceMeters.isFinite()) workout.distanceMeters / workout.durationSeconds else 0.0
 
-    /** The sport a stored workout really was: the watch id, except that type 1 is split by speed ([SportTypes.effectiveId]). */
-    fun effectiveSportType(workout: Workout): Int = SportTypes.effectiveId(workout.sportType, averageSpeedMps(workout))
+    /**
+     * The sport a stored workout really was: the watch id as chosen by the wearer. Only a legacy row from before
+     * the sport picker is second-guessed by average speed ([SportTypes.effectiveId]).
+     */
+    fun effectiveSportType(workout: Workout): Int =
+        SportTypes.effectiveId(workout.sportType, averageSpeedMps(workout), workout.start)
 
     /**
      * Health Connect exercise type. When the user has set [Workout.exerciseTypeOverride] on the detail screen it
      * wins outright — the whole point of the override is to stop a chosen run being filed as a walk. Otherwise the
-     * heuristic applies: type 1 (Outdoor Running, the only type the app could start before the sport picker) is
-     * split by GPS average speed (>= [RUNNING_SPEED_MPS] is running, the same rule as the GPX writer); every other
-     * id maps directly.
+     * heuristic applies, but only to a legacy row recorded before the sport picker existed: for those, type 1 is
+     * split by GPS average speed. A workout the wearer actually chose a sport for is mapped as chosen.
      */
     fun exerciseType(workout: Workout): Int =
         workout.exerciseTypeOverride ?: exerciseTypeFor(effectiveSportType(workout))
@@ -150,20 +153,83 @@ object HealthConnectMapping {
         else -> "Other workout"
     }
 
-    /** Sport id -> Health Connect exercise type; ids without a close match become OTHER_WORKOUT. */
+    /**
+     * Sport id -> Health Connect exercise type, for all 70 of the watch's sports. Health Connect (client
+     * 1.1.0-alpha11) defines 61 types; every watch sport is given the closest one, and only the handful with no
+     * counterpart at all (VO2 max test, long jump, bungee, snorkeling, parkour, waist training, fishing, shooting,
+     * archery, horse riding) fall to OTHER_WORKOUT. Kept in id order so a gap is obvious.
+     */
     fun exerciseTypeFor(sportType: Int): Int = when (sportType) {
-        0x01, 0x24, 0x73 -> ExerciseSessionRecord.EXERCISE_TYPE_RUNNING                // Outdoor Running, Trail Running, Marathon
-        0x1B, 0x15 -> ExerciseSessionRecord.EXERCISE_TYPE_RUNNING_TREADMILL             // Indoor Running, Treadmill
-        0x09, 0x23 -> ExerciseSessionRecord.EXERCISE_TYPE_WALKING                       // Walking, Outdoor Walking
-        0x02 -> ExerciseSessionRecord.EXERCISE_TYPE_BIKING                              // Cycling
-        0x12 -> ExerciseSessionRecord.EXERCISE_TYPE_BIKING_STATIONARY                   // Spinning
+        0x01 -> ExerciseSessionRecord.EXERCISE_TYPE_RUNNING                              // Outdoor Running
+        0x02 -> ExerciseSessionRecord.EXERCISE_TYPE_BIKING                               // Cycling
+        0x04 -> ExerciseSessionRecord.EXERCISE_TYPE_SWIMMING_POOL                        // Swimming (pool is the safer default)
+        0x05 -> ExerciseSessionRecord.EXERCISE_TYPE_BADMINTON
+        0x07 -> ExerciseSessionRecord.EXERCISE_TYPE_TENNIS
         0x08 -> ExerciseSessionRecord.EXERCISE_TYPE_HIKING
-        0x04 -> ExerciseSessionRecord.EXERCISE_TYPE_SWIMMING_POOL
+        0x09 -> ExerciseSessionRecord.EXERCISE_TYPE_WALKING                              // Walking
+        0x0A -> ExerciseSessionRecord.EXERCISE_TYPE_BASKETBALL
+        0x0B -> ExerciseSessionRecord.EXERCISE_TYPE_SOCCER
+        0x0C -> ExerciseSessionRecord.EXERCISE_TYPE_BASEBALL
+        0x0D -> ExerciseSessionRecord.EXERCISE_TYPE_VOLLEYBALL
+        0x0E -> ExerciseSessionRecord.EXERCISE_TYPE_CRICKET
+        0x0F -> ExerciseSessionRecord.EXERCISE_TYPE_RUGBY
+        0x10 -> ExerciseSessionRecord.EXERCISE_TYPE_ICE_HOCKEY                           // Hockey (the watch does not say which)
+        0x12 -> ExerciseSessionRecord.EXERCISE_TYPE_BIKING_STATIONARY                    // Spinning
         0x13 -> ExerciseSessionRecord.EXERCISE_TYPE_YOGA
+        0x14 -> ExerciseSessionRecord.EXERCISE_TYPE_CALISTHENICS                         // Sit-ups
+        0x15 -> ExerciseSessionRecord.EXERCISE_TYPE_RUNNING_TREADMILL                    // Treadmill
+        0x17 -> ExerciseSessionRecord.EXERCISE_TYPE_PADDLING                             // Boating
+        0x18 -> ExerciseSessionRecord.EXERCISE_TYPE_CALISTHENICS                         // Jumping Jacks
+        0x19 -> ExerciseSessionRecord.EXERCISE_TYPE_EXERCISE_CLASS                       // Free Training
+        0x1B -> ExerciseSessionRecord.EXERCISE_TYPE_RUNNING_TREADMILL                    // Indoor Running
         0x1C -> ExerciseSessionRecord.EXERCISE_TYPE_STRENGTH_TRAINING
-        0x61 -> ExerciseSessionRecord.EXERCISE_TYPE_HIGH_INTENSITY_INTERVAL_TRAINING    // HIIT
+        0x1E -> ExerciseSessionRecord.EXERCISE_TYPE_OTHER_WORKOUT                        // Horse Riding: no HC type
         0x1F -> ExerciseSessionRecord.EXERCISE_TYPE_ELLIPTICAL
-        0x29 -> ExerciseSessionRecord.EXERCISE_TYPE_ROWING_MACHINE                      // Rower
+        0x22 -> ExerciseSessionRecord.EXERCISE_TYPE_BOXING
+        0x23 -> ExerciseSessionRecord.EXERCISE_TYPE_WALKING                              // Outdoor Walking
+        0x24 -> ExerciseSessionRecord.EXERCISE_TYPE_RUNNING                              // Trail Running
+        0x25 -> ExerciseSessionRecord.EXERCISE_TYPE_SKIING                               // Skiing (cross-country)
+        0x27 -> ExerciseSessionRecord.EXERCISE_TYPE_MARTIAL_ARTS                         // Taekwondo
+        0x28 -> ExerciseSessionRecord.EXERCISE_TYPE_OTHER_WORKOUT                        // VO2 max Test: no HC type
+        0x29 -> ExerciseSessionRecord.EXERCISE_TYPE_ROWING_MACHINE                       // Rower
+        0x2C -> ExerciseSessionRecord.EXERCISE_TYPE_RUNNING                              // Athletics
+        0x2D -> ExerciseSessionRecord.EXERCISE_TYPE_OTHER_WORKOUT                        // Waist Training: no HC type
+        0x2E -> ExerciseSessionRecord.EXERCISE_TYPE_MARTIAL_ARTS                         // Karate
+        0x34 -> ExerciseSessionRecord.EXERCISE_TYPE_CALISTHENICS                         // Physical Training
+        0x35 -> ExerciseSessionRecord.EXERCISE_TYPE_OTHER_WORKOUT                        // Archery: no HC type
+        0x37 -> ExerciseSessionRecord.EXERCISE_TYPE_EXERCISE_CLASS                       // Aerobic Combo
+        0x39 -> ExerciseSessionRecord.EXERCISE_TYPE_DANCING                              // Street Dancing
+        0x3A -> ExerciseSessionRecord.EXERCISE_TYPE_MARTIAL_ARTS                         // Kick Boxing
+        0x3F -> ExerciseSessionRecord.EXERCISE_TYPE_HANDBALL
+        0x40 -> ExerciseSessionRecord.EXERCISE_TYPE_OTHER_WORKOUT                        // Bowling: no HC type
+        0x41 -> ExerciseSessionRecord.EXERCISE_TYPE_RACQUETBALL
+        0x44 -> ExerciseSessionRecord.EXERCISE_TYPE_SNOWBOARDING
+        0x46 -> ExerciseSessionRecord.EXERCISE_TYPE_FOOTBALL_AMERICAN
+        0x48 -> ExerciseSessionRecord.EXERCISE_TYPE_OTHER_WORKOUT                        // Fishing: no HC type
+        0x4B -> ExerciseSessionRecord.EXERCISE_TYPE_GOLF
+        0x4D -> ExerciseSessionRecord.EXERCISE_TYPE_SKIING                               // Downhill Skiing
+        0x4E -> ExerciseSessionRecord.EXERCISE_TYPE_SKIING                               // Snow Sports
+        0x50 -> ExerciseSessionRecord.EXERCISE_TYPE_CALISTHENICS                         // Core Training
+        0x51 -> ExerciseSessionRecord.EXERCISE_TYPE_SKATING
+        0x55 -> ExerciseSessionRecord.EXERCISE_TYPE_EXERCISE_CLASS                       // Kickboxing Aerobics
+        0x56 -> ExerciseSessionRecord.EXERCISE_TYPE_OTHER_WORKOUT                        // Lacrosse: no HC type
+        0x58 -> ExerciseSessionRecord.EXERCISE_TYPE_MARTIAL_ARTS                         // Wrestling
+        0x59 -> ExerciseSessionRecord.EXERCISE_TYPE_FENCING
+        0x5A -> ExerciseSessionRecord.EXERCISE_TYPE_SOFTBALL
+        0x60 -> ExerciseSessionRecord.EXERCISE_TYPE_RACQUETBALL                          // Pickleball: closest HC type
+        0x61 -> ExerciseSessionRecord.EXERCISE_TYPE_HIGH_INTENSITY_INTERVAL_TRAINING     // HIIT
+        0x62 -> ExerciseSessionRecord.EXERCISE_TYPE_OTHER_WORKOUT                        // Shooting: no HC type
+        0x63 -> ExerciseSessionRecord.EXERCISE_TYPE_MARTIAL_ARTS                         // Judo
+        0x65 -> ExerciseSessionRecord.EXERCISE_TYPE_SKATING                              // Skateboarding: closest HC type
+        0x68 -> ExerciseSessionRecord.EXERCISE_TYPE_OTHER_WORKOUT                        // Parkour: no HC type
+        0x6A -> ExerciseSessionRecord.EXERCISE_TYPE_SURFING
+        0x6B -> ExerciseSessionRecord.EXERCISE_TYPE_SWIMMING_OPEN_WATER                  // Snorkeling: closest HC type
+        0x6C -> ExerciseSessionRecord.EXERCISE_TYPE_CALISTHENICS                         // Pull-up
+        0x6D -> ExerciseSessionRecord.EXERCISE_TYPE_CALISTHENICS                         // Push-up
+        0x6F -> ExerciseSessionRecord.EXERCISE_TYPE_ROCK_CLIMBING
+        0x71 -> ExerciseSessionRecord.EXERCISE_TYPE_OTHER_WORKOUT                        // Bungee Jumping: no HC type
+        0x72 -> ExerciseSessionRecord.EXERCISE_TYPE_OTHER_WORKOUT                        // Long Jump: no HC type
+        0x73 -> ExerciseSessionRecord.EXERCISE_TYPE_RUNNING                              // Marathon
         else -> ExerciseSessionRecord.EXERCISE_TYPE_OTHER_WORKOUT
     }
 

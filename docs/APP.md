@@ -1049,3 +1049,21 @@ the wrist, once per stroke, and the watch's realtime push already delivers that 
 `ActivitySignals.onWatchSteps`, so the counter is now accepted as evidence of life for those two sports. On-water
 rowing is unaffected: its HR and motion are active regardless. Spinning stays `STATIONARY_CARDIO`, because hands on
 the bars never raise the counter.
+
+## Average speed no longer overrules the chosen sport (2026-09-06)
+
+`SportTypes.effectiveId` used to relabel any type-1 (Outdoor Running) workout with an average speed under 2 m/s as
+Outdoor Walking, for Health Connect and for the GPX name. That was a back-fill for rows recorded before the sport
+picker existed, when type 1 was the only type and walks were filed under it. Applied to a chosen sport it is the
+same mistake the stride calibration made: a run of sprints and recovery walks averages below any fixed threshold,
+and the 2026-09-06 session (1.42 m/s over 772 m) would have reached Health Connect as a walk. The heuristic now
+applies only to rows started before `SportTypes.PICKER_EPOCH_MS` (2026-09-05); anything since is exported as the
+sport the wearer picked, with the manual override on the detail screen still winning outright.
+
+## Sports: researched table, court gate, all 70 mapped to Health Connect (2026-09-06)
+
+`docs/sports_and_step_counting.md` now carries a per-sport, sourced description of what the wrist sees, whether the
+counter means anything, whether GPS is worth having, and the Health Connect type. Code changes it drove: a
+`COURT` stride gate for racket and net sports; snorkeling moved from strokes to noise; baseball, softball and bowling
+to repetitions; all 70 sports mapped to Health Connect types (11 remain "other"); and `tools/all_sports_test.sh`,
+which drives every sport through the real picker on the phone and checks the saved row.

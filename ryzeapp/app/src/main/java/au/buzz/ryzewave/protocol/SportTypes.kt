@@ -50,10 +50,30 @@ object SportTypes {
     fun isGps(id: Int): Boolean = id in GPS_SPORTS
 
     /**
-     * The sport a stored workout really was. Type 1 (Outdoor Running) was the only type the app could start before
-     * the picker existed, walks included, so for type 1 alone the GPS average speed decides: below
-     * [RUNNING_SPEED_MPS] it is treated as [OUTDOOR_WALKING]. Every other id is returned unchanged.
+     * 2026-09-05 09:00 Brisbane time, just after the sport picker shipped (commit 94bb9e6, 08:48 that morning;
+     * docs/APP.md "Sport types"). Before it every workout was recorded as type 1 whatever the wearer was doing —
+     * the 08:35 outdoor walk that morning included — and after it, type 1 means the wearer chose Outdoor Running
+     * from a list of 70.
      */
-    fun effectiveId(sportType: Int, avgSpeedMps: Double): Int =
-        if (sportType == OUTDOOR_RUNNING && avgSpeedMps < RUNNING_SPEED_MPS) OUTDOOR_WALKING else sportType
+    const val PICKER_EPOCH_MS = 1_788_562_800_000L
+
+    /**
+     * The sport a stored workout really was.
+     *
+     * For a **legacy** row — one recorded before [PICKER_EPOCH_MS], when type 1 was the only type the app could
+     * start and walks were filed under it — the GPS average speed decides: below [RUNNING_SPEED_MPS] it is
+     * treated as [OUTDOOR_WALKING].
+     *
+     * For anything recorded since, the wearer's choice is returned untouched. Average speed is a bad judge of
+     * gait and must not overrule a person: a deliberately varied run of sprints and recovery walks averages below
+     * any fixed threshold, which is how the 2026-09-06 session (1.42 m/s over 772 m) would have reached Health
+     * Connect labelled a walk. Where the gait of the parts genuinely matters, [workout.StrideCalibration]
+     * classifies each window instead of averaging the whole.
+     */
+    fun effectiveId(sportType: Int, avgSpeedMps: Double, startTimeMs: Long? = null): Int = when {
+        sportType != OUTDOOR_RUNNING -> sportType
+        startTimeMs != null && startTimeMs >= PICKER_EPOCH_MS -> sportType   // the wearer picked it; believe them
+        avgSpeedMps < RUNNING_SPEED_MPS -> OUTDOOR_WALKING
+        else -> sportType
+    }
 }

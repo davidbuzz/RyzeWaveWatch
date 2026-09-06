@@ -122,6 +122,22 @@ class StrideCalibrationTest {
     }
 
     @Test
+    fun racketSportsAreNotAGaitAndSaySo() {
+        for (sport in listOf(0x07 /* Tennis */, 0x05 /* Badminton */, 0x60 /* Pickleball */)) {
+            assertEquals("sport $sport", SportGait.COURT, StrideCalibration.sportGait(sport))
+            val out = StrideCalibration.calibrate(realRun(), buzz, sport)
+            assertNull(out.walk); assertNull(out.run)
+            assertTrue(out.message, out.message.contains("shuffles"))
+        }
+    }
+
+    @Test
+    fun snorkelingIsFinDrivenNotAStrokeSport() {
+        // Arms relaxed at the sides; propulsion is the fin kick. The wrist counts nothing useful.
+        assertEquals(SportGait.NONE, StrideCalibration.sportGait(0x6B))
+    }
+
+    @Test
     fun aWalkingSportOnlyEverTeachesTheWalkingStride() {
         // Same track, declared as Outdoor Walking: the fast windows must not become a running stride.
         val out = StrideCalibration.calibrate(realRun(), buzz, 0x23)
