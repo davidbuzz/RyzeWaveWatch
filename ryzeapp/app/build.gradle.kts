@@ -21,8 +21,8 @@ android {
         applicationId = "au.buzz.ryzewave"
         minSdk = 26
         targetSdk = 35
-        versionCode = 1
-        versionName = "0.1"
+        versionCode = 2
+        versionName = "0.1.1"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     signingConfigs {
@@ -38,6 +38,13 @@ android {
     buildTypes {
         getByName("debug") { applicationIdSuffix = "" }
         getByName("release") {
+            // Deliberately debuggable (Buzz, 2026-09-06). These APKs are sideloaded from GitHub, never sold or
+            // put on the Play Store, and this is the only way the owner of the phone can get at their own data:
+            // it re-enables `adb shell run-as au.buzz.ryzewave` (and so tools/pull_app_data.sh) on a release
+            // build. `allowBackup` stays false on purpose, so nothing is uploaded to Google's cloud backup.
+            // The cost: anyone with USB debugging enabled and an authorised computer can read the app's data,
+            // and the Play Store would reject the APK. Do not "fix" this without asking Buzz.
+            isDebuggable = true
             isMinifyEnabled = false       // no shrinking yet; turn on together with proguard-rules.pro
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
             signingConfig = signingConfigs.findByName("release")
