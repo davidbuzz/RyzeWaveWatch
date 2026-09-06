@@ -198,9 +198,10 @@ private fun LiveWorkoutCard(
                     CircularProgressIndicator(Modifier.size(22.dp), strokeWidth = 2.dp)
                 }
             }
+            val metrics = WorkoutMetrics.of(state)
             Row(horizontalArrangement = Arrangement.spacedBy(20.dp)) {
-                StatText("Distance (GPS)", Fmt.metres(state.distanceMeters), Modifier.weight(1f))
-                StatText("Pace", Fmt.pace(state.paceSecPerKm), Modifier.weight(1f))
+                StatText(metrics.distanceLabel, metrics.distanceText, Modifier.weight(1f))
+                StatText(if (metrics.estimated) "Pace (est)" else "Pace", metrics.paceText, Modifier.weight(1f))
             }
             Row(horizontalArrangement = Arrangement.spacedBy(20.dp)) {
                 StatText("Heart rate", state.hr?.let { "$it bpm" } ?: "–", Modifier.weight(1f))

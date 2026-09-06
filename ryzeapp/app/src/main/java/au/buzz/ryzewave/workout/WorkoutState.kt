@@ -36,10 +36,18 @@ data class WorkoutState(
     val gpsAccuracyM: Float? = null,
     /** False when the location provider says GPS is unavailable (or before the first fix). */
     val gpsAvailable: Boolean = false,
+    /**
+     * True while GPS distance has stopped growing — no accepted fix for longer than [WorkoutController.STALE_FIX_MS]
+     * (a tunnel, indoors, or location switched off mid-run). The live UI switches to the step-based estimate then.
+     */
+    val gpsStale: Boolean = false,
     val trackPointCount: Int = 0,
     val acceptedPointCount: Int = 0,
     /** Watch's per-session step count (max seen); null until the first realtime push carries one. */
     val steps: Int? = null,
+    /** Metres per walking / running step for this session's profile+calibration, for the step-based distance estimate. */
+    val walkStrideMeters: Double = 0.0,
+    val runStrideMeters: Double = 0.0,
     /** Phone step-counter tally for this workout (paused steps excluded); null when unavailable. */
     val phoneSteps: Int? = null,
     /** Last watch/database problem, cleared on the next successful watch call. The workout keeps running. */

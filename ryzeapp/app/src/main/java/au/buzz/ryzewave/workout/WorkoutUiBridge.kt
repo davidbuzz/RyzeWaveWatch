@@ -111,6 +111,11 @@ class WorkoutUiBridge(
                     gpsAccuracyM = s.gpsAccuracyM,
                     gpsFixes = s.trackPointCount,
                     gpsAccepted = s.acceptedPointCount,
+                    gpsAvailable = s.gpsAvailable,
+                    gpsStale = s.gpsStale,
+                    steps = s.steps,
+                    walkStrideMeters = s.walkStrideMeters,
+                    runStrideMeters = s.runStrideMeters,
                     message = s.message,
                 )
             }

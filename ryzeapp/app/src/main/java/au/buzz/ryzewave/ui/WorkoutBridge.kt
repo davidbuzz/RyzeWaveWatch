@@ -50,6 +50,15 @@ data class WorkoutUiState(
     val gpsAccuracyM: Float? = null,
     val gpsFixes: Int = 0,
     val gpsAccepted: Int = 0,
+    /** False when the location provider says GPS is unavailable (or before the first fix). */
+    val gpsAvailable: Boolean = false,
+    /** True while GPS distance has stopped growing (see [au.buzz.ryzewave.workout.WorkoutState.gpsStale]). */
+    val gpsStale: Boolean = false,
+    /** Watch's per-session step count; drives the step-based distance/pace estimate when GPS is unavailable. */
+    val steps: Int? = null,
+    /** Metres per walking / running step for this session, for the step-based estimate. */
+    val walkStrideMeters: Double = 0.0,
+    val runStrideMeters: Double = 0.0,
     val message: String? = null,
 ) {
     val active: Boolean get() = phase == WorkoutPhase.RUNNING || phase == WorkoutPhase.PAUSED

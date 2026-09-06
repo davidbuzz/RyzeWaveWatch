@@ -11,6 +11,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -32,9 +33,10 @@ class WorkoutControllerTest {
 
     private val finished = CopyOnWriteArrayList<au.buzz.ryzewave.core.Workout>()
 
-    private fun controller(tickMs: Long = 20L) = WorkoutController(
+    private fun controller(tickMs: Long = 20L, watchControlDebounceMs: Long = DEBOUNCE_MS) = WorkoutController(
         repo = repo, watch = watch, settings = settings, scope = scope,
         tracker = DefaultGpsDistanceTracker(), clock = { now }, tickMs = tickMs,
+        watchControlDebounceMs = watchControlDebounceMs,
         onError = { message, _ -> errors += message },
         onFinished = { finished += it },
     )
@@ -278,6 +280,99 @@ class WorkoutControllerTest {
         const val LAT = -27.4698
         const val LON = 153.0251
         const val DEG_LAT_M = DefaultGpsDistanceTrackerTest.DEG_LAT_M
+
+        /** Short debounce for the watch-control tests so a settled press applies within the poll timeout. */
+        const val DEBOUNCE_MS = 300L
+    }
+
+    /**
+     * The 2026-09-06 bug: the watch flooded FD 22/FD 33 (pause/resume) every 1-5 s with junk payloads and the app
+     * mirrored each one — thrashing the workout and spamming TTS. A rapid pause,resume,pause,resume burst that
+     * reverses within the window must leave the state untouched and produce no phase transition (hence no cue).
+     */
+    @Test
+    fun watchPauseResumeBurstWithinTheWindowIsIgnored() = runBlocking<Unit> {
+        val ctl = controller(tickMs = 10_000L)
+        ctl.start(1)
+        val phases = CopyOnWriteArrayList<WorkoutPhase>()
+        val job = scope.launch {
+            ctl.state.collect { if (phases.lastOrNull() != it.state) phases += it.state }
+        }
+        awaitUntil("collector sees RUNNING") { phases.contains(WorkoutPhase.RUNNING) }
+
+        // A junk flood: pause,resume,pause,resume back-to-back, all well inside the debounce window.
+        watch.emitEvent(WatchEvent.WorkoutControl(WorkoutControlAction.PAUSE))
+        watch.emitEvent(WatchEvent.WorkoutControl(WorkoutControlAction.RESUME))
+        watch.emitEvent(WatchEvent.WorkoutControl(WorkoutControlAction.PAUSE))
+        watch.emitEvent(WatchEvent.WorkoutControl(WorkoutControlAction.RESUME))
+
+        // Wait out more than the debounce: nothing must have settled.
+        Thread.sleep(DEBOUNCE_MS * 3)
+        assertEquals(WorkoutPhase.RUNNING, ctl.state.value.state)
+        assertEquals("no phase transition (so no spoken cue)", listOf(WorkoutPhase.RUNNING), phases.toList())
+        assertFalse("must not echo pause back to the watch", watch.calls.contains("pause"))
+        assertFalse("must not echo resume back to the watch", watch.calls.contains("resume"))
+
+        // A StateAnnouncer fed the observed phases says nothing beyond the initial start.
+        val announcer = StateAnnouncer()
+        val spoken = phases.mapNotNull { announcer.onPhase(it) }
+        assertEquals(listOf(StateAnnouncer.STARTED), spoken)
+
+        job.cancel()
+        ctl.stop()
+    }
+
+    /** A watch pause that is held (no reversal) past the window applies exactly once. */
+    @Test
+    fun genuineWatchPauseHeldBeyondTheWindowAppliesOnce() = runBlocking<Unit> {
+        val ctl = controller(tickMs = 10_000L)
+        ctl.start(1)
+        watch.emitEvent(WatchEvent.WorkoutControl(WorkoutControlAction.PAUSE))
+        // Still RUNNING immediately (debounced, not applied yet).
+        assertEquals(WorkoutPhase.RUNNING, ctl.state.value.state)
+        awaitUntil("settled pause applies") { ctl.state.value.state == WorkoutPhase.PAUSED }
+        assertFalse("a watch pause is not echoed back", watch.calls.contains("pause"))
+        ctl.stop()
+    }
+
+    /** A watch resume that is held past the window applies exactly once. */
+    @Test
+    fun genuineWatchResumeHeldBeyondTheWindowAppliesOnce() = runBlocking<Unit> {
+        val ctl = controller(tickMs = 10_000L)
+        ctl.start(1)
+        ctl.pause()                                        // get to PAUSED first (app button, immediate)
+        assertEquals(WorkoutPhase.PAUSED, ctl.state.value.state)
+        watch.emitEvent(WatchEvent.WorkoutControl(WorkoutControlAction.RESUME))
+        assertEquals(WorkoutPhase.PAUSED, ctl.state.value.state)   // debounced, not applied yet
+        awaitUntil("settled resume applies") { ctl.state.value.state == WorkoutPhase.RUNNING }
+        assertFalse("a watch resume is not echoed back", watch.calls.contains("resume"))
+        ctl.stop()
+    }
+
+    /** App-button pause/resume are immediate — they never go through the watch debounce. */
+    @Test
+    fun appPauseAndResumeAreImmediate() = runBlocking<Unit> {
+        val ctl = controller(tickMs = 10_000L)
+        ctl.start(1)
+        ctl.pause()
+        assertEquals(WorkoutPhase.PAUSED, ctl.state.value.state)   // no wait for a debounce
+        assertEquals("pause", watch.calls.last())
+        ctl.resume()
+        assertEquals(WorkoutPhase.RUNNING, ctl.state.value.state)
+        assertEquals("resume", watch.calls.last())
+        ctl.stop()
+    }
+
+    /** Session strides are read from settings at start so the UI can build the step-based estimate. */
+    @Test
+    fun startPopulatesSessionStrides() = runBlocking<Unit> {
+        val ctl = controller(tickMs = 10_000L)
+        ctl.start(1)
+        val s = ctl.state.value
+        // FakeSettings has no calibration -> DefaultStrideModel derives from the 175 cm male profile.
+        assertEquals(175 * 0.410 / 100.0, s.walkStrideMeters, 1e-9)
+        assertEquals(175 * 0.546 / 100.0, s.runStrideMeters, 1e-9)
+        ctl.stop()
     }
 
     @Test

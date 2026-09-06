@@ -5,6 +5,8 @@ import au.buzz.ryzewave.core.HealthRepository
 import au.buzz.ryzewave.core.HrSample
 import au.buzz.ryzewave.core.SampleSource
 import au.buzz.ryzewave.core.SettingsStore
+import au.buzz.ryzewave.core.StrideModel
+import au.buzz.ryzewave.core.StrideSettings
 import au.buzz.ryzewave.core.TrackPoint
 import au.buzz.ryzewave.core.UserProfile
 import au.buzz.ryzewave.core.WatchApi
@@ -53,8 +55,16 @@ class WorkoutController(
     private val settings: SettingsStore,
     private val scope: CoroutineScope,
     private val tracker: GpsDistanceTracker = DefaultGpsDistanceTracker(),
+    private val strideModel: StrideModel = DefaultStrideModel(),
     private val clock: () -> Long = System::currentTimeMillis,
     private val tickMs: Long = 1_000L,
+    /**
+     * How long a watch-originated pause/resume must stay SETTLED before it is applied. The watch has been seen to
+     * flood `FD 22`/`FD 33` every 1-5 s with junk payloads (captures/pixel_run2_20260906); a reversal within this
+     * window is treated as noise and ignored, so a single spurious toggle never thrashes the workout or the TTS.
+     * App-button pause/resume are applied immediately (they never go through this gate).
+     */
+    private val watchControlDebounceMs: Long = WATCH_CONTROL_DEBOUNCE_MS,
     private val onError: (String, Throwable?) -> Unit = { _, _ -> },
     /** Called once per workout, after [stop] has written the final row (e.g. to export it to Health Connect). */
     private val onFinished: (Workout) -> Unit = {},
@@ -96,6 +106,16 @@ class WorkoutController(
     /** Steps counted by the phone's step counter for this workout (paused excluded); -1 = none reported. */
     @Volatile private var phoneStepsValue = -1
 
+    /** Per-session stride (metres/step), read from settings at [start]; feeds the step-based distance estimate. */
+    @Volatile private var walkStrideM = 0.0
+    @Volatile private var runStrideM = 0.0
+
+    /** Guards the watch-control debounce state below (mutated from the events collector and the debounce timer). */
+    private val watchGate = Any()
+    /** The phase a watch pause/resume is waiting to settle into, or null when nothing is pending. */
+    private var pendingWatchPhase: WorkoutPhase? = null
+    private var watchDebounceJob: Job? = null
+
     private var hrJob: Job? = null
     private var tickerJob: Job? = null
     private var watchUpdateJob: Job? = null
@@ -111,8 +131,10 @@ class WorkoutController(
     private suspend fun onWatchEvent(e: WatchEvent) {
         when (e) {
             is WatchEvent.WorkoutControl -> when (e.action) {
-                WorkoutControlAction.PAUSE -> if (_state.value.state == WorkoutPhase.RUNNING) pause(fromWatch = true)
-                WorkoutControlAction.RESUME -> if (_state.value.state == WorkoutPhase.PAUSED) resume(fromWatch = true)
+                // Pause/resume from the watch are DEBOUNCED: the watch floods junk FD 22/FD 33; only a state that
+                // settles beyond the window is applied and announced. A reversal within the window is dropped as noise.
+                WorkoutControlAction.PAUSE -> onWatchPauseResume(WorkoutPhase.PAUSED)
+                WorkoutControlAction.RESUME -> onWatchPauseResume(WorkoutPhase.RUNNING)
                 WorkoutControlAction.STOP -> if (_state.value.state != WorkoutPhase.STOPPED) stop(fromWatch = true)
                 // The app cannot meaningfully begin a session from a watch press here (no GPS/foreground): ignore.
                 WorkoutControlAction.START -> Unit
@@ -121,6 +143,60 @@ class WorkoutController(
             else -> Unit
         }
     }
+
+    /**
+     * A watch-originated pause ([want] = PAUSED) or resume ([want] = RUNNING). It is not applied immediately: the
+     * watch echoes these controls in floods of junk 13-byte `FD 22`/`FD 33` (captures/pixel_run2_20260906), so we
+     * wait [watchControlDebounceMs] and only apply the change if the watch is still asking for the opposite of the
+     * current state — a reversal (or a return to the current state) within the window cancels the pending change.
+     */
+    private fun onWatchPauseResume(want: WorkoutPhase) {
+        synchronized(watchGate) {
+            val current = _state.value.state
+            if (current == WorkoutPhase.STOPPED) {
+                cancelPendingWatchControlLocked()          // no active workout: nothing to pause/resume
+                return
+            }
+            when {
+                // The watch is back on the current state: a reversal of whatever was pending — treat as noise.
+                want == current -> cancelPendingWatchControlLocked()
+                // Same target already pending: let the running timer decide, do not restart it.
+                want == pendingWatchPhase -> Unit
+                // A new, opposite target: (re)arm the settle timer.
+                else -> {
+                    pendingWatchPhase = want
+                    watchDebounceJob?.cancel()
+                    watchDebounceJob = scope.launch {
+                        delay(watchControlDebounceMs)
+                        settleWatchControl(want)
+                    }
+                }
+            }
+        }
+    }
+
+    /** Fires [watchControlDebounceMs] after a watch pause/resume: applies it iff it is still the pending, opposite state. */
+    private suspend fun settleWatchControl(want: WorkoutPhase) {
+        synchronized(watchGate) {
+            if (pendingWatchPhase != want) return          // superseded, reversed, or cancelled while we waited
+            pendingWatchPhase = null
+            watchDebounceJob = null
+        }
+        when (want) {
+            WorkoutPhase.PAUSED -> pause(fromWatch = true)
+            WorkoutPhase.RUNNING -> resume(fromWatch = true)
+            WorkoutPhase.STOPPED -> Unit
+        }
+    }
+
+    private fun cancelPendingWatchControlLocked() {
+        pendingWatchPhase = null
+        watchDebounceJob?.cancel()
+        watchDebounceJob = null
+    }
+
+    /** Clears any pending watch pause/resume (a user action or a new session overrides watch noise). */
+    private fun cancelPendingWatchControl() = synchronized(watchGate) { cancelPendingWatchControlLocked() }
 
     /**
      * Starts a workout: inserts the [Workout] row, subscribes to [WatchApi.liveHr], tells the watch
@@ -141,7 +217,18 @@ class WorkoutController(
         weightKg = profile.weightKg.toDouble().takeIf { it > 0.0 } ?: UserProfile().weightKg.toDouble()
         ageYears = profile.age.takeIf { it > 0 } ?: UserProfile().age
         male = profile.male
+        val stride = try {
+            settings.stride.first()
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            onError("stride settings unavailable, using defaults", e)
+            StrideSettings()
+        }
+        walkStrideM = strideModel.walkStrideM(profile, stride)
+        runStrideM = strideModel.runStrideM(profile, stride)
 
+        cancelPendingWatchControl()
         synchronized(lock) {
             tracker.reset()
             pendingPoints.clear()
@@ -177,6 +264,7 @@ class WorkoutController(
         _state.value = WorkoutState(
             state = WorkoutPhase.RUNNING, workoutId = id, sportType = sportType, startTime = now,
             gpsAvailable = previous.gpsAvailable,
+            walkStrideMeters = walkStrideM, runStrideMeters = runStrideM,
             // The service reports GPS problems before it asks us to start: keep them visible.
             hostError = previous.hostError, errorSeq = previous.errorSeq,
         )
@@ -205,6 +293,7 @@ class WorkoutController(
      */
     suspend fun pause(fromWatch: Boolean = false): Unit = control.withLock {
         if (_state.value.state != WorkoutPhase.RUNNING) return@withLock
+        if (!fromWatch) cancelPendingWatchControl()    // an app-button pause overrides any pending watch noise
         val now = clock()
         runningSince?.let { activeMsBefore += max(0L, now - it) }
         runningSince = null
@@ -218,6 +307,7 @@ class WorkoutController(
     /** Resumes a paused workout. [fromWatch] (an unsolicited `FD 33`) skips sending `FD 33` back to the watch. */
     suspend fun resume(fromWatch: Boolean = false): Unit = control.withLock {
         if (_state.value.state != WorkoutPhase.PAUSED) return@withLock
+        if (!fromWatch) cancelPendingWatchControl()    // an app-button resume overrides any pending watch noise
         val now = clock()
         runningSince = now
         lastTickTime = now
@@ -241,6 +331,7 @@ class WorkoutController(
      */
     suspend fun stop(fromWatch: Boolean = false, reason: StopReason? = null): Workout? = control.withLock {
         if (_state.value.state == WorkoutPhase.STOPPED) return@withLock null
+        cancelPendingWatchControl()
         val why = reason ?: if (fromWatch) StopReason.WATCH else StopReason.USER
         val now = clock()
         runningSince?.let { activeMsBefore += max(0L, now - it) }
@@ -327,7 +418,7 @@ class WorkoutController(
         _state.update {
             it.copy(
                 distanceMeters = distance, paceSecPerKm = pace, speedMps = speed,
-                gpsAccuracyM = accuracyM, gpsAvailable = true,
+                gpsAccuracyM = accuracyM, gpsAvailable = true, gpsStale = false,
                 trackPointCount = it.trackPointCount + 1,
                 acceptedPointCount = it.acceptedPointCount + (if (accepted) 1 else 0),
             )
@@ -414,7 +505,7 @@ class WorkoutController(
             _state.update {
                 it.copy(
                     elapsedSeconds = elapsed, distanceMeters = distance, paceSecPerKm = pace,
-                    speedMps = speed, calories = calories,
+                    speedMps = speed, calories = calories, gpsStale = stale,
                 )
             }
             pushToWatch(elapsed, distance, pace, calories)
@@ -567,6 +658,12 @@ class WorkoutController(
         const val WATCH_TIMEOUT_MS = 5_000L
         const val UPDATE_TIMEOUT_MS = 3_000L
         const val STALE_FIX_MS = 15_000L
+
+        /**
+         * A watch-originated pause/resume must stay settled this long before it is applied and announced. Longer than
+         * the watch's junk `FD 22`/`FD 33` flood interval (1-5 s seen on 2026-09-06), so a spurious toggle is dropped.
+         */
+        const val WATCH_CONTROL_DEBOUNCE_MS = 8_000L
         const val PERSIST_EVERY_S = 5
         const val MAX_TICK_GAP_MS = 60_000L
         const val MAX_HR_SAMPLES = 6 * 3600

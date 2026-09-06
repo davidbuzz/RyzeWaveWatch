@@ -67,5 +67,10 @@ fun WorkoutState.toUi(): WorkoutUiState = WorkoutUiState(
     gpsAccuracyM = gpsAccuracyM,
     gpsFixes = trackPointCount,
     gpsAccepted = acceptedPointCount,
+    gpsAvailable = gpsAvailable,
+    gpsStale = gpsStale,
+    steps = steps,
+    walkStrideMeters = walkStrideMeters,
+    runStrideMeters = runStrideMeters,
     message = error,
 )
