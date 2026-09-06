@@ -86,3 +86,8 @@ Established facts:
   the useful ones; the sport metrics page shows HR/kcal/timer but not the sport name). Camera distance is fine as
   set up; a few degrees off-axis reduces the reflection streak. For the 2026-09-07 run: Moto drives, Pixel films,
   Pixel's copy of the app is force-stopped by the driver so it cannot steal the watch link.
+- 2026-09-06 20:20 Buzz declared the all-sports end-to-end test COMPLETE and PASSED after spot checks from the top,
+  middle and bottom of the list (Outdoor Running, Cycling, Yoga, Rower x3, Kick Boxing, Marathon: saved row = watch FD AA
+  answer = realtime-push id, stop verified). He does not want the remaining sports run. Do not re-run it unasked.
+  Driver lesson: the Workout tab's chip row re-flows around the selected sport, so More…/Start/Stop move between sports
+  and cannot be tapped blind; a uiautomator dump costs ~2.7 s and dominates the per-sport time.

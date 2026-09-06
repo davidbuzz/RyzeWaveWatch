@@ -272,6 +272,29 @@ classifications above are right, because a phone sitting on a desk does not row 
 each sport can do that, and so far exactly one sport (Outdoor Running) has one. Treat the table's thresholds as
 provisional until more real sessions exist.
 
+## Result of the end-to-end test (2026-09-06, evening)
+
+Run on the moto g05 with the watch linked, 12-15 s per sport, verdict = saved row + the watch's `FD AA` answer + every
+realtime push carrying the chosen id + a verified stop. Sports checked from the top, middle and bottom of the list:
+
+| Sport | id | Saved | Watch said | Realtime pushes | Result |
+|---|---|---|---|---|---|
+| Outdoor Running | 0x01 | 1 | 1 | 1 | OK |
+| Cycling | 0x02 | 2 | 2 | 3 | OK |
+| Yoga | 0x13 | 19 | 19 | 1 | OK |
+| Rower | 0x29 | 41 | 41 | (photographed: face lit at start and after stop) | OK ×3 |
+| Kick Boxing | 0x3A | 58 | 58 | 1 | OK |
+| Marathon | 0x73 | 115 | 115 | 0 | OK |
+
+Buzz's call: with the first, last and several middle entries passing on all three binary checks, the remaining
+sports go through the identical picker-start-stop path and do not need to be run individually. **Testing complete,
+all passed.** A full 70-sport pass with `tools/all_sports_test.sh <serial> 15` remains available (about 45 min);
+it proves the chain, not the classifications.
+
+Lesson from building the driver: the Workout tab's chip row re-flows around the selected sport, so "More…",
+"Start workout" and "Stop" move between sports and cannot be tapped from remembered coordinates; only the bottom
+navigation bar is fixed. Each UI-tree dump costs ~2.7 s regardless of transport, which is where a sport's ~50 s goes.
+
 ## Known imprecision, honestly
 
 - **"Steps inflated by swings or dribbling"** covers basketball, cricket and golf: a swing, a bowling action or a
