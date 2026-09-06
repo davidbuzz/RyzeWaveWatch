@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
-# Install a minimal Android SDK inside the repo (tools/android-sdk): cmdline-tools, platform 34, build-tools 34.
+# Install a minimal Android SDK inside the repo (tools/android-sdk): cmdline-tools, platforms 34 + 35,
+# build-tools 34 + 35. The Gradle app (ryzeapp/) needs 35 (compileSdk/targetSdk 35); RyzeBridge (android/) targets
+# 34 but builds against whichever platform sorts highest, so both are installed.
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 SDK="$ROOT/tools/android-sdk"
@@ -16,5 +18,5 @@ if [ ! -x cmdline-tools/latest/bin/sdkmanager ]; then
 fi
 SM="$SDK/cmdline-tools/latest/bin/sdkmanager"
 yes | "$SM" --sdk_root="$SDK" --licenses > /dev/null 2>&1 || true
-"$SM" --sdk_root="$SDK" "platforms;android-34" "build-tools;34.0.0"
+"$SM" --sdk_root="$SDK" "platforms;android-34" "build-tools;34.0.0" "platforms;android-35" "build-tools;35.0.0"
 echo "[*] SDK ready:"; ls "$SDK/build-tools" "$SDK/platforms"
