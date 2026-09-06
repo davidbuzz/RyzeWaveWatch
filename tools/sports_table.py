@@ -43,6 +43,9 @@ D = {
 0x6F:("Reaching and pulling, irregular and slow","Noise","NONE"),0x71:("A fall, then hanging; nothing rhythmic","Noise","NONE"),
 0x72:("A short run-up, then a single jump","Sparse","FOOT"),0x73:("Swings with the stride for hours","Steps","FOOT"),
 }
+GPS = {1: 'Y', 2: 'Y', 4: 'S', 5: 'N', 7: 'N', 8: 'Y', 9: 'Y', 10: 'N', 11: 'Y', 12: 'S', 13: 'N', 14: 'S', 15: 'Y', 16: 'S', 18: 'N', 19: 'N', 20: 'N', 21: 'N', 23: 'Y', 24: 'N', 25: 'S', 27: 'N', 28: 'N', 30: 'Y', 31: 'N', 34: 'N', 35: 'Y', 36: 'Y', 37: 'Y', 39: 'N', 40: 'S', 41: 'S', 44: 'S', 45: 'N', 46: 'N', 52: 'S', 53: 'N', 55: 'N', 57: 'N', 58: 'N', 63: 'N', 64: 'N', 65: 'N', 68: 'Y', 70: 'Y', 72: 'S', 75: 'Y', 77: 'Y', 78: 'Y', 80: 'N', 81: 'Y', 85: 'N', 86: 'Y', 88: 'N', 89: 'N', 90: 'S', 96: 'N', 97: 'S', 98: 'N', 99: 'N', 101: 'Y', 104: 'S', 106: 'Y', 107: 'S', 108: 'N', 109: 'N', 111: 'S', 113: 'N', 114: 'N', 115: 'Y'}
+WHY = {4: 'open water yes, a lap pool no', 12: 'outdoors, but little ground covered', 14: 'outdoors, but little ground covered', 16: 'field hockey yes, ice hockey no', 25: 'depends what the session is', 40: 'a track or road test, not a lab one', 41: 'on the water yes, an erg no', 44: 'track and road events, not field events', 52: 'depends what the session is', 72: 'where you went, not the fishing', 90: 'outdoors, but little ground covered', 97: 'outdoors intervals only', 104: 'when it moves through a city rather than one spot', 107: 'surface swimming out and back', 111: 'the approach and traverse, never the vertical'}
+GPSTXT = {'Y': '**Yes** — outdoors and covers ground', 'S': 'Sometimes', 'N': 'No — indoors or stays put'}
 sc=open('ryzeapp/app/src/main/java/au/buzz/ryzewave/protocol/SportTypes.kt').read()
 names={int(m.group(1),16):m.group(2) for m in re.finditer(r'0x([0-9A-Fa-f]{2}) to "([^"]+)"', sc)}
 st=open('ryzeapp/app/src/main/java/au/buzz/ryzewave/workout/StrideCalibration.kt').read()
@@ -53,14 +56,16 @@ stroke,reps,still,walk = ids('STROKE_SPORTS'), ids('REP_SPORTS'), ids('STILL_HAN
 MEAS={"Steps":"**Yes** — footfalls","Sparse":"Partly — real steps, but few","Steps+":"Partly — steps inflated by swings",
       "Strokes":"**Yes** — strokes, not steps","Reps":"Partly — repetitions, not travel","Noise":"**No** — nothing usable"}
 gaps=[]
-print("| id | Sport | What the wrist actually sees | Does the step counter measure anything? | Handled in code? |")
-print("|---|---|---|---|---|")
+print("| id | Sport | What the wrist actually sees | Does the step counter measure anything? | Is GPS worth having here? | Handled in code? |")
+print("|---|---|---|---|---|---|")
 for i in sorted(names):
     arm,meas,intended = D[i]
     cur = 'STROKES' if i in stroke else 'REPS' if i in reps else 'NONE' if i in still else 'WALK_ONLY' if i in walk else 'ANY'
     want = {'FOOT':'ANY','WALK':'WALK_ONLY','STROKES':'STROKES','NONE':'NONE','REPS':'REPS'}[intended]
     state = f"Yes, `{cur}`" if cur==want else f"**No** — `{cur}`, should be `{want}`"
     if cur!=want: gaps.append((i,names[i],cur,want))
-    print(f"| `0x{i:02X}` | {names[i]} | {arm} | {MEAS[meas]} | {state} |")
+    g = GPS[i]
+    gtxt = GPSTXT[g] + (f" — {WHY[i]}" if i in WHY else "")
+    print(f"| `0x{i:02X}` | {names[i]} | {arm} | {MEAS[meas]} | {gtxt} | {state} |")
 print(f"gaps={len(gaps)}", file=sys.stderr)
 for g in gaps: print("0x%02X %s: %s -> %s"%g, file=sys.stderr)
