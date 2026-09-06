@@ -8,6 +8,7 @@
 #   tools/all_sports_test.sh ZY... 30 "Rower" "Swimming"    just those
 #
 # Output: captures/all_sports_<ts>/{results.tsv,log.txt,<sport>.png}. Exit 1 if any sport failed.
+# With the watch linked, the app asks it (FD AA) which sport it opened; a disagreement is a failure too.
 # Needs: the app installed and permitted, location ON (the app refuses to start otherwise), the phone unlocked.
 set -uo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -81,7 +82,7 @@ row_for_start() {   # newest workout row (id, sportType, duration, distance) via
   sqlite3 "$S/db" "select id, sportType, durationSeconds, cast(distanceMeters as int), ifnull(steps,''), (select count(*) from track_point where workoutId=workout.id) from workout order by start desc limit 1;" 2>/dev/null
 }
 
-printf 'sport\tid\tsaved_sport\tduration_s\tdistance_m\tsteps\tpoints\tresult\n' > "$RES"
+printf 'sport\tid\tsaved_sport\twatch_says\tduration_s\tdistance_m\tsteps\tpoints\tresult\n' > "$RES"
 fail=0
 adb shell am start -n $PKG/.MainActivity >/dev/null 2>&1; sleep 2
 for name in "${SPORTS[@]}"; do
@@ -93,17 +94,28 @@ for name in "${SPORTS[@]}"; do
   # the picker: a chip row with the popular sports and a "More…" chip that opens the "All sports" dialog.
   # The tab can take a moment to render after a stop, so try twice before giving up.
   if ! tap_text "More…"; then sleep 1.5; tap_text "Workout"; sleep 1; tap_text "More…" || { say "$name: no 'More…' chip on the Workout tab"; dump; }; fi
-  if ! pick_in_dialog "$name"; then say "FAIL $name: not found in the picker"; printf '%s\t%d\t\t\t\t\t\tNOT_IN_PICKER\n' "$name" "$id" >> "$RES"; fail=1; tap_text "Close"; continue; fi
+  if ! pick_in_dialog "$name"; then say "FAIL $name: not found in the picker"; printf '%s\t%d\t\t\t\t\t\t\tNOT_IN_PICKER\n' "$name" "$id" >> "$RES"; fail=1; tap_text "Close"; continue; fi
   tap_text "Close"; sleep 0.5
-  if ! tap_text "Start workout"; then say "FAIL $name: no Start button (location off?)"; printf '%s\t%d\t\t\t\t\t\tNO_START\n' "$name" "$id" >> "$RES"; fail=1; adb exec-out screencap -p > "$OUT/$(echo "$name" | tr ' /' '__').png"; continue; fi
+  if ! tap_text "Start workout"; then say "FAIL $name: no Start button (location off?)"; printf '%s\t%d\t\t\t\t\t\t\tNO_START\n' "$name" "$id" >> "$RES"; fail=1; adb exec-out screencap -p > "$OUT/$(echo "$name" | tr ' /' '__').png"; continue; fi
+  adb logcat -c 2>/dev/null
   sleep "$SECS"
   adb exec-out screencap -p > "$OUT/$(echo "$name" | tr ' /' '__').png"
+  # what the WATCH says it is doing (FD AA after start, logged by the app); n/a when no watch is linked
+  watch=$(adb logcat -d 2>/dev/null | grep -oE 'watch confirms sport [0-9]+ open|watch reports state=[0-9]+ type=[0-9]+|watch did not answer the sport query' | tail -1)
+  case "$watch" in
+    "watch confirms sport $id open") wsays="$id";;
+    "watch reports"*) wsays="$(echo "$watch" | grep -oE 'type=[0-9]+' | cut -d= -f2)";;
+    "") wsays="n/a";;
+    *) wsays="?";;
+  esac
   tap_text "Stop"; sleep 3
   row=$(row_for_start); IFS='|' read -r rid rsport rdur rdist rsteps rpts <<<"$row"
-  if [ "$rid" = "$before" ]; then say "FAIL $name: no new workout row"; printf '%s\t%d\t\t\t\t\t\tNO_ROW\n' "$name" "$id" >> "$RES"; fail=1; continue; fi
-  if [ "$rsport" = "$id" ]; then r=OK; else r="WRONG_SPORT"; fail=1; fi
-  say "$r $name (id $id): saved sport=$rsport dur=${rdur}s dist=${rdist}m steps=$rsteps points=$rpts"
-  printf '%s\t%d\t%s\t%s\t%s\t%s\t%s\t%s\n' "$name" "$id" "$rsport" "$rdur" "$rdist" "$rsteps" "$rpts" "$r" >> "$RES"
+  if [ "$rid" = "$before" ]; then say "FAIL $name: no new workout row"; printf '%s\t%d\t\t\t\t\t\t\tNO_ROW\n' "$name" "$id" >> "$RES"; fail=1; continue; fi
+  if [ "$rsport" != "$id" ]; then r="WRONG_SPORT"; fail=1
+  elif [ "$wsays" != "n/a" ] && [ "$wsays" != "$id" ]; then r="WATCH_DISAGREES"; fail=1
+  else r=OK; fi
+  say "$r $name (id $id): saved sport=$rsport watch=$wsays dur=${rdur}s dist=${rdist}m steps=$rsteps points=$rpts"
+  printf '%s\t%d\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' "$name" "$id" "$rsport" "$wsays" "$rdur" "$rdist" "$rsteps" "$rpts" "$r" >> "$RES"
 done
 say "done: $(grep -c $'\tOK$' "$RES") OK, $(grep -vc -E $'\tOK$|^sport' "$RES") failed -> $RES"
 rm -rf "$S"

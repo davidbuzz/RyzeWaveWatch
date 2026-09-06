@@ -17,6 +17,8 @@ import au.buzz.ryzewave.core.WatchStatus
 import au.buzz.ryzewave.core.WorkoutControlAction
 import au.buzz.ryzewave.protocol.Packet
 import au.buzz.ryzewave.protocol.Protocol
+import au.buzz.ryzewave.protocol.SportTypes
+import au.buzz.ryzewave.protocol.SportState
 import au.buzz.ryzewave.protocol.Spo2Phase
 import au.buzz.ryzewave.protocol.encFetchHr24Since
 import au.buzz.ryzewave.protocol.encUserInfo
@@ -431,6 +433,20 @@ class WatchApiImpl(
             Protocol.encSportControl(Protocol.SPORT_START, sportType, 1),
             Matchers.isSportEcho(Protocol.SPORT_START), CONTROL_TIMEOUT_MS,
         )
+        // Then ask the watch what it actually did. Best effort: a missing answer is logged, never fatal.
+        val state = runCatching { queryWorkout() }.getOrNull()
+        when {
+            state == null -> log("watch did not answer the sport query after start (type $sportType)", null)
+            state.state != 0 && state.sportType == sportType ->
+                log("watch confirms sport $sportType open (${SportTypes.name(sportType)})", null)
+            else -> log("watch reports state=${state.state} type=${state.sportType} after starting $sportType", null)
+        }
+    }
+
+    override suspend fun queryWorkout(): SportState? {
+        requireReady()
+        val reply = link.request(Protocol.encSportQuery(), { Protocol.decSportState(it) != null }, CONTROL_TIMEOUT_MS)
+        return Protocol.decSportState(reply)
     }
 
     override suspend fun updateWorkout(durationSeconds: Int, distanceMeters: Double, paceSecPerKm: Double, calories: Int) {

@@ -1076,3 +1076,11 @@ Verdicts: `CONFIRMED_STATIONARY` (every usable fix inside 25 m of the centroid),
 or a 60 m spread), `MISLABELLED_MOVED`, `MISLABELLED_STILL` (only after 4 min, so a warm-up on the spot is not
 accused), `INCONCLUSIVE`, `NO_GPS` (fewer than 20 fixes better than 30 m). Paused fixes are ignored. The sentence is
 shown under the stats on the workout detail, red for a contradiction, primary for a confirmation.
+
+## The watch is asked which sport it opened (2026-09-06)
+
+`FD AA` (verified on the watch via RyzeBridge: `FD AA 00 01` when idle) is the closest thing to reading the
+watch's screen. `WatchApi.queryWorkout()` sends it; `startWorkout()` now asks right after the start echo and logs
+"watch confirms sport N open" or "watch reports state=S type=T", best effort and never fatal. `tools/all_sports_test.sh`
+reads that line back from logcat into a `watch_says` column and fails a sport when the watch disagrees with what
+was chosen, so the end-to-end test proves the watch entered the sport, not only that the app saved the id.

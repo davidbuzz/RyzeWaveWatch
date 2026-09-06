@@ -33,6 +33,12 @@ interface WatchApi {
     suspend fun spo2SpotTest(): Int?
 
     suspend fun startWorkout(sportType: Int = 1)
+
+    /**
+     * Ask the watch whether a sport screen is open and which (`FD AA` -> `FD AA <state> <type>`), the nearest
+     * thing to reading its display. Null when the watch does not answer. Default no-op for fakes.
+     */
+    suspend fun queryWorkout(): au.buzz.ryzewave.protocol.SportState? = null
     /** Push live metrics to the watch face once per second while a workout runs (`FD 44`). */
     suspend fun updateWorkout(durationSeconds: Int, distanceMeters: Double, paceSecPerKm: Double, calories: Int)
     suspend fun pauseWorkout()
