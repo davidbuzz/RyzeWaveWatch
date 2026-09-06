@@ -160,11 +160,11 @@ stride model calibrated from GPS walks. Heart rate, SpO2, steps and sleep come f
 - [x] Workout mode end-to-end through the phone: start, per-second HR stream, metric push, stop (2026-09-04)
 - [x] Live heart rate on demand through the phone: `D6 02` then `E5 11` streams `E5 11 00 <hr>` per second (2026-09-04)
 - [x] SpO2 spot test from the phone works (97 %): ignore the spurious `34 00 FF FF`, the result arrives ~1 min later
-- [ ] Our own distance model (GPS track filter for workouts, calibrated stride for daily steps) — vendor formula documented in docs/PROTOCOL.md §9
+- [x] Our own distance model: GPS track with jitter/accuracy rejection for workouts, height-derived and user-calibratable stride for daily steps and as the pace fallback when GPS is lost (vendor formula documented in docs/PROTOCOL.md §9)
 - [x] RyzeBridge headless APK built (no Gradle) and installed on the Pixel; driven by `tools/bridge.py`
 - [x] Full history sync through the phone bridge (steps, HR, SpO2, sleep); record timing verified against the clock
-- [ ] Laptop BlueZ link drops every 5-20 s (supervision timeout) — parked, see `captures/bluez_linkdrop_notes.md`
-- [x] Phone notifications to the watch (build 6); find-phone ringer (build 8); [ ] camera, music control
+- [~] Laptop BlueZ link drops every 5-20 s (supervision timeout) — not fixed and no longer needed: the phone bridge replaced the laptop as the BLE radio. Notes in `captures/bluez_linkdrop_notes.md`
+- [x] Phone notifications to the watch (build 6); find-phone ringer (build 8)
 - [x] Two-way pause/resume/stop with spoken cues (build 9), stuck-workout detector (build 10), GPS breadcrumb plan B (build 11 of 2026-09-06 — see the build-number note in docs/APP.md)
 - [x] Platform decided: native Kotlin app in `ryzeapp/` (docs/APP.md)
 - [x] First build 2026-09-05 00:02: green build, 187 unit tests, installed on the Moto g05, connects, syncs (steps/HR/SpO2/sleep), dashboard + history charts render
@@ -173,7 +173,11 @@ stride model calibrated from GPS walks. Heart rate, SpO2, steps and sleep come f
 - [x] Build 2 (00:41): profile-edit revert, SpO2 chip overflow, export-button layout, midnight rollover fixed and independently verified on the phone (200 unit tests)
 - [x] Workout on the phone (00:52): start → watch HR streaming (71 bpm) → stop; GPS was 'poor (±39 m)' indoors so distance stayed 0 — an outdoor walk is the remaining real-world test
 - [x] Build 3 (01:02): workouts exported to Health Connect as Exercise sessions, TX/RX packet log (`adb logcat -s WatchGatt:*`), HR mean unified, chart labels clamped (202 unit tests) — independently verified on the phone
-- [ ] Outdoor GPS walk to validate distance/pace and stride calibration (instructions above)
+- [x] Outdoor GPS sessions validated distance, pace and stride: a 2.5-min walk (2026-09-05) and a 55-min run (2026-09-06), which also exposed the two bugs since fixed — the location-services gate and the step-based pace fallback
+- [ ] Remote camera shutter and music control from the watch
+- [ ] Watch alarms and weather push
+- [ ] Contacts, call log and watch-face upload — researched, see [docs/watch_features_research.md](docs/watch_features_research.md)
+- [ ] Send the protocol corrections upstream to Gadgetbridge ([docs/gadgetbridge_upstream.md](docs/gadgetbridge_upstream.md) is written, not yet submitted)
 
 ### Git layout
 

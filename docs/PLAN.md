@@ -57,11 +57,11 @@ over-smoothing corners and dropping fixes (deflates). If the workout figure is w
 Which of (a) or (b) is the one that's wrong decides the first milestone. Both can be validated against the phone's
 own GPS or a known route without any watch involvement.
 
-## 4. Milestones (status 2026-09-05 00:20)
+## 4. Milestones (status 2026-09-06)
 - [x] 1 and 2 done in the first build: Kotlin GATT layer + codec (187 unit tests replaying the captures), dashboard, history charts; connects and syncs on launch on the Moto g05.
-- [~] 3 workout: implemented (GPS tracker, controller, foreground service, GPX) but not yet exercised on the phone.
-- [~] Health Connect export: implemented, permissions flow untested on the phone.
-- [ ] 4 comfort features.
+- [x] 3 workout: implemented and exercised outdoors on the phone (GPS tracker, controller, foreground service, GPX, two-way pause/resume/stop, live HR, 70 sport types).
+- [x] Health Connect export: verified on the phone, permissions flow included; sessions, routes, steps, HR, SpO2, distance and sleep all land in Health Connect.
+- [~] 4 comfort features: notifications to the watch and find-my-phone are done; weather and watch alarms are not started.
 Review of the first build produced 36 findings (2 high: Health Connect export cursor semantics, BLE "Ready" published on a lost link); the fix pass applied 33 (build 00:36 on the phone, connected + synced). Health Connect export verified (172 records). Build 2 (00:41) fixed and independently verified the profile-edit revert, SpO2 chip overflow, export-button layout and midnight rollover (200 unit tests). Workout verified on the phone at 00:52 (start, live HR, stop; GPS poor indoors). A polish pass (workout → Health Connect exercise session, debug packet log, chart nits) is running with an independent verifier. Remaining real-world test: an outdoor walk for distance/pace and stride calibration.
 
 ## 4a. Original milestone list
