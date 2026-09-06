@@ -83,6 +83,12 @@ data class TrackPoint(
      * resume never loses the route) but never counted towards distance ([accepted] is always false for these).
      */
     val paused: Boolean = false,
+    /**
+     * The workout's step count at this fix (the watch's session total, or the phone's when the watch is silent).
+     * Added in schema version 6 so stride calibration can attribute steps to the fast and slow parts of a single
+     * session ([workout.StrideCalibration]); null on older rows and whenever no step source has reported yet.
+     */
+    val steps: Int? = null,
 )
 
 data class UserProfile(

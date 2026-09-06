@@ -28,6 +28,7 @@ import androidx.health.connect.client.records.ExerciseSessionRecord
 import au.buzz.ryzewave.health.ExportResult
 import au.buzz.ryzewave.health.HealthConnectMapping
 import au.buzz.ryzewave.notify.WatchNotificationListener
+import au.buzz.ryzewave.workout.StrideCalibration
 import au.buzz.ryzewave.workout.CalibrationSteps
 import au.buzz.ryzewave.workout.DefaultStrideModel
 import kotlinx.coroutines.CancellationException
@@ -524,28 +525,30 @@ class SettingsViewModel(
     fun resetStride() = saveStride(StrideSettings())
 
     /**
-     * Stride from the last GPS workout: distance ÷ the workout's own step count. The step count is the watch's
-     * per-workout total ([Workout.steps]) or the phone's ([Workout.phoneSteps]) — no hourly pro-rating, which used
-     * to mix in steps walked in the same hour outside the workout ([DefaultStrideModel.calibrationSteps]). Speeds
-     * below 2 m/s calibrate the walking stride, faster ones the running stride; the bounds live in
-     * [DefaultStrideModel.calibratedStrideM].
+     * Stride from the last GPS workout, split by how the wearer was actually moving
+     * ([StrideCalibration]): the workout is sliced into 15-second windows, each window is classified as walking or
+     * running from its stride-to-height ratio and its cadence, and each gait's windows produce their own stride.
+     * The sport the user picked gates the result, so an Outdoor Running session can never be filed as walking and
+     * a bike ride calibrates nothing. Only the bands with enough evidence, and within a plausible distance of the
+     * height-derived value, are saved; the rest are reported and left alone.
      */
     fun calibrateFromLastWorkout() = task("Calibration") {
         val w = calibrationWorkout.value ?: return@task "No GPS workout of at least ${MIN_CALIBRATION_M.toInt()} m yet"
         w.end ?: return@task "Workout not finished"
-        val source = when (val s = DefaultStrideModel.calibrationSteps(w, MIN_CALIBRATION_STEPS)) {
-            is CalibrationSteps.Unavailable -> return@task s.message
-            is CalibrationSteps.Use -> s
+        val points = graph.repo.trackPointsOnce(w.id)
+        val outcome = StrideCalibration.calibrate(points, profile.value, w.exerciseTypeOverride ?: w.sportType)
+        if (!outcome.changedAnything) {
+            return@task listOf(outcome.message, outcome.notes.joinToString("; "))
+                .filter { it.isNotBlank() }.joinToString(". ")
         }
-        val steps = source.steps
-        val strideM = DefaultStrideModel.calibratedStrideM(steps, w.distanceMeters, MIN_CALIBRATION_STEPS, MIN_CALIBRATION_M)
-            ?: return@task "Computed stride ${Fmt.value(w.distanceMeters / steps)} m/step is implausible; not saved"
-        val speed = w.distanceMeters / w.durationSeconds
         val current = stride.value
-        val next = if (speed < RUN_SPEED_MPS) current.copy(walkStrideM = strideM) else current.copy(runStrideM = strideM)
-        graph.settings.setStride(next)
-        val kind = if (speed < RUN_SPEED_MPS) "walking" else "running"
-        "Calibrated $kind stride: ${String.format(Locale.US, "%.3f", strideM)} m/step from ${Fmt.metres(w.distanceMeters)} / $steps ${source.source} steps"
+        graph.settings.setStride(
+            current.copy(
+                walkStrideM = outcome.walk?.strideM ?: current.walkStrideM,
+                runStrideM = outcome.run?.strideM ?: current.runStrideM,
+            )
+        )
+        listOf(outcome.message, outcome.notes.joinToString("; ")).filter { it.isNotBlank() }.joinToString(". ")
     }
 
     fun setHealthConnectEnabled(on: Boolean) = task("Health Connect", exclusive = false) {

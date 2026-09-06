@@ -393,7 +393,7 @@ class WorkoutController(
                 pendingPoints += TrackPoint(
                     workoutId = workoutId, time = time, lat = lat, lon = lon, accuracyM = accuracyM,
                     speedMps = speedMps, altitudeM = altitudeM, accepted = false, cumulativeM = distance,
-                    paused = true,
+                    paused = true, steps = stepsSoFar(),
                 )
             }
             _state.update {
@@ -411,6 +411,7 @@ class WorkoutController(
             pendingPoints += TrackPoint(
                 workoutId = workoutId, time = time, lat = lat, lon = lon, accuracyM = accuracyM,
                 speedMps = speedMps, altitudeM = altitudeM, accepted = accepted, cumulativeM = distance,
+                steps = stepsSoFar(),
             )
             pace = tracker.paceSecPerKm
             speed = tracker.speedMps
@@ -434,6 +435,17 @@ class WorkoutController(
      * The watch's per-session step count from a realtime push (any thread). The maximum seen is the workout's
      * step total; it only ever rises. Ignored once STOPPED.
      */
+    /**
+     * The session step count to stamp on a track point: the watch's own per-workout total, or the phone's when
+     * the watch has not reported one. Both only ever rise, so the stored series is monotonic and a later
+     * calibration can difference it over any window ([StrideCalibration]).
+     */
+    private fun stepsSoFar(): Int? = when {
+        watchStepsMax > 0 -> watchStepsMax
+        phoneStepsValue > 0 -> phoneStepsValue
+        else -> null
+    }
+
     fun onWatchSteps(steps: Int) {
         if (_state.value.state == WorkoutPhase.STOPPED) return
         if (steps <= watchStepsMax) return

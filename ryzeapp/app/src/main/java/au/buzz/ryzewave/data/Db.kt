@@ -126,6 +126,8 @@ data class TrackPointEntity(
     val cumulativeM: Double?,
     /** True for a fix taken while paused; added in schema version 4 (see [Db.MIGRATION_3_4]), default 0. */
     @ColumnInfo(defaultValue = "0") val paused: Boolean = false,
+    /** Workout step count at this fix; added in schema version 6 (see [Db.MIGRATION_5_6]), null on older rows. */
+    val steps: Int? = null,
 )
 
 /** Always-on GPS breadcrumb (Settings opt-in); added in schema version 5 (see [Db.MIGRATION_4_5]). */
@@ -189,10 +191,10 @@ fun Workout.toEntity(updatedAt: Long): WorkoutEntity =
     WorkoutEntity(id, start, end, sportType, distanceMeters, durationSeconds, avgHr, maxHr, calories, updatedAt, steps, phoneSteps, exerciseTypeOverride)
 
 fun TrackPointEntity.toModel(): TrackPoint =
-    TrackPoint(workoutId, time, lat, lon, accuracyM, speedMps, altitudeM, accepted, cumulativeM, paused)
+    TrackPoint(workoutId, time, lat, lon, accuracyM, speedMps, altitudeM, accepted, cumulativeM, paused, steps)
 
 fun TrackPoint.toEntity(): TrackPointEntity =
-    TrackPointEntity(workoutId, time, lat, lon, accuracyM, speedMps, altitudeM, accepted, cumulativeM, paused)
+    TrackPointEntity(workoutId, time, lat, lon, accuracyM, speedMps, altitudeM, accepted, cumulativeM, paused, steps)
 
 // ---------------------------------------------------------------- DAOs
 // `between` ranges are half-open: fromTime <= t < toTime. `rangeOnce` is inclusive on both ends (it fetches the
@@ -394,7 +396,7 @@ interface HcExportDao {
         HcExportEntity::class,
         BreadcrumbEntity::class,
     ],
-    version = 5,
+    version = 6,
     exportSchema = false,
 )
 abstract class Db : RoomDatabase() {
@@ -447,6 +449,17 @@ abstract class Db : RoomDatabase() {
                 "`accuracyM` REAL NOT NULL, `speedMps` REAL NOT NULL, `altitudeM` REAL, `activity` TEXT, PRIMARY KEY(`time`))",
         )
 
+        /** Schema version 6: per-fix step count, so stride calibration can split a workout by speed. */
+        val MIGRATION_5_6_SQL: List<String> = listOf(
+            "ALTER TABLE `track_point` ADD COLUMN `steps` INTEGER",
+        )
+
+        val MIGRATION_5_6: Migration = object : Migration(5, 6) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                for (sql in MIGRATION_5_6_SQL) db.execSQL(sql)
+            }
+        }
+
         val MIGRATION_4_5: Migration = object : Migration(4, 5) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 for (sql in MIGRATION_4_5_SQL) db.execSQL(sql)
@@ -471,7 +484,7 @@ abstract class Db : RoomDatabase() {
         fun get(context: Context): Db =
             instance ?: synchronized(this) {
                 instance ?: Room.databaseBuilder(context.applicationContext, Db::class.java, NAME)
-                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
+                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)
                     .build()
                     .also { instance = it }
             }
