@@ -1,6 +1,6 @@
 # RyzeWaveWatch
 
-**A working open-source Android alternative to the "Ryze Fit" app that ships with the Ryze Wave smartwatch**
+**A working, source-available Android alternative to the "Ryze Fit" app that ships with the Ryze Wave smartwatch**
 (Ryze Above, AU; models RZ-WADA/B/C). It talks to the watch directly over Bluetooth LE with no vendor account, no
 cloud and no telemetry, and it is built around the thing the vendor app does worst: **live tracking during
 exercise — heart rate every second, blood oxygen, and a real GPS track with honest distance and pace**, written
@@ -63,6 +63,11 @@ Build it and put it on your phone: **[BUILD.md](BUILD.md)**. The app's design an
 Not affiliated with, endorsed by, or supported by Ryze Above or the makers of the Ryze Fit app. "Ryze" and "Ryze
 Wave" are their trademarks, used here only to say which watch this talks to. Use it at your own risk: it is not a
 medical device and nothing it records should be treated as medical data.
+
+**Licence:** copyright (c) 2026 David Buzz, all rights reserved, licensed to you under the
+[PolyForm Noncommercial License 1.0.0](LICENSE). Use it, change it and share it freely for any **noncommercial**
+purpose, including personal use, study and hobby projects. **Commercial use requires a separate written agreement**
+and may require payment. This is source-available software, not open source.
 
 ---
 

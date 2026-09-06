@@ -66,6 +66,12 @@ Claude Code's persistent memory for this project lives **in the repo** at `memor
 `memory/MEMORY.md`). `~/.claude/projects/-home-buzz-RyzeWaveWatch/memory` is a symlink to it, so the memory
 tooling keeps working; edit the files here, never under `~/.claude`.
 
+## Licence
+The repo is **source-available, not open source**: copyright David Buzz, all rights reserved, licensed under the
+PolyForm Noncommercial License 1.0.0 (`LICENSE`). Noncommercial use is granted; commercial use needs a separate
+written agreement. Do not describe the project as "open source" in docs or commit messages, and do not add a
+dependency whose licence would conflict (copyleft such as GPL/AGPL cannot be combined with this and shipped).
+
 ## Git
 The project is a local git repo (initialised 2026-09-05, branch `main`; no remote configured here — Buzz pushes to his own private GitHub repo himself, see [[never-git-push]]). `tools/Gadgetbridge` and
 `tools/Gadgetbridge-tools` are submodules. Commit only when Buzz asks; never push — the GitHub remote will be a
