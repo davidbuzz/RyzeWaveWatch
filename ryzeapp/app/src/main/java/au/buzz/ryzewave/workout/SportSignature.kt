@@ -15,10 +15,19 @@ enum class SportClass(val expected: Set<Indicator>) {
     /** On foot, indoors: treadmill, indoor running, court sports, dance, aerobics. GPS is not expected. */
     INDOOR_STEPS(setOf(Indicator.STEPS, Indicator.HR, Indicator.MOTION)),
 
-    /** Wheels, water, snow, hooves: no steps, but the phone travels. */
+    /** Wheels, snow, hooves, open water: no steps, but the phone travels with the wearer. */
     RIDE(setOf(Indicator.GPS, Indicator.HR, Indicator.MOTION)),
 
-    /** Spinning, elliptical: the phone goes nowhere; HR and cadence motion tell. */
+    /**
+     * A machine the wearer's arms drive: a rowing erg, an elliptical with moving handles. The body goes nowhere,
+     * so GPS must not be expected, but the wrist swings with every stroke, so the watch's own counter keeps
+     * rising. That counter is the [Indicator.STEPS] signal here — strokes rather than footfalls, but the same
+     * evidence that the session is alive, and the one that survives a phone left on a shelf and a heart rate that
+     * has not climbed yet.
+     */
+    STATIONARY_MACHINE(setOf(Indicator.STEPS, Indicator.HR, Indicator.MOTION)),
+
+    /** Spinning: the phone goes nowhere and the hands grip the bars, so only HR and cadence motion tell. */
     STATIONARY_CARDIO(setOf(Indicator.HR, Indicator.MOTION)),
 
     /** Yoga / stretching: low HR, no steps; the only sign of life is the phone moving with the body. */
@@ -45,9 +54,12 @@ object SportSignature {
             .forEach { put(it, SportClass.MOVEMENT) }
         listOf(0x05, 0x0A, 0x0D, 0x15, 0x18, 0x1B, 0x37, 0x39, 0x3F, 0x40, 0x41, 0x55, 0x60)
             .forEach { put(it, SportClass.INDOOR_STEPS) }
-        listOf(0x02, 0x17, 0x1E, 0x25, 0x29, 0x44, 0x4D, 0x4E, 0x51, 0x65)
+        listOf(0x02, 0x17, 0x1E, 0x25, 0x44, 0x4D, 0x4E, 0x51, 0x65)
             .forEach { put(it, SportClass.RIDE) }
-        listOf(0x12, 0x1F).forEach { put(it, SportClass.STATIONARY_CARDIO) }
+        // Rower and elliptical are machines: the wearer stays put while the arms work, so GPS must not be
+        // expected of them. On-water rowing still passes, because its HR and motion are active regardless.
+        listOf(0x1F, 0x29).forEach { put(it, SportClass.STATIONARY_MACHINE) }
+        put(0x12, SportClass.STATIONARY_CARDIO)
         put(0x13, SportClass.FLOOR_WORK)
         listOf(0x14, 0x19, 0x1C, 0x22, 0x27, 0x2D, 0x2E, 0x34, 0x3A, 0x50, 0x58, 0x59, 0x61, 0x63, 0x6C, 0x6D, 0x6F, 0x71)
             .forEach { put(it, SportClass.STRENGTH) }

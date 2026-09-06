@@ -143,6 +143,18 @@ That makes it the reference the rest is checked against. Two consequences worth 
 - **Cycling was separated from rowing.** Both refuse to calibrate, for opposite reasons: a rower's arms follow the
   effort, so the count is real; a cyclist's hands are on the bars, so a wrist cannot see the pedals at all.
 
+
+## What this means for an indoor machine
+
+The same insight that separates strokes from steps decides whether a session is judged alive. On a rowing erg or
+an elliptical the wearer stays in one place, so demanding GPS movement of them would flag a genuine session as
+stuck; but the wrist swings once per stroke, so the watch's counter keeps rising and *that* is the evidence the
+session is real. It survives the two things that break the alternatives: a phone left on a shelf, which kills the
+motion signal, and a heart rate that has not climbed yet, early in a session or during a gentle row.
+
+Spinning is deliberately not in that group. Hands stay on the bars, the counter does not rise, and requiring it
+would flag every spin class. There, heart rate and phone motion are all there is.
+
 ## Known imprecision, honestly
 
 - **"Steps inflated by swings"** covers tennis, badminton, racquetball, pickleball, basketball and golf. A racket

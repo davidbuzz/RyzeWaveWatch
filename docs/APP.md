@@ -1039,3 +1039,13 @@ reassembled, without relying on Fit being pre-configured; it must discard statio
   buttons and STOP stay immediate; the 13-byte FD 33 play-button fix is untouched.
 - 394 unit tests (WorkoutMetricsTest 9, WorkoutControllerTest 21). Verified by an independent agent. Not yet
   exercised on-device (the Moto was off USB during the job); installed on the Pixel.
+
+## Indoor machines are no longer expected to travel (2026-09-06)
+
+`SportSignature` gained `STATIONARY_MACHINE` (steps, HR, motion) and Rower (0x29) and Elliptical (0x1F) moved into
+it from `RIDE`, which expected GPS. On an erg the body does not move, so the stuck-workout detector could reach
+"nothing expected is active" on a real session and warn, then auto-stop it where that is enabled. What does move is
+the wrist, once per stroke, and the watch's realtime push already delivers that count to
+`ActivitySignals.onWatchSteps`, so the counter is now accepted as evidence of life for those two sports. On-water
+rowing is unaffected: its HR and motion are active regardless. Spinning stays `STATIONARY_CARDIO`, because hands on
+the bars never raise the counter.
