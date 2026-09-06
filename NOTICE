@@ -1,0 +1,38 @@
+# Third-party material in this repository
+
+Everything in this repository is copyright (c) 2026 David Buzz and licensed under the terms in
+`LICENSE`, except the items listed below, which came from elsewhere and keep their own licences.
+Those licences are permissive and impose no restriction on the rest of this project.
+
+## Google Material Design icons — Apache License 2.0
+
+`ryzeapp/app/src/main/res/drawable/ic_watch.xml` is the "watch" glyph from Google's Material Design
+icon set, imported through Android Studio's vector asset tool.
+
+    Copyright Google LLC
+    https://github.com/google/material-design-icons
+    Licensed under the Apache License, Version 2.0
+    https://www.apache.org/licenses/LICENSE-2.0
+
+The other drawables in that directory (`ic_launcher_bg.xml`, `ic_launcher_fg.xml`,
+`ic_launcher_mono.xml`, `mipmap-anydpi-v26/ic_launcher.xml`) are original work.
+
+## Gradle wrapper — Apache License 2.0
+
+`ryzeapp/gradlew` and `ryzeapp/gradle/wrapper/gradle-wrapper.jar` are the standard Gradle wrapper,
+committed as Gradle intends. Both carry their own notices: the script has an Apache-2.0 header and
+an SPDX identifier, and the jar contains `META-INF/LICENSE`.
+
+    Copyright the original authors, 2015-2021
+    https://gradle.org
+    Licensed under the Apache License, Version 2.0
+
+## Not included here
+
+The two entries in `.gitmodules` (`tools/Gadgetbridge`, `tools/Gadgetbridge-tools`, both AGPL-3.0)
+are submodule references, not copies: git stores only a URL and a commit id, and their files are
+fetched from their own projects. No code from either is present in this repository or in anything
+built from it. `docs/PROTOCOL.md` cites their findings the way it cites any other source.
+
+Likewise `apk/` (the vendor application and its decompiled output) and `tools/android-sdk/` are
+git-ignored and are not distributed here.

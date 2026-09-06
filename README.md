@@ -67,7 +67,8 @@ medical device and nothing it records should be treated as medical data.
 **Licence:** copyright (c) 2026 David Buzz, all rights reserved, licensed to you under the
 [PolyForm Noncommercial License 1.0.0](LICENSE). Use it, change it and share it freely for any **noncommercial**
 purpose, including personal use, study and hobby projects. **Commercial use requires a separate written agreement**
-and may require payment. This is source-available software, not open source.
+and may require payment. This is source-available software, not open source. A few files come from
+elsewhere under permissive licences and are listed in [NOTICE](NOTICE).
 
 ---
 
