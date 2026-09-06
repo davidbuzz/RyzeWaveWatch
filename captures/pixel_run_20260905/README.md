@@ -31,3 +31,8 @@ Pulled with `tools/pull_app_data.sh`-style commands at 17:56 (8 MB log buffer se
 3. GPS updates stop while paused, so a missed resume loses the track.
 4. The watch's per-session step count (realtime packet bytes 7–9) is not used.
 Requested: spoken "workout paused" / "workout resumed" on the phone for every pause/resume, whichever side triggered it.
+
+## Coordinates (shifted 2026-09-06)
+Every `track_point` row in `ryzewave.fixed.db` (359 points) is shifted by **+0.0210° latitude (+2.34 km) and
++0.0170° longitude (+1.68 km)** per the repo rule (CLAUDE.md "GPS data in the repo"); the real coordinates are not
+in the repo. Distances/pace in the `workout` table are unaffected (constant offset).
