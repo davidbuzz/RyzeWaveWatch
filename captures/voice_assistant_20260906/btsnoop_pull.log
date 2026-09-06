@@ -1,0 +1,7 @@
+[*] Generating bugreport (takes ~1-2 min) ...
+/data/user_de/0/com.android.shell/files/bugreports/bugreport-tegu-CP1A.260505.005-2026-09-06-11-39-50.zip: 1 file pulled, 0 skipped. 30.7 MB/s (21112680 bytes in 0.655s)
+Bug report copied to /home/buzz/RyzeWaveWatch/captures/bugreport_20260906_113949.zip
+[*] Extracting btsnoop logs ...
+Archive:  /home/buzz/RyzeWaveWatch/captures/bugreport_20260906_113949.zip
+[!] No btsnoop_hci.log inside bugreport. Is HCI snoop logging enabled and was BT toggled after enabling?
+EXIT 1
