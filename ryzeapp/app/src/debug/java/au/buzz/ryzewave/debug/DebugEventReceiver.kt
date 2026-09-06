@@ -71,13 +71,20 @@ class DebugEventReceiver : BroadcastReceiver() {
             ACTION_LINK -> {
                 // `--ez auto false` keeps this phone off the watch (persisted; e.g. the test phone while the Pixel owns
                 // the watch's single BLE link); `--ez auto true` restores normal auto-connect.
-                val auto = intent.getBooleanExtra("auto", true)
                 val pending = goAsync()
                 scope.launch {
                     try {
-                        App.graph.settings.setAutoConnect(auto)
-                        if (auto) WatchService.connect(context) else WatchService.pause(context)
-                        Log.i(TAG, "LINK: autoConnect=$auto")
+                        if (intent.hasExtra("auto")) {
+                            val auto = intent.getBooleanExtra("auto", true)
+                            App.graph.settings.setAutoConnect(auto)
+                            if (auto) WatchService.connect(context) else WatchService.pause(context)
+                            Log.i(TAG, "LINK: autoConnect=$auto")
+                        }
+                        if (intent.hasExtra("breadcrumb")) {
+                            val on = intent.getBooleanExtra("breadcrumb", false)
+                            App.graph.settings.setBreadcrumbEnabled(on)
+                            Log.i(TAG, "LINK: breadcrumb=$on")
+                        }
                     } finally {
                         pending.finish()
                     }
