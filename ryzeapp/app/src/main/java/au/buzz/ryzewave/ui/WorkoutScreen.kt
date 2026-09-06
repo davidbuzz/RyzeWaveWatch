@@ -73,6 +73,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import au.buzz.ryzewave.core.Workout
 import au.buzz.ryzewave.health.HealthConnectMapping
 import au.buzz.ryzewave.protocol.SportTypes
+import au.buzz.ryzewave.workout.SportMotionCheck
 
 @Composable
 fun WorkoutScreen(onOpenWorkout: (Long) -> Unit, vm: WorkoutViewModel = viewModel()) {
@@ -420,6 +421,14 @@ fun WorkoutDetailScreen(id: Long, onBack: () -> Unit, vm: WorkoutDetailViewModel
                             StatText("GPS fixes", "${detail.acceptedCount} of ${detail.pointCount}", Modifier.weight(1f))
                             StatText("GPS track", Fmt.metres(detail.gpsDistanceMeters), Modifier.weight(1f))
                             StatText("HR samples", "${detail.hr.size}", Modifier.weight(1f))
+                        }
+                        detail.motion?.let { m ->
+                            val tone = when (m.verdict) {
+                                SportMotionCheck.Verdict.MISLABELLED_MOVED, SportMotionCheck.Verdict.MISLABELLED_STILL -> MaterialTheme.colorScheme.error
+                                SportMotionCheck.Verdict.CONFIRMED_STATIONARY, SportMotionCheck.Verdict.CONFIRMED_MOVING -> MaterialTheme.colorScheme.primary
+                                else -> MaterialTheme.colorScheme.onSurfaceVariant
+                            }
+                            Text(m.message, style = MaterialTheme.typography.bodySmall, color = tone, modifier = Modifier.padding(top = 6.dp))
                         }
                     }
                 }

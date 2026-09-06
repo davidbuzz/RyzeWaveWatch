@@ -28,6 +28,7 @@ import androidx.health.connect.client.records.ExerciseSessionRecord
 import au.buzz.ryzewave.health.ExportResult
 import au.buzz.ryzewave.health.HealthConnectMapping
 import au.buzz.ryzewave.notify.WatchNotificationListener
+import au.buzz.ryzewave.workout.SportMotionCheck
 import au.buzz.ryzewave.workout.StrideCalibration
 import au.buzz.ryzewave.workout.CalibrationSteps
 import au.buzz.ryzewave.workout.DefaultStrideModel
@@ -320,6 +321,8 @@ data class WorkoutDetail(
     val gpsDistanceMeters: Double = 0.0,
     /** Every stored GPS fix of the workout (accepted and rejected), oldest first, for the track plot. */
     val points: List<TrackPoint> = emptyList(),
+    /** Does the GPS agree with the declared sport? Null until the workout has finished. */
+    val motion: SportMotionCheck.Result? = null,
 )
 
 class WorkoutDetailViewModel(private val graph: Graph = App.graph) : RyzeViewModel() {
@@ -345,6 +348,7 @@ class WorkoutDetailViewModel(private val graph: Graph = App.graph) : RyzeViewMod
             acceptedCount = pts.count { it.accepted },
             gpsDistanceMeters = cum.lastOrNull()?.value ?: 0.0,
             points = pts,
+            motion = w?.let { ww -> ww.end?.let { SportMotionCheck.check(ww.sportType, pts, ww.durationSeconds * 1000L, ww.distanceMeters) } },
         )
     }.stateIn(viewModelScope, started(), WorkoutDetail())
 

@@ -74,3 +74,10 @@ Established facts:
 - 2026-09-06 ~12:10: build 13 (pace fallback from steps x stride, watch pause/resume 8-s debounce; 394 tests) installed on the PIXEL with location back ON and the location gate; the MOTO still needs the latest build (off USB). Pixel also has the merged 55-min run.
 - 2026-09-06 (privacy audit): history rewritten with git-filter-repo (.venv) — real-coordinate DB blobs replaced by shifted ones, phone serials -> PIXEL_SERIAL/MOTO_SERIAL, three Google Fit map screenshots purged. All commit hashes before this date changed; the GitHub remote `davidbuzz/main` still has the OLD history until Buzz force-pushes himself. Pre-rewrite backup bundle in the session scratchpad (contains the real data; delete once the push is done).
 - 2026-09-06 15:30: local folder renamed BuzzRyseWaveWatch -> <repo> (the old name misspelled "Ryze"). References fixed in tracked files, in every git revision, in .venv shebangs, ryzeapp/local.properties and the ~/.claude project symlink; the stale ~/.claude/projects/-home-buzz-BuzzRyseWaveWatch dir was removed. Gradle daemons must be restarted after such a move (they cache the old SDK path). The GitHub repo is still named BuzzRyseWaveWatch — Buzz renames it there if he wants.
+- 2026-09-06 evening: sports pass done — every one of the 70 sports researched (arm motion sourced), classified
+  (stride gate incl. new COURT, signature incl. STATIONARY_MACHINE), mapped to Health Connect (11 remain "other"),
+  and cross-checked against GPS on the workout detail (SportMotionCheck). SportTypes.effectiveId no longer relabels a
+  chosen run as a walk. tools/all_sports_test.sh drives all 70 through the real picker on a phone (smoke-tested on the
+  Moto). Buzz hopes for a full end-to-end test of every sport at some point ( eg users supply logs of different sports) and wants "100%": the driver proves
+  picker->start->stop->saved row for all 70; it cannot prove the classifications, only real sessions can. Swimming
+  cannot get distance at all (GPS is phone-side; the phone stays on the shore). 432 unit tests.

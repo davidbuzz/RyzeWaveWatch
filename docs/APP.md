@@ -1067,3 +1067,12 @@ counter means anything, whether GPS is worth having, and the Health Connect type
 `COURT` stride gate for racket and net sports; snorkeling moved from strokes to noise; baseball, softball and bowling
 to repetitions; all 70 sports mapped to Health Connect types (11 remain "other"); and `tools/all_sports_test.sh`,
 which drives every sport through the real picker on the phone and checks the saved row.
+
+## GPS versus the declared sport (2026-09-06)
+
+`workout/SportMotionCheck` compares a finished workout's track with what its sport implies (`STAYS_PUT`,
+`COVERS_GROUND`, `EITHER`, derived from the sport signature and the stride gate so the tables cannot disagree).
+Verdicts: `CONFIRMED_STATIONARY` (every usable fix inside 25 m of the centroid), `CONFIRMED_MOVING` (150 m recorded
+or a 60 m spread), `MISLABELLED_MOVED`, `MISLABELLED_STILL` (only after 4 min, so a warm-up on the spot is not
+accused), `INCONCLUSIVE`, `NO_GPS` (fewer than 20 fixes better than 30 m). Paused fixes are ignored. The sentence is
+shown under the stats on the workout detail, red for a contradiction, primary for a confirmation.

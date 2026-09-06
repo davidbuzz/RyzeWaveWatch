@@ -219,6 +219,11 @@ Checking each sport against sources moved nine of them, and the code moved with 
 - **A quiet erg session was "stuck".** Rower sat in the travelling class, which expects GPS movement. On a machine
   the body goes nowhere, so a gentle row with the phone on a shelf could be warned and auto-stopped. The wrist's
   stroke count is now accepted as evidence of life for rowing machines and ellipticals.
+- **The declared sport is now checked against the GPS** (`workout/SportMotionCheck.kt`, shown on the workout
+  detail). A stationary sport whose fixes stayed inside 25 m is confirmed; a stationary sport that covered 150 m
+  is flagged as mislabelled; a travelling sport that never left a 25 m circle for four minutes or more is flagged
+  as a treadmill or a session that never happened. Sports that imply nothing (baseball, swimming with the phone on
+  the shore) never contradict.
 - **Only 12 of 70 sports had a Health Connect type.** The rest exported as "other workout". All 70 are now mapped;
   eleven genuinely have no counterpart.
 
