@@ -445,7 +445,8 @@ class WatchApiImpl(
 
     override suspend fun queryWorkout(): SportState? {
         requireReady()
-        val reply = link.request(Protocol.encSportQuery(), { Protocol.decSportState(it) != null }, CONTROL_TIMEOUT_MS)
+        // Short timeout: this is a confirmation, not a control, and must never hold up a start on a watch that ignores it.
+        val reply = link.request(Protocol.encSportQuery(), { Protocol.decSportState(it) != null }, QUERY_TIMEOUT_MS)
         return Protocol.decSportState(reply)
     }
 
@@ -701,6 +702,8 @@ class WatchApiImpl(
         const val LIVE_HR_PERSIST_EVERY_MS = 10_000L
         const val HR_RESYNC_OVERLAP_MS = 2 * 60 * 60_000L
         const val ACK_TIMEOUT_MS = 5_000L
+        /** `FD AA` confirmation after a start: 2 s, never a reason to delay the workout. */
+        const val QUERY_TIMEOUT_MS = 2_000L
         const val CONTROL_TIMEOUT_MS = 8_000L
         const val UPDATE_ECHO_TIMEOUT_MS = 2_000L
 

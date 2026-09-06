@@ -235,8 +235,15 @@ stops it, then reads the stored row back over `adb` and checks the sport that wa
 works on the release build because release builds are debuggable, and it prints a results table and a screenshot
 per sport. A full pass of all 70 at 20 s each takes about forty minutes.
 
-What that proves, and what it does not. It proves the whole chain from picker to database works for every sport:
-selection, start, the location gate, the foreground service, stop, persistence, sport id. It does **not** prove the
+With the watch linked it also proves the **watch** entered the sport: after every start the app asks it `FD AA`
+("is a sport open, and which?") and the driver reads the answer back into a `watch_says` column, failing any sport
+where the watch disagrees with what was chosen. To see the actual face, `tools/watch_cam.sh` turns a second phone
+into a camera rig (shutter over adb, metadata stripped, photo deleted from the phone); the watch must be awake,
+which starting a sport does, and the glossy screen wants the camera a few degrees off-axis to avoid reflections.
+
+What that proves, and what it does not. It proves the whole chain from picker to watch to database works for every
+sport: selection, start, the location gate, the foreground service, the watch's own confirmation, stop, persistence,
+sport id. It does **not** prove the
 classifications above are right, because a phone sitting on a desk does not row or swim; only a recorded session of
 each sport can do that, and so far exactly one sport (Outdoor Running) has one. Treat the table's thresholds as
 provisional until more real sessions exist.

@@ -444,6 +444,7 @@ class WatchApiImplTest {
         link.on("fd220101", "fd220101")
         link.on("fd330101", "fd330101")
         link.on("fd000101", "fd000101")
+        link.on("fdaa", "fdaa0101")            // the watch confirms: sport screen open, type 1
         link.onPrefix("fd44", "fd440101000001000000000000")
         api.startWorkout(1)
         link.rx("fd01550000000000000000000000")
@@ -455,7 +456,7 @@ class WatchApiImplTest {
         api.pauseWorkout()
         api.resumeWorkout()
         api.stopWorkout()
-        assertEquals(listOf("fd110101", "fd440101000001000000000000", "fd220101", "fd330101", "fd000101"), link.txHex())
+        assertEquals(listOf("fd110101", "fdaa", "fd440101000001000000000000", "fd220101", "fd330101", "fd000101"), link.txHex())
         assertTrue(repo.hr.isEmpty())   // workout samples are persisted by the workout controller, not here
         job.cancel()
     }

@@ -1,0 +1,20 @@
+09-06 19:32:12.529 I/RyzeBridge( 9878): service created
+09-06 19:32:12.529 I/RyzeBridge( 9878): SCRIPT connect;write fdaa;until fd 8000;write a2;until a2 4000;disconnect
+09-06 19:32:12.544 I/RyzeBridge( 9878): CONNECTING 78:02:B7:37:91:E5
+09-06 19:32:12.557 I/RyzeBridge( 9878): STATE connected status=0
+09-06 19:32:12.560 I/RyzeBridge( 9878): STATE connected status=0
+09-06 19:32:15.820 I/RyzeBridge( 9878): CONNPARAMS interval=6 latency=0 timeout=500 status=0
+09-06 19:32:16.446 I/RyzeBridge( 9878): SERVICES 11 status=0
+09-06 19:32:16.471 I/RyzeBridge( 9878): NOTIFY 33f2 on
+09-06 19:32:16.471 I/RyzeBridge( 9878): MTU 247 status=0
+09-06 19:32:16.493 I/RyzeBridge( 9878): NOTIFY 34f2 on
+09-06 19:32:16.493 I/RyzeBridge( 9878): READY mtu=247
+09-06 19:32:16.497 I/RyzeBridge( 9878): TX 33F1 fdaa
+09-06 19:32:16.745 I/RyzeBridge( 9878): CONNPARAMS interval=248 latency=0 timeout=500 status=0
+09-06 19:32:17.056 I/RyzeBridge( 9878): RX 33F2 fdaa0001
+09-06 19:32:17.057 I/RyzeBridge( 9878): UNTIL fd ok
+09-06 19:32:17.059 I/RyzeBridge( 9878): TX 33F1 a2
+09-06 19:32:17.675 I/RyzeBridge( 9878): RX 33F2 a226
+09-06 19:32:17.676 I/RyzeBridge( 9878): UNTIL a2 ok
+09-06 19:32:17.683 I/RyzeBridge( 9878): STATE disconnected status=0
+09-06 19:32:17.982 I/RyzeBridge( 9878): DONE
