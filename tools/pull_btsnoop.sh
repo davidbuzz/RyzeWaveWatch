@@ -25,4 +25,4 @@ for f in "$OUT_DIR/tmp_$TS"/btsnoop_hci.log*; do
 done
 rmdir "$OUT_DIR/tmp_$TS"
 rm -f "$OUT_DIR/bugreport_$TS.zip"
-echo "[*] Done. Decode with: tools/decode_btsnoop.py <file>   or open in Wireshark with the gloryfit.lua dissector."
+echo "[*] Done. Decode with: tools/decode_btsnoop.py <file>   or open in Wireshark with the gloryfit.lua dissector from the tools/Gadgetbridge-tools submodule."

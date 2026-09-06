@@ -114,7 +114,6 @@ tools/parse_logcat.py       turn that log into a packet timeline
 tools/pull_btsnoop.sh       pull the Android HCI snoop log via adb
 tools/decode_btsnoop.py     print GloryFit ATT traffic from a btsnoop log
 tools/extract_opcodes.py    regenerate captures/sdk_opcode_map.txt from the decompiled SDK
-tools/wireshark/            Gadgetbridge's gloryfit.lua dissector (+ gb_utils.lua)
 tools/Gadgetbridge/         sparse clone of Gadgetbridge (GloryFit/No1F1/JYou drivers only, git-ignored)
 tools/Gadgetbridge-tools/   Gadgetbridge-tools clone, branch jr-gb-dissector (git-ignored)
 tools/jadx/                 jadx 1.5.6 decompiler (git-ignored)
@@ -162,7 +161,8 @@ adb logcat -s RyzeBridge:*      # raw view: TX/RX lines in hex
 5. Use Ryze Fit: pair from scratch if possible, sync, change settings, start a workout, take an SpO2 reading.
 6. `tools/pull_btsnoop.sh` — writes `captures/btsnoop_hci_<ts>.log`.
 7. `.venv/bin/python tools/decode_btsnoop.py captures/btsnoop_hci_<ts>.log`
-   or open it in Wireshark with `tools/wireshark/*.lua` in `~/.local/lib/wireshark/plugins/`.
+   or, for a Wireshark view, copy `gloryfit.lua` and `gb_utils.lua` from the `tools/Gadgetbridge-tools`
+   submodule into `~/.local/lib/wireshark/plugins/` (they are AGPL-3.0, so we point at them rather than vendor them).
 
 Pairing from scratch (unpair in Ryze Fit, forget the watch in Android BT settings, then re-add)
 is the single most valuable capture: it shows the `D5` handshake and the initial config burst.
