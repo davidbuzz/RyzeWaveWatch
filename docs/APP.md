@@ -1017,3 +1017,18 @@ reassembled, without relying on Fit being pre-configured; it must discard statio
   `startInForeground()` catches the refusal and `stopSelf()`s. The app no longer crash-loops on launch.
 - Still to do: a step-based (stride) pace/distance fallback so pace is never a bare "--:--"; stop mirroring the watch's
   rapid junk pause/resume (FD 22/33 flood) that split the 2026-09-06 run and spammed spoken cues.
+
+
+## Build 13 (2026-09-06): step-based pace fallback + watch pause/resume debounce
+
+- **Never a bare "--:--".** `ui/WorkoutMetrics` (pure) picks the source: GPS when it is live (available, not stale,
+  distance > 0); otherwise, when the watch reports session steps, distance = steps × stride (walk/run stride from
+  Settings, chosen by sport or live cadence) and pace = elapsed / that, labelled "Distance (from steps)" / "6:10 /km
+  (est)". The estimate is display-only — the stored `workout.distanceMeters` stays the GPS value. Dashes only when
+  neither GPS nor steps exist. (Together with the location gate this covers both "location off" and "GPS lost mid-run".)
+- **Watch pause/resume debounce.** A watch-originated pause/resume arms an 8-s settle timer in `WorkoutController`;
+  a reversal inside the window cancels it, so the watch's junk 1–5 s FD 22/33 flood (2026-09-06 run) no longer
+  thrashes the workout or spams spoken cues. Only a state held past the window is applied and announced, once. App
+  buttons and STOP stay immediate; the 13-byte FD 33 play-button fix is untouched.
+- 394 unit tests (WorkoutMetricsTest 9, WorkoutControllerTest 21). Verified by an independent agent. Not yet
+  exercised on-device (the Moto was off USB during the job); installed on the Pixel.

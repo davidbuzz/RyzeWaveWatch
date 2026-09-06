@@ -11,3 +11,4 @@
 - [No blocking question tool](no-blocking-question-tool.md) — never use AskUserQuestion; ask in plain text and keep working
 - [Direct edits, fast builds](direct-edits-fast-builds.md) — small changes done directly with tools/fastbuild.sh; no implementer subagent, no --rerun-tasks
 - [Location off is critical](location-off-is-critical.md) — no-GPS is a severe error; block workout start until location is on and verified
+- [Commit hygiene](commit-hygiene.md) — one change per commit; never git add -A while a background job edits the tree
