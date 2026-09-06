@@ -46,6 +46,7 @@ import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -57,6 +58,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.runtime.DisposableEffect
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.core.content.ContextCompat
@@ -78,19 +85,31 @@ fun WorkoutScreen(onOpenWorkout: (Long) -> Unit, vm: WorkoutViewModel = viewMode
     val snackbar = remember { SnackbarHostState() }
     MessageSnackbar(message, vm::clearMessage, snackbar)
 
-    // GPS distance needs precise location; the foreground service cannot start without it on Android 14+.
+    // A workout must NOT start without GPS: it needs the precise-location permission AND the phone's location services
+    // switched on (memory: location-off-is-critical — a run with no GPS gives 0 distance and no pace, unrecoverable).
     val context = LocalContext.current
+    val locationManager = remember { context.getSystemService(android.location.LocationManager::class.java) }
+    fun locationServicesOn(): Boolean = locationManager?.isLocationEnabled == true
     var locationDenied by remember { mutableStateOf(false) }
+    var locationOff by remember { mutableStateOf(!locationServicesOn()) }
+    // Re-check every time the screen comes back to the foreground (e.g. returning from the system location settings).
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val obs = LifecycleEventObserver { _, event -> if (event == Lifecycle.Event.ON_RESUME) locationOff = !locationServicesOn() }
+        lifecycleOwner.lifecycle.addObserver(obs)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(obs) }
+    }
     val locationLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
         locationDenied = !granted
-        if (granted) vm.start()
+        if (granted && locationServicesOn()) vm.start() else if (granted) locationOff = true
     }
     val onStart: () -> Unit = {
-        if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            locationDenied = false
-            vm.start()
-        } else {
-            locationLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+        locationOff = !locationServicesOn()
+        when {
+            ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED ->
+                locationLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+            locationOff -> Unit           // blocked: the card below tells the user to turn location on
+            else -> { locationDenied = false; vm.start() }
         }
     }
 
@@ -103,7 +122,11 @@ fun WorkoutScreen(onOpenWorkout: (Long) -> Unit, vm: WorkoutViewModel = viewMode
                 .padding(12.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            LiveWorkoutCard(state, sportType, vm::setSportType, status.isConnected(), onStart, vm::pause, vm::resume, vm::stop)
+            val onTurnOnLocation: () -> Unit = {
+                context.startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+            }
+            LiveWorkoutCard(state, sportType, vm::setSportType, status.isConnected(), onStart, vm::pause, vm::resume, vm::stop,
+                locationOff = locationOff, onTurnOnLocation = onTurnOnLocation)
             if (locationDenied) {
                 ElevatedCard(Modifier.fillMaxWidth()) {
                     Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -156,6 +179,8 @@ private fun LiveWorkoutCard(
     onPause: () -> Unit,
     onResume: () -> Unit,
     onStop: () -> Unit,
+    locationOff: Boolean = false,
+    onTurnOnLocation: () -> Unit = {},
 ) {
     val sport = if (state.phase == WorkoutPhase.IDLE) selectedSport else state.sportType
     ElevatedCard(Modifier.fillMaxWidth()) {
@@ -189,7 +214,7 @@ private fun LiveWorkoutCard(
             state.message?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error) }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 when (state.phase) {
-                    WorkoutPhase.IDLE -> Button(onClick = onStart) { Text("Start workout") }
+                    WorkoutPhase.IDLE -> if (!locationOff) Button(onClick = onStart) { Text("Start workout") } else Unit
                     WorkoutPhase.RUNNING -> {
                         FilledTonalButton(onClick = onPause) { Text("Pause") }
                         OutlinedButton(onClick = onStop) { Text("Stop") }
@@ -199,6 +224,23 @@ private fun LiveWorkoutCard(
                         OutlinedButton(onClick = onStop) { Text("Stop") }
                     }
                     WorkoutPhase.STARTING, WorkoutPhase.STOPPING -> OutlinedButton(onClick = {}, enabled = false) { Text("Please wait…") }
+                }
+            }
+            if (locationOff && state.phase == WorkoutPhase.IDLE) {
+                Surface(
+                    color = MaterialTheme.colorScheme.errorContainer,
+                    shape = MaterialTheme.shapes.medium,
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text("Location services are OFF", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onErrorContainer)
+                        Text(
+                            "A workout cannot start without GPS — with location off there is no distance and no pace. " +
+                                "Turn location on, then come back and start.",
+                            style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onErrorContainer,
+                        )
+                        Button(onClick = onTurnOnLocation) { Text("Turn on location") }
+                    }
                 }
             }
             if (!connected && state.phase == WorkoutPhase.IDLE) {

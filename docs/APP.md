@@ -1003,3 +1003,17 @@ reassembled, without relying on Fit being pre-configured; it must discard statio
   added to the workout, the distance replaced and the session re-exported to Health Connect. Unit-tested
   (`BreadcrumbReconstructionTest`: a 1 km breadcrumb walk at one fix per 30 s reconstructs within 3 %).
 - Settings: "GPS breadcrumb (plan B)" switch, off by default; trail kept on the phone only.
+
+
+## Location gate + BreadcrumbService crash fix (build 12, 2026-09-06)
+
+- **A workout cannot start without GPS** (memory: location-off is critical). The Workout screen checks
+  `LocationManager.isLocationEnabled` and the fine-location permission before starting; when location services are off
+  it hides the Start button and shows a red "Location services are OFF" card with a "Turn on location" button that
+  opens `Settings.ACTION_LOCATION_SOURCE_SETTINGS`, and re-checks on ON_RESUME so Start returns once location is on.
+  (Cause of the 2026-09-06 run failure: the phone's location was off, so zero GPS, 0 m distance, pace "--:--".)
+- **BreadcrumbService crash fixed**: `stop()` used a start-intent which created the service and crashed trying to go
+  foreground (type location) while location was off; now `stop()` uses `stopService` (never creates it) and
+  `startInForeground()` catches the refusal and `stopSelf()`s. The app no longer crash-loops on launch.
+- Still to do: a step-based (stride) pace/distance fallback so pace is never a bare "--:--"; stop mirroring the watch's
+  rapid junk pause/resume (FD 22/33 flood) that split the 2026-09-06 run and spammed spoken cues.
