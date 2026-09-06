@@ -1,9 +1,34 @@
 # RyzeWaveWatch
 
-Reverse engineering the **Ryze Wave** smartwatch (Ryze Above, AU; models RZ-WADA/B/C)
-so we can replace the vendor "Ryze Fit" app with our own.
+**A working open-source Android alternative to the "Ryze Fit" app that ships with the Ryze Wave smartwatch**
+(Ryze Above, AU; models RZ-WADA/B/C). It talks to the watch directly over Bluetooth LE with no vendor account, no
+cloud and no telemetry, and it is built around the thing the vendor app does worst: **live tracking during
+exercise — heart rate every second, blood oxygen, and a real GPS track with honest distance and pace**, written
+straight into Android Health Connect so the data is yours.
 
-## What we know so far (2026-09-04)
+What it does today: connects and syncs steps, heart rate, SpO2 and sleep; starts, pauses and stops a workout from
+either the phone or the watch, with spoken cues; streams live heart rate while you run; records the GPS track on
+the phone and reports distance and pace from it, falling back to a step-and-stride estimate when GPS is lost;
+recognises all 70 of the watch's sport types; forwards phone notifications to the watch; rings the phone from the
+watch; and exports everything to Health Connect.
+
+| Live workout | GPS track and summary | Heart rate and SpO2 | Dashboard |
+|---|---|---|---|
+| ![Live workout with per-second heart rate](captures/app_workout_20260905_010143/3_running.png) | ![Workout detail with GPS track](captures/app_track_20260905/detail_top.png) | ![Heart rate and blood oxygen history](captures/app_polish_20260905/hr_card_after.png) | ![Home dashboard](captures/app_sleepguard_20260906/01_dashboard.png) |
+
+Screenshots are from real sessions; personal details are pixelated and every GPS coordinate in this repo is
+deliberately displaced (see [docs/privacy_audit_20260906.md](docs/privacy_audit_20260906.md)).
+
+Build it and put it on your phone: **[BUILD.md](BUILD.md)**. The app's design and behaviour: [docs/APP.md](docs/APP.md).
+
+---
+
+## If you want to hack on this app
+
+The rest of this README is the reverse-engineering side: how the watch's protocol was worked out, the tools that
+did it, and what is still unknown. None of it is needed just to build and run the app.
+
+### What we know so far (2026-09-04)
 
 | Item | Value |
 |---|---|
@@ -19,7 +44,7 @@ so we can replace the vendor "Ryze Fit" app with our own.
 The full command table, packet formats and the pairing handshake are in
 [docs/PROTOCOL.md](docs/PROTOCOL.md).
 
-## Layout
+### Layout
 
 ```
 README.md, CLAUDE.md        this file / notes for Claude Code sessions
@@ -59,7 +84,7 @@ apk/                        Ryze Fit XAPK + jadx output (git-ignored, ~1 GB)
 .venv/                      python venv (bleak, pytest, pillow)
 ```
 
-## Getting started
+### Getting started
 
 Building the Android app and putting it on a phone: **[BUILD.md](BUILD.md)**. The rest of this section is the
 Python client, which talks to the watch from the laptop.
@@ -74,7 +99,7 @@ bluetoothctl trust 78:02:B7:37:91:E5        # once: lets BlueZ cache the (slow) 
 ```
 Pairing state is cached at runtime in `captures/devices.json`; it is not tracked and is not part of the repo.
 
-## Phone as the BLE radio (RyzeBridge)
+### Phone as the BLE radio (RyzeBridge)
 
 The laptop's Intel/BlueZ stack keeps dropping the LE link (supervision timeouts), while the phone's stack is
 rock solid with this watch. `android/` is a tiny headless app that owns the GATT connection on the phone and is
@@ -89,7 +114,7 @@ adb logcat -s RyzeBridge:*      # raw view: TX/RX lines in hex
 ```
 `tools/bridge.py` force-stops Ryze Fit before each run: Android shares one GATT link between apps, so the vendor app's own traffic would otherwise interleave with ours (we saw its whole init burst arrive on our notifications).
 
-## Capturing the phone <-> watch conversation (Pixel 9a)
+### Capturing the phone <-> watch conversation (Pixel 9a)
 
 1. Settings > About phone > tap **Build number** 7x.
 2. Settings > System > Developer options > **Enable Bluetooth HCI snoop log** = Enabled.
@@ -103,7 +128,7 @@ adb logcat -s RyzeBridge:*      # raw view: TX/RX lines in hex
 Pairing from scratch (unpair in Ryze Fit, forget the watch in Android BT settings, then re-add)
 is the single most valuable capture: it shows the `D5` handshake and the initial config burst.
 
-## Why (and what "distance" means here)
+### Why (and what "distance" means here)
 
 The vendor app's distance is wrong, which is the main reason we want our own. Distance and pace are **not
 produced by the watch**: during a workout Ryze Fit computes them on the phone from GPS and pushes them to the
@@ -111,7 +136,7 @@ watch once a second (`FD 44 …`, see the protocol doc). Outside workouts the ap
 count and stride. Our app will own both calculations: proper GPS track distance (filtered, haversine) and a
 stride model calibrated from GPS walks. Heart rate, SpO2, steps and sleep come from the watch over BLE.
 
-## Next real-world test (for Buzz): the outdoor walk
+### Validating distance and stride: the outdoor walk
 
 1. Watch on the wrist, Moto in a pocket with Bluetooth + location on, Ryze Fit not running.
 2. Open "Buzz's Ryze Wave" → Workout → Start workout. Walk at least 200 m (a few hundred metres is better), ideally
@@ -123,7 +148,7 @@ stride model calibrated from GPS walks. Heart rate, SpO2, steps and sleep come f
 5. Health Connect → Data and access → Exercise should list the session; tell me the distance you know you walked and
    what the app said, and I'll tune the filter if they disagree.
 
-## Roadmap
+### Roadmap
 
 - [x] Identify protocol family, SDK, chipset, UUIDs
 - [x] Extract command opcode table from the decompiled SDK
@@ -150,7 +175,7 @@ stride model calibrated from GPS walks. Heart rate, SpO2, steps and sleep come f
 - [x] Build 3 (01:02): workouts exported to Health Connect as Exercise sessions, TX/RX packet log (`adb logcat -s WatchGatt:*`), HR mean unified, chart labels clamped (202 unit tests) — independently verified on the phone
 - [ ] Outdoor GPS walk to validate distance/pace and stride calibration (instructions above)
 
-## Git layout
+### Git layout
 
 Everything project-authored is tracked. Reference material that came from git is a **submodule**, and downloaded
 tools / build output / the decompiled vendor APK are ignored:
@@ -173,7 +198,7 @@ android/sdk-install.sh && echo "sdk.dir=$PWD/tools/android-sdk" > ryzeapp/local.
 ```
 Then build the Android app as described in [BUILD.md](BUILD.md).
 
-## References
+### References
 
 - Gadgetbridge GloryFit page: https://gadgetbridge.org/gadgets/wearables/gloryfit/
 - Gadgetbridge GloryFit PR: https://codeberg.org/Freeyourgadget/Gadgetbridge/pulls/5063
