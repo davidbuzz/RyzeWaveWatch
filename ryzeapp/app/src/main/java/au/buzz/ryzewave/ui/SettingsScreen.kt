@@ -83,6 +83,7 @@ fun SettingsScreen(vm: SettingsViewModel = viewModel()) {
     val forwardAll by vm.forwardAllNotifications.collectAsStateWithLifecycle()
     val stuckEnabled by vm.stuckDetectorEnabled.collectAsStateWithLifecycle()
     val stuckAutoStopApp by vm.stuckAutoStopAppWorkouts.collectAsStateWithLifecycle()
+    val breadcrumbOn by vm.breadcrumbEnabled.collectAsStateWithLifecycle()
     val installedApps by vm.installedApps.collectAsStateWithLifecycle()
     val notificationAccess by vm.notificationAccess.collectAsStateWithLifecycle()
     val health = LocalHealthPermissionHost.current
@@ -143,11 +144,35 @@ fun SettingsScreen(vm: SettingsViewModel = viewModel()) {
                 enabled = stuckEnabled, autoStopApp = stuckAutoStopApp,
                 onToggle = vm::setStuckDetectorEnabled, onAutoStopApp = vm::setStuckAutoStopAppWorkouts,
             )
+            BreadcrumbSection(enabled = breadcrumbOn, onToggle = vm::setBreadcrumbEnabled)
         }
     }
 }
 
 // ---- stuck-workout detector ---------------------------------------------------------------------------------
+
+@Composable
+private fun BreadcrumbSection(enabled: Boolean, onToggle: (Boolean) -> Unit) {
+    val context = LocalContext.current
+    SectionCard("GPS breadcrumb (plan B)") {
+        SwitchRow("Record where I go while I move", enabled, onChange = onToggle)
+        Text(
+            "Off by default. When on, the phone keeps a GPS trail only while it detects walking, running or cycling " +
+                "(nothing while still or in a vehicle; about one fix a minute, faster when running). If a workout's " +
+                "own tracking fails, open it and tap \"Rebuild from breadcrumb\". Independent of Google Fit. " +
+                "For it to survive a reboot, set the app's location permission to \"Allow all the time\". " +
+                "Trail kept 14 days, on this phone only.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        OutlinedButton(onClick = {
+            context.startActivity(
+                android.content.Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                    .setData(android.net.Uri.fromParts("package", context.packageName, null)),
+            )
+        }) { Text("Open location permission") }
+    }
+}
 
 @Composable
 private fun StuckDetectorSection(

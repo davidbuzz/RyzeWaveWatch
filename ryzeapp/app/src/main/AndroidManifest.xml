@@ -9,6 +9,8 @@
     <!-- GPS for workouts -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <!-- Opt-in GPS breadcrumb: lets the location foreground service keep recording after a reboot / from the background -->
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
     <!-- foreground services: watch link + workout tracking -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE" />
@@ -75,6 +77,9 @@
                 <action android:name="android.bluetooth.device.action.ACL_CONNECTED" />
             </intent-filter>
         </receiver>
+        <service android:name=".workout.BreadcrumbService" android:exported="false"
+
+            android:foregroundServiceType="location" />
         <service android:name=".workout.WorkoutService" android:exported="false"
             android:foregroundServiceType="location" />
         <!-- Phone -> watch notifications (C5). The user grants access in Settings > Notifications > Open notification

@@ -385,6 +385,7 @@ fun WorkoutDetailScreen(id: Long, onBack: () -> Unit, vm: WorkoutDetailViewModel
                         Text("Track", style = MaterialTheme.typography.titleMedium)
                         Spacer(Modifier.height(8.dp))
                         TrackPlot(detail.points)
+                        TextButton(onClick = vm::rebuildFromBreadcrumb) { Text("Rebuild from breadcrumb") }
                         if (detail.points.isNotEmpty()) {
                             Text(
                                 "Line: accepted fixes · dots: rejected fixes · green start, red end · rings: whole km · north up",

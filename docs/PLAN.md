@@ -120,7 +120,7 @@ Status 2026-09-05 18:xx: the per-fix Doppler tracker refinement was REVERTED (th
   17:20 run/walk at 9:24 min/km avg was filed as Walking. Plan: let the user pick/confirm the exercise type on the
   workout (and don't discard the user's chosen sport to a heuristic); a run/walk should be recordable as Running. The
   session still counts as cardio regardless of label because the HR series (130-160) earns heart points.
-- **Always-on GPS breadcrumb (Buzz's idea).** Optionally log a GPS fix ~every 60 s all day so a workout can be
+- **Always-on GPS breadcrumb (Buzz's idea) — BUILT as build 11 (2026-09-06), see docs/APP.md.** Optionally log a GPS fix ~every 60 s all day so a workout can be
   reassembled even if workout tracking fails, discarding fixes while the phone is stationary. Battery-sane design:
   gate on the Activity Recognition API / step sensor so GPS is only requested while the phone reports walking/running/
   cycling (that IS the "discard when stationary"), not a blind 60 s timer that wakes the GPS radio while still. Needs

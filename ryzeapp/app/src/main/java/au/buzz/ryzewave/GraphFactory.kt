@@ -100,6 +100,14 @@ object GraphFactory {
                 .collect { (walk, run) -> exportNew("stride change (walk $walk m, run $run m)") }
         }
 
+        // Opt-in GPS breadcrumb: the switch in Settings starts/stops the location foreground service.
+        scope.launch {
+            settings.breadcrumbEnabled.distinctUntilChanged().collect { on ->
+                Log.i(TAG, "breadcrumb ${if (on) "on: starting" else "off: stopping"} the service")
+                if (on) au.buzz.ryzewave.workout.BreadcrumbService.start(app) else au.buzz.ryzewave.workout.BreadcrumbService.stop(app)
+            }
+        }
+
         // Phone -> watch notifications: the listener service hands posted notifications to this forwarder.
         val notifications = NotificationForwarder(
             settings, watch, scope, ownPackage = app.packageName,

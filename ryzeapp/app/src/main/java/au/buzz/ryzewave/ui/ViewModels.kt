@@ -371,6 +371,31 @@ class WorkoutDetailViewModel(private val graph: Graph = App.graph) : RyzeViewMod
      * row so the Health Connect export uses it instead of the speed/sport heuristic, then this session is
      * re-exported (when Health Connect is on) so the change shows up straight away.
      */
+    /**
+     * Rebuilds this workout's track and distance from the always-on GPS breadcrumb (Settings) for the workout's
+     * time window — for a session whose own tracking failed. The crumbs run through the same distance rules as a
+     * live workout; the new points are added to the row and the session re-exported.
+     */
+    fun rebuildFromBreadcrumb() = task("Rebuild from breadcrumb") {
+        val w = workout.value ?: return@task "No workout loaded"
+        val end = w.end ?: return@task "Workout not finished"
+        val crumbs = graph.repo.breadcrumbsBetween(w.start, end)
+        val r = au.buzz.ryzewave.workout.BreadcrumbReconstruction.forWorkout(w.id, w.start, end, crumbs)
+            ?: return@task "No breadcrumb points in this workout's window (${crumbs.size} found)"
+        graph.repo.insertTrackPoints(r.points)
+        graph.repo.updateWorkout(w.copy(distanceMeters = r.distanceMeters))
+        val summary = "Rebuilt from ${r.points.size} breadcrumb points (${r.accepted} accepted): ${Fmt.metres(r.distanceMeters)}"
+        if (!graph.settings.healthConnectEnabled.first()) return@task summary
+        try {
+            graph.health.exportNew()
+            "$summary, re-exported to Health Connect"
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            "$summary; Health Connect re-export failed: ${e.message ?: e.javaClass.simpleName}"
+        }
+    }
+
     fun setExerciseType(exerciseType: Int) = task("Exercise type") {
         val w = workout.value ?: return@task "No workout loaded"
         graph.repo.updateWorkout(w.copy(exerciseTypeOverride = exerciseType))
@@ -597,6 +622,16 @@ class SettingsViewModel(
     fun setStuckAutoStopAppWorkouts(on: Boolean) = task("Stuck-workout detector", exclusive = false) {
         graph.settings.setStuckAutoStopAppWorkouts(on)
         null
+    }
+
+    // ---- GPS breadcrumb (opt-in) ----
+
+    val breadcrumbEnabled: StateFlow<Boolean> =
+        graph.settings.breadcrumbEnabled.stateIn(viewModelScope, started(), false)
+
+    fun setBreadcrumbEnabled(on: Boolean) = task("GPS breadcrumb", exclusive = false) {
+        graph.settings.setBreadcrumbEnabled(on)
+        if (on) "Breadcrumb on: records while you move, off when still or driving" else "Breadcrumb off"
     }
 
     fun sendTestNotification() = task("Test notification") {

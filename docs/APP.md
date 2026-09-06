@@ -978,3 +978,28 @@ sets it false and the watch service's connect loop treats `!autoConnect` like th
 survives a reinstall or reboot. Motivation: the watch holds ONE BLE link; right after a build was installed on the
 Moto test phone its app reconnected and stole the watch from Buzz's Pixel mid-test (status 147 on the Pixel until the
 Moto was stopped). On the test phone, tap Disconnect once and it stays off the watch until Connect is tapped.
+
+
+## Build 11 (2026-09-06): opt-in always-on GPS breadcrumb ("plan B", independent of Google Fit)
+
+Buzz's requirement: the app itself keeps a GPS trail while he moves so a workout whose own tracking fails can be
+reassembled, without relying on Fit being pre-configured; it must discard stationary time.
+
+- **Gate** (`workout/BreadcrumbGate`, pure): activity-recognition transitions decide the radio. WALKING/ON_FOOT →
+  location on at 60 s; RUNNING/ON_BICYCLE → 20 s; STILL → keep sampling for a 2-minute grace, then off;
+  IN_VEHICLE → off; a significant-motion event with no activity report → a 3-minute burst at 60 s; no report for
+  10 minutes → off. Unit-tested (`BreadcrumbGateTest`).
+- **Service** (`workout/BreadcrumbService`): location-type foreground service (own MIN-importance notification),
+  started/stopped by the Settings switch through a collector in `GraphFactory`; requests `ActivityTransition`
+  updates (mutable PendingIntent to a receiver registered for the service's lifetime), arms the
+  `TYPE_SIGNIFICANT_MOTION` trigger as a fallback, ticks the gate every minute, and turns fused location on/off
+  (balanced-power accuracy) at the gate's interval. Fixes are stored as `breadcrumb` rows (Room v5) with the detected
+  activity; nothing is stored while one of our workouts is active (it records its own track); rows older than
+  14 days are pruned at start and daily.
+- **Permissions**: `ACCESS_BACKGROUND_LOCATION` declared; the Settings section links to the app's permission page
+  ("Allow all the time" lets the trail survive a reboot). ACTIVITY_RECOGNITION is already requested.
+- **Rebuild**: the workout detail's Track card gains "Rebuild from breadcrumb": crumbs inside the workout window run
+  through `BreadcrumbReconstruction` (the same `DefaultGpsDistanceTracker` rules as a live workout), the points are
+  added to the workout, the distance replaced and the session re-exported to Health Connect. Unit-tested
+  (`BreadcrumbReconstructionTest`: a 1 km breadcrumb walk at one fix per 30 s reconstructs within 3 %).
+- Settings: "GPS breadcrumb (plan B)" switch, off by default; trail kept on the phone only.
