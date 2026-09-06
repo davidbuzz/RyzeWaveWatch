@@ -28,3 +28,4 @@ ryzeapp/keystore.properties
 captures/**/*.db
 captures/**/*.db-*
 android/debug.keystore
+dist/
