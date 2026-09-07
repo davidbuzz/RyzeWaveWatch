@@ -13,3 +13,5 @@
 - [Location off is critical](location-off-is-critical.md) — no-GPS is a severe error; block workout start until location is on and verified
 - [Commit hygiene](commit-hygiene.md) — one change per commit; never git add -A while a background job edits the tree
 - [Never git push](never-git-push.md) — no git push in any form, ever; Buzz pushes himself
+- [Proceed without waiting](proceed-without-waiting.md) — commit verified finished work autonomously; don't pause for a go-ahead (still never push)
+- [Release-signed build on Pixel](release-signed-on-pixel.md) — the Pixel runs the release-signed APK; assembleRelease + adb install -r, never uninstall (wipes ryzewave.db)
