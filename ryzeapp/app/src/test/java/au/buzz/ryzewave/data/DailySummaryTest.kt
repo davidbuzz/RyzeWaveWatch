@@ -49,6 +49,14 @@ class DailySummaryTest {
         assertEquals(250.0, s.distanceMeters, 1e-9)
     }
 
+    /** Workout GPS metres are added on top of steps × stride (the watch's hourly steps exclude workouts). */
+    @Test
+    fun workoutGpsMetersAddToStrideDistance() {
+        val s = buildDailySummary(0L, StepTotals(1100, 1000, 100), null, null, null,
+            UserProfile(), StrideSettings(), model, workoutMeters = 2780.0)
+        assertEquals(800.0 + 2780.0, s.distanceMeters, 1e-9)
+    }
+
     @Test
     fun emptyDayIsZeroAndNull() {
         val s = buildDailySummary(123L, null, null, null, null, UserProfile(), StrideSettings(), model)

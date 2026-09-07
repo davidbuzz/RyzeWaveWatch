@@ -343,9 +343,10 @@ object HealthConnectMapping {
             .toList()
 
     /**
-     * One [DistanceRecord] per local day from the stride model: walk steps × walk stride + run steps × run stride,
-     * exactly as `DailySummary.distanceMeters`. [hours] must contain every hour of the days to be written
-     * (a partial day would shrink the day's distance). Today ends at [now].
+     * One [DistanceRecord] per local day from the stride model: walk steps × walk stride + run steps × run stride
+     * (the stride part of `DailySummary.distanceMeters`; the summary's workout GPS part is exported separately by
+     * [workoutDistanceRecords], so the two record kinds add up to the app's day figure). [hours] must contain
+     * every hour of the days to be written (a partial day would shrink the day's distance). Today ends at [now].
      */
     fun dailyDistanceRecords(
         hours: List<StepsHour>,

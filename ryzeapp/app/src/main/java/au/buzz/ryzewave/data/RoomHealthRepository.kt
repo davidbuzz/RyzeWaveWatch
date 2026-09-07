@@ -37,7 +37,8 @@ import kotlin.math.roundToInt
  * [workoutsSince] only returns finished workouts (end != null).
  *
  * Daily figures are SQL aggregates over the local calendar day; the daily distance is
- * `stride.stepsToMeters(walk, run, profile, strideSettings)` with the profile and stride settings observed live
+ * `stride.stepsToMeters(walk, run, profile, strideSettings)` plus the GPS metres of the day's finished
+ * workouts (see [buildDailySummary]), with the profile and stride settings observed live
  * from [settings], so the dashboard updates when either changes.
  *
  * @param zone calendar zone for day boundaries; null = the device zone at the time of each call.
@@ -180,22 +181,30 @@ class RoomHealthRepository(
         val strideInputs = combine(settings.profile, settings.stride) { profile, strideSettings ->
             profile to strideSettings
         }
+        // The watch's hourly steps table does NOT include workout-session steps (verified 2026-09-07: a 39-min
+        // run's ~4300 steps were absent from the 17:00/18:00 rows), so adding the workouts' GPS metres on top of
+        // steps × stride does not double-count. Matches the Health Connect export, where the daily stride-based
+        // DistanceRecord and the per-workout GPS DistanceRecord are separate, additive records.
+        val distanceInputs = combine(strideInputs, db.workouts().gpsMeters(dayStart, dayEnd)) { inputs, gps ->
+            inputs to gps
+        }
         return combine(
             db.steps().totals(dayStart, dayEnd),
             db.hr().stats(dayStart, dayEnd),
             db.hr().last(dayStart, dayEnd),
             db.spo2().last(dayStart, dayEnd),
-            strideInputs,
-        ) { totals, stats, lastHr, lastSpo2, inputs ->
+            distanceInputs,
+        ) { totals, stats, lastHr, lastSpo2, extra ->
             buildDailySummary(
                 dayStart = dayStart,
                 totals = totals,
                 stats = stats,
                 lastHr = lastHr?.toModel(),
                 lastSpo2 = lastSpo2?.toModel(),
-                profile = inputs.first,
-                strideSettings = inputs.second,
+                profile = extra.first.first,
+                strideSettings = extra.first.second,
                 stride = stride,
+                workoutMeters = extra.second,
             )
         }.distinctUntilChanged()
     }
@@ -246,6 +255,7 @@ class RoomHealthRepository(
                 profile = profile,
                 strideSettings = strideSettings,
                 stride = stride,
+                workoutMeters = db.workouts().gpsMetersOnce(dayStart, dayEnd),
             )
         }
     }
@@ -312,7 +322,9 @@ internal fun <M, K> newOrChanged(incoming: List<M>, existing: Collection<M>, key
 
 /**
  * Pure assembly of a [DailySummary] from the SQL aggregates. Separate from the repository so it can be unit
- * tested without a database. Missing aggregates (empty day) yield zero steps and null HR figures.
+ * tested without a database. Missing aggregates (empty day) yield zero steps and null HR figures. The day's
+ * distance is steps × stride plus [workoutMeters], the GPS metres of the day's finished workouts (whose steps
+ * the watch keeps out of its hourly table, so the two do not overlap).
  */
 internal fun buildDailySummary(
     dayStart: Long,
@@ -323,6 +335,7 @@ internal fun buildDailySummary(
     profile: UserProfile,
     strideSettings: StrideSettings,
     stride: StrideModel,
+    workoutMeters: Double = 0.0,
 ): DailySummary {
     val steps = totals?.total ?: 0
     val walk = totals?.walk ?: 0
@@ -332,7 +345,7 @@ internal fun buildDailySummary(
         steps = steps,
         walkSteps = walk,
         runSteps = run,
-        distanceMeters = stride.stepsToMeters(walk, run, profile, strideSettings),
+        distanceMeters = stride.stepsToMeters(walk, run, profile, strideSettings) + workoutMeters,
         lastHr = lastHr,
         lastSpo2 = lastSpo2,
         minHr = stats?.minBpm,

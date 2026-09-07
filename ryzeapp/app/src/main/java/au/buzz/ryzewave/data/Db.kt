@@ -332,6 +332,19 @@ interface WorkoutDao {
     /** Rows with no end whose last write is older than [before]: crashed or lost-race sessions to repair. */
     @Query("SELECT * FROM workout WHERE endTime IS NULL AND updatedAt < :before ORDER BY start")
     suspend fun unfinishedBefore(before: Long): List<WorkoutEntity>
+
+    /** GPS metres of the finished workouts that started in [fromTime, toTime). */
+    @Query(
+        "SELECT COALESCE(SUM(distanceMeters), 0) FROM workout " +
+            "WHERE endTime IS NOT NULL AND start >= :fromTime AND start < :toTime"
+    )
+    fun gpsMeters(fromTime: Long, toTime: Long): Flow<Double>
+
+    @Query(
+        "SELECT COALESCE(SUM(distanceMeters), 0) FROM workout " +
+            "WHERE endTime IS NOT NULL AND start >= :fromTime AND start < :toTime"
+    )
+    suspend fun gpsMetersOnce(fromTime: Long, toTime: Long): Double
 }
 
 @Dao
