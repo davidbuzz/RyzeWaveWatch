@@ -168,6 +168,28 @@ class WorkoutControllerTest {
         ctl.stop()
     }
 
+    /**
+     * The stop-cancellation race seen on 2026-09-07: publishing STOPPED makes WorkoutService stop itself, and
+     * its onDestroy cancels the scope the stop command runs on — while stop() is still waiting for the watch's
+     * ack. The final row write (the one that sets `end`) must survive that cancellation, or the workout stays
+     * "in progress / not finished" forever.
+     */
+    @Test
+    fun stopFinalWriteSurvivesScopeCancellation() = runBlocking<Unit> {
+        val ctl = controller(tickMs = 10_000L)
+        ctl.start(1)
+        val gate = kotlinx.coroutines.CompletableDeferred<Unit>()
+        watch.stopGate = gate
+        scope.launch { ctl.stop() }
+        awaitUntil("STOPPED published") { ctl.state.value.state == WorkoutPhase.STOPPED }
+        scope.cancel()               // what WorkoutService.onDestroy does the moment STOPPED is seen
+        gate.complete(Unit)          // the watch's ack arrives after the cancellation
+        awaitUntil("final row written") { repo.updates().lastOrNull()?.end != null }
+        assertTrue(watch.calls.contains("stop"))
+        awaitUntil("onFinished ran") { finished.size == 1 }
+        assertNotNull(finished[0].end)
+    }
+
     @Test
     fun ticksPushCurrentMetrics() = runBlocking<Unit> {
         val ctl = controller()

@@ -17,6 +17,7 @@ import au.buzz.ryzewave.core.WatchEvent
 import au.buzz.ryzewave.core.WatchStatus
 import au.buzz.ryzewave.core.Workout
 import java.util.concurrent.CopyOnWriteArrayList
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -111,6 +112,8 @@ class FakeWatch : WatchApi {
     val updates = CopyOnWriteArrayList<Update>()
 
     @Volatile var failStart = false
+    /** When set, stopWorkout suspends on it — lets a test hold a stop mid-flight (the BLE ack in flight). */
+    @Volatile var stopGate: CompletableDeferred<Unit>? = null
 
     override val status: StateFlow<WatchStatus> = MutableStateFlow(WatchStatus())
     override val liveHr: SharedFlow<HrSample> = hr
@@ -153,6 +156,7 @@ class FakeWatch : WatchApi {
 
     override suspend fun stopWorkout() {
         calls += "stop"
+        stopGate?.await()
     }
 
     override suspend fun findWatch() {}

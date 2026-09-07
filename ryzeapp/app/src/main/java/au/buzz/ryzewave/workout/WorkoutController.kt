@@ -17,6 +17,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -27,6 +28,7 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlin.math.max
 import kotlin.math.roundToInt
@@ -347,6 +349,10 @@ class WorkoutController(
         val elapsed = elapsedSeconds(now)
         val distance = synchronized(lock) { tracker.distanceMeters }
         val calories = caloriesKcal.roundToInt()
+        // Publishing STOPPED makes WorkoutService stop itself, which cancels the very scope this runs on
+        // (onDestroy -> scope.cancel()). Everything after the update — the watch stop command, the buffer
+        // flush and above all the final row write that sets `end` — must therefore be shielded from that
+        // cancellation, or the workout stays flagged "in progress" forever (seen 2026-09-07: four rows).
         _state.update {
             it.copy(
                 state = WorkoutPhase.STOPPED, elapsedSeconds = elapsed, distanceMeters = distance,
@@ -355,23 +361,21 @@ class WorkoutController(
                 stopReason = why,
             )
         }
-        if (!fromWatch) watchCall("stopWorkout") { watch.stopWorkout() }
-        flush()
         val final = buildWorkout(end = now, elapsed = elapsed, distance = distance)
-        try {
-            repo.updateWorkout(final)
-        } catch (e: CancellationException) {
-            throw e
-        } catch (e: Exception) {
-            onError("updateWorkout(final) failed", e)
-            setError("save: ${e.message}")
-        }
-        try {
-            onFinished(final)
-        } catch (e: CancellationException) {
-            throw e
-        } catch (e: Exception) {
-            onError("onFinished failed", e)
+        withContext(NonCancellable) {
+            if (!fromWatch) watchCall("stopWorkout") { watch.stopWorkout() }
+            flush()
+            try {
+                repo.updateWorkout(final)
+            } catch (e: Exception) {
+                onError("updateWorkout(final) failed", e)
+                setError("save: ${e.message}")
+            }
+            try {
+                onFinished(final)
+            } catch (e: Exception) {
+                onError("onFinished failed", e)
+            }
         }
         final
     }
