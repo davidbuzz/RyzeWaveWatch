@@ -65,6 +65,21 @@ object GraphFactory {
             }
         }
 
+        // No workout can be active at process start, so any endTime-NULL row is an orphan (a crash, or the
+        // former stop-cancellation race) — close it so it stops showing "in progress" and counts in the day.
+        val processStart = System.currentTimeMillis()
+        scope.launch {
+            try {
+                val closed = repo.closeOrphanedWorkouts(before = processStart)
+                if (closed > 0) {
+                    Log.i(TAG, "closed $closed orphaned workout row(s)")
+                    exportNew("orphan repair")
+                }
+            } catch (t: Throwable) {
+                Log.w(TAG, "orphaned-workout repair failed", t)
+            }
+        }
+
         // Workout: one controller for the foreground service and the Workout screen. A finished workout goes to
         // Health Connect straight away (session + distance + its HR samples), not only after the next watch sync.
         val controller = WorkoutController(

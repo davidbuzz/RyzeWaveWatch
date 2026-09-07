@@ -138,6 +138,25 @@ class RoomHealthRepository(
         db.workouts().update(workout.toEntity(clock()))
     }
 
+    /**
+     * Closes every workout row that has no end and was last written before [before] (a crash, or the historical
+     * stop-cancellation race): its end becomes the best estimate available — the later of the last stored track
+     * point and the last periodic persist ([WorkoutEntity.updatedAt], at most [au.buzz.ryzewave.workout.
+     * WorkoutController.PERSIST_EVERY_S] behind the real stop). The rewrite stamps `updatedAt = now`, so the
+     * Health Connect cursor exports the repaired workout on the next run. Returns how many rows were closed.
+     */
+    suspend fun closeOrphanedWorkouts(before: Long): Int {
+        val orphans = db.workouts().unfinishedBefore(before)
+        if (orphans.isEmpty()) return 0
+        val now = clock()
+        for (row in orphans) {
+            val lastFix = db.trackPoints().lastTimeFor(row.id) ?: 0L
+            val end = maxOf(row.updatedAt, lastFix, row.start)
+            db.workouts().update(row.copy(endTime = end, updatedAt = now))
+        }
+        return orphans.size
+    }
+
     override suspend fun insertTrackPoints(points: List<TrackPoint>) {
         if (points.isEmpty()) return
         db.trackPoints().upsert(points.map(TrackPoint::toEntity))

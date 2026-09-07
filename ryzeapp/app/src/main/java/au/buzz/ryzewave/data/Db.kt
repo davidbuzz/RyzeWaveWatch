@@ -328,6 +328,10 @@ interface WorkoutDao {
     /** Finished workouts inserted or updated at/after [time]; a workout still running (no end) is excluded. */
     @Query("SELECT * FROM workout WHERE updatedAt >= :time AND endTime IS NOT NULL ORDER BY start")
     suspend fun finishedChangedSince(time: Long): List<WorkoutEntity>
+
+    /** Rows with no end whose last write is older than [before]: crashed or lost-race sessions to repair. */
+    @Query("SELECT * FROM workout WHERE endTime IS NULL AND updatedAt < :before ORDER BY start")
+    suspend fun unfinishedBefore(before: Long): List<WorkoutEntity>
 }
 
 @Dao
@@ -340,6 +344,9 @@ interface TrackPointDao {
 
     @Query("SELECT * FROM track_point WHERE workoutId = :workoutId ORDER BY time")
     suspend fun forWorkoutOnce(workoutId: Long): List<TrackPointEntity>
+
+    @Query("SELECT MAX(time) FROM track_point WHERE workoutId = :workoutId")
+    suspend fun lastTimeFor(workoutId: Long): Long?
 }
 
 @Dao
