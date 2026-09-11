@@ -1,0 +1,5 @@
+{
+    "claudeCode.initialPermissionMode": "acceptEdits",
+    "claudeCode.autosave": true,
+    "chat.editing.autoAcceptDelay": 1
+}
