@@ -123,6 +123,9 @@ class WorkoutController(
 
     /** Guards the watch-control debounce state below (mutated from the events collector and the debounce timer). */
     private val watchGate = Any()
+    /** When [stop] last ran: the watch answers the app's `FD 00` with a 4-byte `FD 11` (2026-09-11, 3/3 stops),
+     *  which must not be mistaken for a wrist start press or every stop restarts the workout. */
+    @Volatile private var lastStopAtMs = 0L
     /** The phase a watch pause/resume is waiting to settle into, or null when nothing is pending. */
     private var pendingWatchPhase: WorkoutPhase? = null
     private var watchDebounceJob: Job? = null
@@ -148,7 +151,12 @@ class WorkoutController(
                 WorkoutControlAction.RESUME -> onWatchPauseResume(WorkoutPhase.RUNNING)
                 WorkoutControlAction.STOP -> if (_state.value.state != WorkoutPhase.STOPPED) stop(fromWatch = true)
                 // Tracking can only be started by the host (foreground service + GPS): hand the press over.
-                WorkoutControlAction.START -> if (_state.value.state == WorkoutPhase.STOPPED) onWatchStartRequested()
+                // Not within the debounce of a stop: the watch's FD 11 reply to our FD 00 is not a press.
+                WorkoutControlAction.START ->
+                    if (_state.value.state == WorkoutPhase.STOPPED) {
+                        if (clock() - lastStopAtMs >= watchControlDebounceMs) onWatchStartRequested()
+                        else onError("watch START within ${watchControlDebounceMs} ms of a stop: ignored (stop handshake)", null)
+                    }
             }
             is WatchEvent.WorkoutRealtime -> {
                 onWatchSteps(e.steps)
@@ -351,6 +359,7 @@ class WorkoutController(
         cancelPendingWatchControl()
         val why = reason ?: if (fromWatch) StopReason.WATCH else StopReason.USER
         val now = clock()
+        lastStopAtMs = now
         runningSince?.let { activeMsBefore += max(0L, now - it) }
         runningSince = null
         tickerJob?.cancel()

@@ -436,6 +436,24 @@ class WorkoutControllerTest {
         ctl.stop()
     }
 
+    /**
+     * The 2026-09-11 restart loop: the watch answers the app's `FD 00` stop with a 4-byte `FD 11`, which parses
+     * as a watch START. Within the debounce of a stop it is handshake noise, not a press; after it, a real press.
+     */
+    @Test
+    fun watchStartRightAfterAStopIsIgnoredAsHandshakeNoise() = runBlocking<Unit> {
+        val ctl = controller(tickMs = 10_000L)
+        ctl.start(1)
+        now += 5_000L
+        ctl.stop()
+        watch.emitEvent(WatchEvent.WorkoutControl(WorkoutControlAction.START))
+        Thread.sleep(50)
+        assertEquals("the FD 11 stop reply must not restart", 0, watchStartRequests.get())
+        now += DEBOUNCE_MS + 1
+        watch.emitEvent(WatchEvent.WorkoutControl(WorkoutControlAction.START))
+        awaitUntil("a later real press is honoured") { watchStartRequests.get() == 1 }
+    }
+
     /** A fromWatch start must not echo `FD 11` (the watch is already in exercise mode). */
     @Test
     fun fromWatchStartDoesNotSendStartToTheWatch() = runBlocking<Unit> {
