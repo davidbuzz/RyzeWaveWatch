@@ -32,6 +32,7 @@ class WorkoutControllerTest {
     private var now = 1_000_000L
 
     private val finished = CopyOnWriteArrayList<au.buzz.ryzewave.core.Workout>()
+    private val watchStartRequests = java.util.concurrent.atomic.AtomicInteger()
 
     private fun controller(tickMs: Long = 20L, watchControlDebounceMs: Long = DEBOUNCE_MS) = WorkoutController(
         repo = repo, watch = watch, settings = settings, scope = scope,
@@ -39,6 +40,7 @@ class WorkoutControllerTest {
         watchControlDebounceMs = watchControlDebounceMs,
         onError = { message, _ -> errors += message },
         onFinished = { finished += it },
+        onWatchStartRequested = { watchStartRequests.incrementAndGet() },
     )
 
     @After
@@ -409,6 +411,64 @@ class WorkoutControllerTest {
         assertEquals(repo.updates().last(), w)     // the row is written before the hook fires
         assertNull(ctl.stop())
         assertEquals(1, finished.size)
+    }
+
+    /**
+     * The 2026-09-10 field bug: a watch-button START was announced but nothing tracked. The controller must hand
+     * the press to the host (which starts the foreground service) — and only while nothing is active.
+     */
+    @Test
+    fun watchStartWhileStoppedRequestsAHostStart() = runBlocking<Unit> {
+        val ctl = controller(tickMs = 10_000L)
+        watch.emitEvent(WatchEvent.WorkoutControl(WorkoutControlAction.START))
+        awaitUntil("host start requested") { watchStartRequests.get() == 1 }
+        assertEquals(WorkoutPhase.STOPPED, ctl.state.value.state)   // the host starts the session, not this event
+
+        // while a workout is active a watch START is ignored (the watch echoes its own state)
+        ctl.start(1)
+        watch.emitEvent(WatchEvent.WorkoutControl(WorkoutControlAction.STOP))
+        awaitUntil("stopped from the watch") { ctl.state.value.state == WorkoutPhase.STOPPED }
+        assertEquals(1, watchStartRequests.get())
+        ctl.start(1)
+        watch.emitEvent(WatchEvent.WorkoutControl(WorkoutControlAction.START))
+        Thread.sleep(50)
+        assertEquals("no request while active", 1, watchStartRequests.get())
+        ctl.stop()
+    }
+
+    /** A fromWatch start must not echo `FD 11` (the watch is already in exercise mode). */
+    @Test
+    fun fromWatchStartDoesNotSendStartToTheWatch() = runBlocking<Unit> {
+        val ctl = controller(tickMs = 10_000L)
+        val id = ctl.start(sportType = 1, fromWatch = true)
+        assertEquals(1L, id)
+        assertEquals(WorkoutPhase.RUNNING, ctl.state.value.state)
+        assertFalse("FD 11 must not be echoed", watch.calls.any { it.startsWith("start") })
+        // a normal stop from the app still tells the watch
+        ctl.stop()
+        assertTrue(watch.calls.contains("stop"))
+    }
+
+    /** The START control names no sport: a fromWatch session adopts it from the first realtime push. */
+    @Test
+    fun fromWatchSessionAdoptsTheSportFromTheRealtimePush() = runBlocking<Unit> {
+        val ctl = controller(tickMs = 10_000L)
+        ctl.start(sportType = 1, fromWatch = true)
+        watch.emitEvent(WatchEvent.WorkoutRealtime(sportType = 3, steps = 10, calories = 1, distanceMeters = 5.0))
+        awaitUntil("sport adopted") { ctl.state.value.sportType == 3 }
+        val final = ctl.stop()!!
+        assertEquals(3, final.sportType)
+    }
+
+    /** An app-started session keeps the sport the user picked, whatever the watch pushes. */
+    @Test
+    fun appStartedSessionKeepsItsSport() = runBlocking<Unit> {
+        val ctl = controller(tickMs = 10_000L)
+        ctl.start(sportType = 2)
+        watch.emitEvent(WatchEvent.WorkoutRealtime(sportType = 3, steps = 10, calories = 1, distanceMeters = 5.0))
+        awaitUntil("steps arrived") { ctl.state.value.steps == 10 }
+        assertEquals(2, ctl.state.value.sportType)
+        assertEquals(2, ctl.stop()!!.sportType)
     }
 
     @Test

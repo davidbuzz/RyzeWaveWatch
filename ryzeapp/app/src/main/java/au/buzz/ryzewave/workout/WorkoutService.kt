@@ -115,8 +115,9 @@ class WorkoutService : Service() {
         when (intent?.action) {
             ACTION_START -> {
                 val sportType = intent.getIntExtra(EXTRA_SPORT_TYPE, DEFAULT_SPORT_TYPE)
+                val fromWatch = intent.getBooleanExtra(EXTRA_FROM_WATCH, false)
                 ensureTracking()   // GPS warms up while the watch is being told to start
-                command("start") { if (!controller.state.value.isActive) controller.start(sportType) }
+                command("start") { if (!controller.state.value.isActive) controller.start(sportType, fromWatch) }
             }
             // GPS is deliberately NOT stopped on pause (see ensureTracking): fixes keep coming so the track
             // stays continuous; the controller stores them tagged paused and adds no distance.
@@ -418,6 +419,8 @@ class WorkoutService : Service() {
         const val ACTION_RESUME = "au.buzz.ryzewave.workout.action.RESUME"
         const val ACTION_STOP = "au.buzz.ryzewave.workout.action.STOP"
         const val EXTRA_SPORT_TYPE = "sportType"
+        /** Set on [ACTION_START] when the watch itself began the workout: the controller must not echo `FD 11`. */
+        const val EXTRA_FROM_WATCH = "fromWatch"
         const val DEFAULT_SPORT_TYPE = 1
         const val CHANNEL_ID = "workout"
         const val CHANNEL_NAME = "Workout"
@@ -435,9 +438,15 @@ class WorkoutService : Service() {
                 if (sportType != null) putExtra(EXTRA_SPORT_TYPE, sportType)
             }
 
-        /** Starts the foreground service and the workout; the caller must hold the location permission. */
-        fun start(context: Context, sportType: Int = DEFAULT_SPORT_TYPE) {
-            ContextCompat.startForegroundService(context, intent(context, ACTION_START, sportType))
+        /**
+         * Starts the foreground service and the workout; the caller must hold the location permission.
+         * [fromWatch]: the watch already began the workout itself — track it without echoing `FD 11`. On
+         * Android 12+ this can throw `ForegroundServiceStartNotAllowedException` when the app is in the
+         * background; the watch-start path catches it and announces the watch-only fallback.
+         */
+        fun start(context: Context, sportType: Int = DEFAULT_SPORT_TYPE, fromWatch: Boolean = false) {
+            val intent = intent(context, ACTION_START, sportType).putExtra(EXTRA_FROM_WATCH, fromWatch)
+            ContextCompat.startForegroundService(context, intent)
         }
 
         fun pause(context: Context) {

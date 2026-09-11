@@ -38,5 +38,12 @@ class StateAnnouncer {
         const val RESUMED = "workout resumed"
         const val STOPPED = "workout stopped"
         const val STOPPED_NO_ACTIVITY = "workout stopped, no activity"
+
+        /**
+         * A watch-button start the phone could NOT escalate into a tracked session (location off, permission
+         * missing, or the foreground start was refused). Deliberately distinct from [STARTED]: on 2026-09-10 the
+         * plain phrase was spoken for an untracked watch start and masked that nothing was being recorded.
+         */
+        const val STARTED_WATCH_ONLY = "workout on watch only, open the app to track it"
     }
 }

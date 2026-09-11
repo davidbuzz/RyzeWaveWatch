@@ -42,10 +42,10 @@ import kotlinx.coroutines.sync.withLock
  * [WatchApi.liveHr] plus the periodic auto/history samples ([periodicHr]) for a watch that is not streaming;
  * phone motion from [MotionSource] (started per session). The resting baseline comes from [restingBaseline].
  *
- * A watch-originated start is also announced ("[StateAnnouncer.STARTED]") so an accidental wrist press is
- * heard immediately; app starts are announced by [WorkoutService] from the controller's state, so each start is
- * spoken exactly once. Pause/resume of a watch-only session (`FD 22`/`FD 33`) suspend the judgement; a resume
- * restarts the window. No Android imports; unit-tested with fakes.
+ * A watch-originated start is escalated elsewhere (the controller's `onWatchStartRequested` starts the tracked
+ * session, announced by [WorkoutService] from the controller's state; an impossible escalation is announced by
+ * its handler), so this monitor never speaks a start — it still watches the watch-only session in case the
+ * escalation failed. No Android imports; unit-tested with fakes.
  */
 class StuckWorkoutMonitor(
     private val watch: WatchApi,
@@ -201,7 +201,7 @@ class StuckWorkoutMonitor(
 
     private suspend fun beginSession(origin: Origin, sportType: Int?) {
         val enabled = safe("detectorEnabled", true) { detectorEnabled() }
-        val toSpeak = mutex.withLock {
+        mutex.withLock {
             val current = session
             if (current != null) {
                 if (origin == Origin.WATCH) {
@@ -235,10 +235,9 @@ class StuckWorkoutMonitor(
                     (if (enabled) "" else " — detector disabled in Settings, only announcing") +
                     (if (s.debug != null) ", debug ${s.debug}" else ""),
             )
-            origin == Origin.WATCH
         }
-        // A watch press announces itself; the app's own start is spoken by the service from the controller state.
-        if (toSpeak) speak(StateAnnouncer.STARTED)
+        // No announcement here: a watch start is escalated into a controller session (spoken by the service from
+        // the controller's state) or, when that is impossible, announced honestly by the escalation handler.
     }
 
     private suspend fun pauseSession(origin: Origin) = mutex.withLock {

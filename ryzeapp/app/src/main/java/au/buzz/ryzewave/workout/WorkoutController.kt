@@ -70,6 +70,13 @@ class WorkoutController(
     private val onError: (String, Throwable?) -> Unit = { _, _ -> },
     /** Called once per workout, after [stop] has written the final row (e.g. to export it to Health Connect). */
     private val onFinished: (Workout) -> Unit = {},
+    /**
+     * A watch START (its physical buttons) arrived while nothing is active. The controller cannot begin tracking
+     * by itself (GPS and the foreground service live in the host): the host wires this to start [WorkoutService]
+     * with `fromWatch`, so a wrist press becomes a real tracked session instead of only an announcement
+     * (2026-09-10: "workout started" was spoken but nothing tracked).
+     */
+    private val onWatchStartRequested: () -> Unit = {},
 ) {
     private val _state = MutableStateFlow(WorkoutState())
     val state: StateFlow<WorkoutState> = _state.asStateFlow()
@@ -87,6 +94,8 @@ class WorkoutController(
 
     @Volatile private var workoutId = 0L
     @Volatile private var sportType = 1
+    /** True when this session tracks a workout the watch itself started (its `FD 11` is not echoed back). */
+    @Volatile private var fromWatchSession = false
     @Volatile private var startTime = 0L
     @Volatile private var activeMsBefore = 0L
     @Volatile private var runningSince: Long? = null
@@ -138,10 +147,13 @@ class WorkoutController(
                 WorkoutControlAction.PAUSE -> onWatchPauseResume(WorkoutPhase.PAUSED)
                 WorkoutControlAction.RESUME -> onWatchPauseResume(WorkoutPhase.RUNNING)
                 WorkoutControlAction.STOP -> if (_state.value.state != WorkoutPhase.STOPPED) stop(fromWatch = true)
-                // The app cannot meaningfully begin a session from a watch press here (no GPS/foreground): ignore.
-                WorkoutControlAction.START -> Unit
+                // Tracking can only be started by the host (foreground service + GPS): hand the press over.
+                WorkoutControlAction.START -> if (_state.value.state == WorkoutPhase.STOPPED) onWatchStartRequested()
             }
-            is WatchEvent.WorkoutRealtime -> onWatchSteps(e.steps)
+            is WatchEvent.WorkoutRealtime -> {
+                onWatchSteps(e.steps)
+                adoptWatchSport(e.sportType)
+            }
             else -> Unit
         }
     }
@@ -203,9 +215,11 @@ class WorkoutController(
     /**
      * Starts a workout: inserts the [Workout] row, subscribes to [WatchApi.liveHr], tells the watch
      * (`FD 11 <type> 01`) and starts the one-second ticker. Returns the workout id. If a workout is already
-     * active, it is left alone and its id is returned.
+     * active, it is left alone and its id is returned. [fromWatch] is set when the watch itself started the
+     * workout (its buttons): it is already in exercise mode, so `FD 11` is NOT sent back — and the sport, which
+     * the START control does not carry, is adopted from the first realtime push ([adoptWatchSport]).
      */
-    suspend fun start(sportType: Int = 1): Long = control.withLock {
+    suspend fun start(sportType: Int = 1, fromWatch: Boolean = false): Long = control.withLock {
         if (_state.value.state != WorkoutPhase.STOPPED) return@withLock workoutId
         val now = clock()
         val profile = try {
@@ -240,6 +254,7 @@ class WorkoutController(
             hrMax = 0
         }
         this.sportType = sportType
+        this.fromWatchSession = fromWatch
         startTime = now
         activeMsBefore = 0L
         runningSince = now
@@ -276,7 +291,7 @@ class WorkoutController(
         hrJob = scope.launch(start = CoroutineStart.UNDISPATCHED) {
             watch.liveHr.collect { onHr(it) }
         }
-        watchCall("startWorkout") { watch.startWorkout(sportType) }
+        if (!fromWatch) watchCall("startWorkout") { watch.startWorkout(sportType) }
 
         tickerJob?.cancel()
         tickerJob = scope.launch {
@@ -455,6 +470,17 @@ class WorkoutController(
         if (steps <= watchStepsMax) return
         watchStepsMax = steps
         _state.update { it.copy(steps = steps) }
+    }
+
+    /**
+     * A fromWatch session starts before its sport is known (the START control names none): the watch's realtime
+     * push carries it, so adopt it into the state and the row. App-started sessions keep what the user picked.
+     */
+    private fun adoptWatchSport(type: Int) {
+        if (!fromWatchSession || type <= 0 || type == sportType) return
+        if (_state.value.state == WorkoutPhase.STOPPED) return
+        sportType = type
+        _state.update { it.copy(sportType = type) }
     }
 
     /** The phone step counter's tally for this workout (paused steps already excluded). Ignored once STOPPED. */

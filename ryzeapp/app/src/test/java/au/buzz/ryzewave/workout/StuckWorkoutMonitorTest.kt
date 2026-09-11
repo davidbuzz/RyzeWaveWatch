@@ -65,9 +65,11 @@ class StuckWorkoutMonitorTest {
 
     @Test
     fun aWatchStartedWorkoutWithFlatStepsIsWarnedThenAutoStopped() = runBlocking<Unit> {
-        monitor()
+        val m = monitor()
         watch.emitEvent(WatchEvent.WorkoutControl(WorkoutControlAction.START))
-        awaitUntil("start announced") { spoken.contains(StateAnnouncer.STARTED) }
+        awaitUntil("watching") { m.active }
+        // the misleading plain "workout started" of 2026-09-10 is gone: the monitor never announces a start
+        assertFalse(spoken.contains(StateAnnouncer.STARTED))
         // flat session steps + a resting HR for longer than the window
         for (i in 1..6) { realtime(40); watch.hr.emit(HrSample(now, 58, SampleSource.WORKOUT)); now += WINDOW / 4 }
         awaitUntil("warned") { warns.get() == 1 }

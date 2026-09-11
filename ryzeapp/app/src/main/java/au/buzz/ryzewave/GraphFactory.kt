@@ -1,6 +1,11 @@
 package au.buzz.ryzewave
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.location.LocationManager
 import android.util.Log
+import androidx.core.content.ContextCompat
+import androidx.core.location.LocationManagerCompat
 import au.buzz.ryzewave.ble.createWatchApi
 import au.buzz.ryzewave.core.ConnectionState
 import au.buzz.ryzewave.data.DataStoreSettingsStore
@@ -17,8 +22,10 @@ import au.buzz.ryzewave.workout.AndroidSpeaker
 import au.buzz.ryzewave.workout.AndroidStuckWorkoutAlerter
 import au.buzz.ryzewave.workout.DefaultStrideModel
 import au.buzz.ryzewave.workout.RestingHrBaseline
+import au.buzz.ryzewave.workout.StateAnnouncer
 import au.buzz.ryzewave.workout.StuckWorkoutMonitor
 import au.buzz.ryzewave.workout.WorkoutController
+import au.buzz.ryzewave.workout.WorkoutService
 import au.buzz.ryzewave.workout.WorkoutSession
 import au.buzz.ryzewave.workout.WorkoutUiBridge
 import kotlinx.coroutines.CoroutineName
@@ -82,6 +89,28 @@ object GraphFactory {
 
         // Workout: one controller for the foreground service and the Workout screen. A finished workout goes to
         // Health Connect straight away (session + distance + its HR samples), not only after the next watch sync.
+        // A watch-button START is escalated into a real tracked session (2026-09-10: it was announced but nothing
+        // tracked): start the foreground service with fromWatch — or, when that is impossible (location off,
+        // no fine-location, background FGS refused), say so honestly instead of the plain "workout started".
+        val speaker = AndroidSpeaker(app)
+        fun onWatchStart() {
+            val fineLocation = ContextCompat.checkSelfPermission(app, Manifest.permission.ACCESS_FINE_LOCATION) ==
+                PackageManager.PERMISSION_GRANTED
+            val lm = app.getSystemService(LocationManager::class.java)
+            val locationOn = lm != null && LocationManagerCompat.isLocationEnabled(lm)
+            if (!fineLocation || !locationOn) {
+                Log.w(TAG, "watch start not escalated: fineLocation=$fineLocation locationOn=$locationOn")
+                speaker.speak(StateAnnouncer.STARTED_WATCH_ONLY)
+                return
+            }
+            try {
+                WorkoutService.start(app, WorkoutService.DEFAULT_SPORT_TYPE, fromWatch = true)
+                Log.i(TAG, "watch start escalated to the foreground workout service")
+            } catch (e: Exception) {
+                Log.w(TAG, "watch start: foreground service refused", e)
+                speaker.speak(StateAnnouncer.STARTED_WATCH_ONLY)
+            }
+        }
         val controller = WorkoutController(
             repo = repo,
             watch = watch,
@@ -89,6 +118,7 @@ object GraphFactory {
             scope = WorkoutSession.scope,
             onError = { message, cause -> Log.w(TAG, message, cause) },
             onFinished = { workout -> scope.launch { exportNew("workout ${workout.id}") } },
+            onWatchStartRequested = ::onWatchStart,
         )
         WorkoutSession.install(controller)
         WorkoutBridgeHolder.install(WorkoutUiBridge(app, controller, WorkoutSession.scope))
@@ -144,7 +174,6 @@ object GraphFactory {
         // after a grace (short at night with the wearer's HR at sleeping level: the former night workout guard).
         // App-started workouts are only auto-stopped when the Settings switch says so. Lives in the process the
         // BLE foreground service keeps alive, so it works with the screen off; speech goes through the shared engine.
-        val speaker = AndroidSpeaker(app)
         val stuckMonitor = StuckWorkoutMonitor(
             watch = watch,
             controller = controller,
