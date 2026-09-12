@@ -15,3 +15,4 @@
 - [Never git push](never-git-push.md) — no git push in any form, ever; Buzz pushes himself
 - [Proceed without waiting](proceed-without-waiting.md) — commit verified finished work autonomously; don't pause for a go-ahead (still never push)
 - [Release-signed build on Pixel](release-signed-on-pixel.md) — the Pixel runs the release-signed APK; assembleRelease + adb install -r, never uninstall (wipes ryzewave.db)
+- [Explain every edit](explain-every-edit.md) — narrate each file edit in plain language: which file, what changes, why
