@@ -38,6 +38,7 @@ class WorkoutControllerTest {
         repo = repo, watch = watch, settings = settings, scope = scope,
         tracker = DefaultGpsDistanceTracker(), clock = { now }, tickMs = tickMs,
         watchControlDebounceMs = watchControlDebounceMs,
+        stopHandshakeMs = HANDSHAKE_MS,
         onError = { message, _ -> errors += message },
         onFinished = { finished += it },
         onWatchStartRequested = { watchStartRequests.incrementAndGet() },
@@ -307,6 +308,7 @@ class WorkoutControllerTest {
 
         /** Short debounce for the watch-control tests so a settled press applies within the poll timeout. */
         const val DEBOUNCE_MS = 300L
+        const val HANDSHAKE_MS = 100L
     }
 
     /**
@@ -438,7 +440,7 @@ class WorkoutControllerTest {
 
     /**
      * The 2026-09-11 restart loop: the watch answers the app's `FD 00` stop with a 4-byte `FD 11`, which parses
-     * as a watch START. Within the debounce of a stop it is handshake noise, not a press; after it, a real press.
+     * as a watch START. Within the stop-handshake window it is noise, not a press; after it, a real press.
      */
     @Test
     fun watchStartRightAfterAStopIsIgnoredAsHandshakeNoise() = runBlocking<Unit> {
@@ -449,9 +451,26 @@ class WorkoutControllerTest {
         watch.emitEvent(WatchEvent.WorkoutControl(WorkoutControlAction.START))
         Thread.sleep(50)
         assertEquals("the FD 11 stop reply must not restart", 0, watchStartRequests.get())
-        now += DEBOUNCE_MS + 1
+        now += HANDSHAKE_MS + 1
         watch.emitEvent(WatchEvent.WorkoutControl(WorkoutControlAction.START))
         awaitUntil("a later real press is honoured") { watchStartRequests.get() == 1 }
+    }
+
+    /**
+     * 2026-09-12: a real wrist press a few seconds after stopping the previous workout was swallowed because the
+     * handshake window shared the 8 s pause/resume debounce. Past the (short) handshake window, a START is a press
+     * even while the pause/resume debounce would still be open.
+     */
+    @Test
+    fun watchStartShortlyAfterAStopIsARealPress() = runBlocking<Unit> {
+        val ctl = controller(tickMs = 10_000L)
+        ctl.start(1)
+        now += 5_000L
+        ctl.stop()
+        now += HANDSHAKE_MS + 1
+        check(HANDSHAKE_MS + 1 < DEBOUNCE_MS) { "test needs the handshake window shorter than the debounce" }
+        watch.emitEvent(WatchEvent.WorkoutControl(WorkoutControlAction.START))
+        awaitUntil("a press between the two windows is honoured") { watchStartRequests.get() == 1 }
     }
 
     /** A fromWatch start must not echo `FD 11` (the watch is already in exercise mode). */

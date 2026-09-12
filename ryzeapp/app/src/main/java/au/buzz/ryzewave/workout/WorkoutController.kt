@@ -67,6 +67,12 @@ class WorkoutController(
      * App-button pause/resume are applied immediately (they never go through this gate).
      */
     private val watchControlDebounceMs: Long = WATCH_CONTROL_DEBOUNCE_MS,
+    /**
+     * How long after [stop] a watch START is still taken for the watch's `FD 11` reply to our `FD 00` (which
+     * arrives in 90-200 ms) rather than a wrist press. Short on purpose: 8 s swallowed a real press made a few
+     * seconds after stopping the previous workout (2026-09-12).
+     */
+    private val stopHandshakeMs: Long = STOP_HANDSHAKE_MS,
     private val onError: (String, Throwable?) -> Unit = { _, _ -> },
     /** Called once per workout, after [stop] has written the final row (e.g. to export it to Health Connect). */
     private val onFinished: (Workout) -> Unit = {},
@@ -154,8 +160,8 @@ class WorkoutController(
                 // Not within the debounce of a stop: the watch's FD 11 reply to our FD 00 is not a press.
                 WorkoutControlAction.START ->
                     if (_state.value.state == WorkoutPhase.STOPPED) {
-                        if (clock() - lastStopAtMs >= watchControlDebounceMs) onWatchStartRequested()
-                        else onError("watch START within ${watchControlDebounceMs} ms of a stop: ignored (stop handshake)", null)
+                        if (clock() - lastStopAtMs >= stopHandshakeMs) onWatchStartRequested()
+                        else onError("watch START within ${stopHandshakeMs} ms of a stop: ignored (stop handshake)", null)
                     }
             }
             is WatchEvent.WorkoutRealtime -> {
@@ -715,6 +721,7 @@ class WorkoutController(
          * the watch's junk `FD 22`/`FD 33` flood interval (1-5 s seen on 2026-09-06), so a spurious toggle is dropped.
          */
         const val WATCH_CONTROL_DEBOUNCE_MS = 8_000L
+        const val STOP_HANDSHAKE_MS = 2_000L
         const val PERSIST_EVERY_S = 5
         const val MAX_TICK_GAP_MS = 60_000L
         const val MAX_HR_SAMPLES = 6 * 3600
