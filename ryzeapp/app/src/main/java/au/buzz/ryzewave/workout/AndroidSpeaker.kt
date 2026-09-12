@@ -22,6 +22,7 @@ class AndroidSpeaker(private val context: Context) {
     private var tts: TextToSpeech? = null
     private var ready = false
     private var failed = false
+    private var lastRebuildMs = 0L
     private val pending = ArrayDeque<String>()
 
     fun speak(text: String) {
@@ -73,21 +74,46 @@ class AndroidSpeaker(private val context: Context) {
             runCatching { engine.language = Locale.getDefault() }
             ready = true
             Log.i(TAG, "TTS ready; speaking ${pending.size} queued utterance(s)")
-            while (pending.isNotEmpty()) utter(pending.removeFirst())
+            while (ready && pending.isNotEmpty()) utter(pending.removeFirst())
         }
     }
 
     /** Under [lock], engine ready. */
     private fun utter(text: String) {
-        try {
-            tts?.speak(text, TextToSpeech.QUEUE_ADD, null, "ryzewave:$text")
+        val engine = tts ?: return
+        val result = try {
+            engine.speak(text, TextToSpeech.QUEUE_ADD, null, "ryzewave:$text")
         } catch (e: Exception) {
-            Log.d(TAG, "speak failed: ${e.message}")
+            Log.w(TAG, "speak threw: ${e.message}")
+            TextToSpeech.ERROR
         }
+        if (result != TextToSpeech.SUCCESS) rebuild(text)
+    }
+
+    /**
+     * Under [lock]. In a long-lived process the engine's binding to the TTS service dies silently
+     * (`speak` returns ERROR, framework logs "not bound to TTS engine" — seen 2026-09-12 after days of
+     * uptime): rebuild the engine and re-queue the utterance, at most once per cooldown so an engine
+     * that stays broken cannot rebuild-loop.
+     */
+    private fun rebuild(text: String) {
+        val now = android.os.SystemClock.elapsedRealtime()
+        if (now - lastRebuildMs < REBUILD_COOLDOWN_MS) {
+            Log.w(TAG, "speak failed within rebuild cooldown; dropped \"$text\"")
+            return
+        }
+        lastRebuildMs = now
+        Log.w(TAG, "speak failed (TTS binding lost); rebuilding engine and re-queueing \"$text\"")
+        runCatching { tts?.shutdown() }
+        tts = null
+        ready = false
+        pending.addFirst(text)
+        main.post { create() }
     }
 
     companion object {
         const val TAG = "WorkoutSpeech"
         const val MAX_PENDING = 4
+        const val REBUILD_COOLDOWN_MS = 30_000L
     }
 }
