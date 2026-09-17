@@ -1023,20 +1023,56 @@ reassembled, without relying on Fit being pre-configured; it must discard statio
   foreground (type location) while location was off; now `stop()` uses `stopService` (never creates it) and
   `startInForeground()` catches the refusal and `stopSelf()`s. The app no longer crash-loops on launch.
 - Still to do: a step-based (stride) pace/distance fallback so pace is never a bare "--:--"; stop mirroring the watch's
-  rapid junk pause/resume (FD 22/33 flood) that split the 2026-09-06 run and spammed spoken cues.
+  rapid pause/resume that split the 2026-09-06 run and spammed spoken cues. (The "junk FD 22/33 flood" reading of that
+  run was WRONG — see "Watch pause/resume is immediate again" below.)
 
 
-## Build 13 (2026-09-06): step-based pace fallback + watch pause/resume debounce
+## Watch pause/resume is immediate again — the debounce is gone (2026-09-17)
+
+Buzz: "i want an IMMEDIATE response to my pressing a button on the watch, and i dont ever want to wait 8 seconds
+for it... i think its trying to fix a problem that doesnt exist." He was right. The 8-second settle timer added in
+build 13, every trace of it, is removed: `WATCH_CONTROL_DEBOUNCE_MS`, the `watchControlDebounceMs` parameter, the
+`watchGate`/`pendingWatchPhase`/`watchDebounceJob` state, `settleWatchControl` and `cancelPendingWatchControl`.
+`onWatchPauseResume` now applies the press on the spot; the only guard left is the no-op when the watch asks for
+the state we are already in. `STOP_HANDSHAKE_MS` is untouched — that is a different, real fix (the watch's `FD 11`
+reply to our `FD 00`).
+
+**Why the premise was wrong**, measured 2026-09-15:
+
+- *It was never a flood.* Across the whole of `captures/pixel_run2_20260906` (76 min) there are 28 `FD 22` + 33
+  `FD 33` log lines against 2676 `FD 44` and 2882 `FD 01` — about 1 % of the traffic, roughly 30 real events in 76
+  minutes. 46 of the 61 lines fall in the four minutes 09:42–09:45; the other 65 minutes of running hold nine,
+  several of which are echoes of the app's own commands. The "every 1–5 s" in the old comment describes **one
+  minute**, 09:43, which had been generalised into a permanent property of the hardware.
+- *The watch never sends them unprompted.* An 85 s workout driven over RyzeBridge with nobody touching the watch —
+  40 s of `FD 44` then 40 s of silence, exactly the condition of the 09:43 burst — produced **zero** `FD 22`/`FD 33`
+  (`captures/bridge_20260915_183348.txt`). Motion is ruled out by the distribution above: wrist movement would
+  scatter them across all 76 minutes, not pile them into one bad minute.
+- *The "junk payloads" were not junk.* Every packet in that burst carried the same frozen bytes because the app had
+  just paused and stopped sending `FD 44`, and the watch can only reflect the last one it received — proven on
+  hardware the same day (`captures/bridge_20260915_watchclock.md`).
+- *The gaps were human.* 1.2 s to 9.4 s, irregular — Buzz pressing a button the app was not responding to.
+
+So the timer was not filtering noise, it was filtering the user, and it was the direct cause of the 5–10 s lag
+before a spoken "paused"/"resumed". It also explains the elapsed-time non-linearity he saw on the watch face: the
+watch freezes its display on a wrist press, but the app kept pushing `FD 44` through the 8 s it ignored the press,
+overwriting the frozen number so the time stood still and then jumped forward.
+
+Tests rewritten to assert the new contract: a pause,resume,pause,resume burst now produces all four transitions and
+all four cues, and a watch pause or resume applies without waiting.
+
+
+## Build 13 (2026-09-06): step-based pace fallback + watch pause/resume debounce *(debounce removed 2026-09-17)*
 
 - **Never a bare "--:--".** `ui/WorkoutMetrics` (pure) picks the source: GPS when it is live (available, not stale,
   distance > 0); otherwise, when the watch reports session steps, distance = steps × stride (walk/run stride from
   Settings, chosen by sport or live cadence) and pace = elapsed / that, labelled "Distance (from steps)" / "6:10 /km
   (est)". The estimate is display-only — the stored `workout.distanceMeters` stays the GPS value. Dashes only when
   neither GPS nor steps exist. (Together with the location gate this covers both "location off" and "GPS lost mid-run".)
-- **Watch pause/resume debounce.** A watch-originated pause/resume arms an 8-s settle timer in `WorkoutController`;
-  a reversal inside the window cancels it, so the watch's junk 1–5 s FD 22/33 flood (2026-09-06 run) no longer
-  thrashes the workout or spams spoken cues. Only a state held past the window is applied and announced, once. App
-  buttons and STOP stay immediate; the 13-byte FD 33 play-button fix is untouched.
+- **Watch pause/resume debounce.** *(SUPERSEDED 2026-09-17 — removed entirely; the premise was wrong. See
+  "Watch pause/resume is immediate again" below. Kept here only as the record of what was built.)* A watch-originated
+  pause/resume armed an 8-s settle timer in `WorkoutController`; a reversal inside the window cancelled it. Only a
+  state held past the window was applied and announced. App buttons and STOP stayed immediate.
 - 394 unit tests (WorkoutMetricsTest 9, WorkoutControllerTest 21). Verified by an independent agent. Not yet
   exercised on-device (the Moto was off USB during the job); installed on the Pixel.
 

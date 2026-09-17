@@ -42,10 +42,10 @@ every GPS coordinate in this repo is deliberately displaced (see [docs/privacy_a
    steps and a calibrated stride and labelled "(est)", instead of showing nothing until the session ends.
 6. **Stride is yours, not a formula.** Walking and running strides start from your height and can be overridden in
    Settings, and the two are tracked separately because the watch reports walking and running steps separately.
-7. **Pause, resume and stop work from either end.** Press the button on the watch or in the app and both agree,
-   with spoken cues so you do not have to look, and a session you start on the watch is announced and monitored. The
-   watch's firmware sometimes floods pause and resume in bursts; the app waits 8 seconds for the state to settle
-   instead of chopping your run into fragments.
+7. **Pause, resume and stop work from either end, instantly.** Press the button on the watch or in the app and both
+   agree, with spoken cues so you do not have to look, and a session you start on the watch is announced and
+   monitored. A press on the wrist is acted on and spoken the moment it arrives — the app never makes you wait to
+   find out whether it heard you.
 8. **It cannot phone home.** The app requests no internet permission at all, so it is incapable of sending your data
    anywhere; everything lives in a plain SQLite file on your phone that you can copy off over adb (see
    [BUILD.md](BUILD.md#backing-up-and-restoring-your-data)). The vendor app requests internet access and talks to

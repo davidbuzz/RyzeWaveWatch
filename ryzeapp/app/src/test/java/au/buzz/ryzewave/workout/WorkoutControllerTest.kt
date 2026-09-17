@@ -34,10 +34,9 @@ class WorkoutControllerTest {
     private val finished = CopyOnWriteArrayList<au.buzz.ryzewave.core.Workout>()
     private val watchStartRequests = java.util.concurrent.atomic.AtomicInteger()
 
-    private fun controller(tickMs: Long = 20L, watchControlDebounceMs: Long = DEBOUNCE_MS) = WorkoutController(
+    private fun controller(tickMs: Long = 20L) = WorkoutController(
         repo = repo, watch = watch, settings = settings, scope = scope,
         tracker = DefaultGpsDistanceTracker(), clock = { now }, tickMs = tickMs,
-        watchControlDebounceMs = watchControlDebounceMs,
         stopHandshakeMs = HANDSHAKE_MS,
         onError = { message, _ -> errors += message },
         onFinished = { finished += it },
@@ -306,18 +305,17 @@ class WorkoutControllerTest {
         const val LON = 153.0251
         const val DEG_LAT_M = DefaultGpsDistanceTrackerTest.DEG_LAT_M
 
-        /** Short debounce for the watch-control tests so a settled press applies within the poll timeout. */
-        const val DEBOUNCE_MS = 300L
         const val HANDSHAKE_MS = 100L
     }
 
     /**
-     * The 2026-09-06 bug: the watch flooded FD 22/FD 33 (pause/resume) every 1-5 s with junk payloads and the app
-     * mirrored each one — thrashing the workout and spamming TTS. A rapid pause,resume,pause,resume burst that
-     * reverses within the window must leave the state untouched and produce no phase transition (hence no cue).
+     * A wrist press acts AT ONCE (Buzz, 2026-09-15). This used to be delayed 8 s to swallow a supposed junk
+     * flood; measurement showed the watch never emits pause/resume unprompted (85 s untouched, including 40 s
+     * with no `FD 44`, produced zero — captures/bridge_20260915_183348.txt), so every press is a real one.
+     * pause,resume,pause,resume must therefore produce all four transitions, each announced.
      */
     @Test
-    fun watchPauseResumeBurstWithinTheWindowIsIgnored() = runBlocking<Unit> {
+    fun watchPauseResumeBurstIsAppliedImmediatelyInOrder() = runBlocking<Unit> {
         val ctl = controller(tickMs = 10_000L)
         ctl.start(1)
         val phases = CopyOnWriteArrayList<WorkoutPhase>()
@@ -326,62 +324,78 @@ class WorkoutControllerTest {
         }
         awaitUntil("collector sees RUNNING") { phases.contains(WorkoutPhase.RUNNING) }
 
-        // A junk flood: pause,resume,pause,resume back-to-back, all well inside the debounce window.
-        watch.emitEvent(WatchEvent.WorkoutControl(WorkoutControlAction.PAUSE))
-        watch.emitEvent(WatchEvent.WorkoutControl(WorkoutControlAction.RESUME))
-        watch.emitEvent(WatchEvent.WorkoutControl(WorkoutControlAction.PAUSE))
-        watch.emitEvent(WatchEvent.WorkoutControl(WorkoutControlAction.RESUME))
+        for (a in listOf(
+            WorkoutControlAction.PAUSE, WorkoutControlAction.RESUME,
+            WorkoutControlAction.PAUSE, WorkoutControlAction.RESUME,
+        )) {
+            val want = if (a == WorkoutControlAction.PAUSE) WorkoutPhase.PAUSED else WorkoutPhase.RUNNING
+            watch.emitEvent(WatchEvent.WorkoutControl(a))
+            awaitUntil("$a applies at once") { ctl.state.value.state == want }
+        }
 
-        // Wait out more than the debounce: nothing must have settled.
-        Thread.sleep(DEBOUNCE_MS * 3)
-        assertEquals(WorkoutPhase.RUNNING, ctl.state.value.state)
-        assertEquals("no phase transition (so no spoken cue)", listOf(WorkoutPhase.RUNNING), phases.toList())
+        assertEquals(
+            "every press produces its transition",
+            listOf(WorkoutPhase.RUNNING, WorkoutPhase.PAUSED, WorkoutPhase.RUNNING, WorkoutPhase.PAUSED, WorkoutPhase.RUNNING),
+            phases.toList(),
+        )
         assertFalse("must not echo pause back to the watch", watch.calls.contains("pause"))
         assertFalse("must not echo resume back to the watch", watch.calls.contains("resume"))
 
-        // A StateAnnouncer fed the observed phases says nothing beyond the initial start.
+        // Each transition is spoken, so the user hears the press they just made.
         val announcer = StateAnnouncer()
         val spoken = phases.mapNotNull { announcer.onPhase(it) }
-        assertEquals(listOf(StateAnnouncer.STARTED), spoken)
+        assertEquals(
+            listOf(StateAnnouncer.STARTED, StateAnnouncer.PAUSED, StateAnnouncer.RESUMED, StateAnnouncer.PAUSED, StateAnnouncer.RESUMED),
+            spoken,
+        )
 
         job.cancel()
         ctl.stop()
     }
 
-    /** A watch pause that is held (no reversal) past the window applies exactly once. */
+    /** A watch pause is applied on the spot — no settle window to wait out. */
     @Test
-    fun genuineWatchPauseHeldBeyondTheWindowAppliesOnce() = runBlocking<Unit> {
+    fun watchPauseAppliesImmediately() = runBlocking<Unit> {
         val ctl = controller(tickMs = 10_000L)
         ctl.start(1)
         watch.emitEvent(WatchEvent.WorkoutControl(WorkoutControlAction.PAUSE))
-        // Still RUNNING immediately (debounced, not applied yet).
-        assertEquals(WorkoutPhase.RUNNING, ctl.state.value.state)
-        awaitUntil("settled pause applies") { ctl.state.value.state == WorkoutPhase.PAUSED }
+        awaitUntil("pause applies at once") { ctl.state.value.state == WorkoutPhase.PAUSED }
         assertFalse("a watch pause is not echoed back", watch.calls.contains("pause"))
         ctl.stop()
     }
 
-    /** A watch resume that is held past the window applies exactly once. */
+    /** A watch resume is applied on the spot. */
     @Test
-    fun genuineWatchResumeHeldBeyondTheWindowAppliesOnce() = runBlocking<Unit> {
+    fun watchResumeAppliesImmediately() = runBlocking<Unit> {
         val ctl = controller(tickMs = 10_000L)
         ctl.start(1)
-        ctl.pause()                                        // get to PAUSED first (app button, immediate)
+        ctl.pause()                                        // get to PAUSED first (app button)
         assertEquals(WorkoutPhase.PAUSED, ctl.state.value.state)
         watch.emitEvent(WatchEvent.WorkoutControl(WorkoutControlAction.RESUME))
-        assertEquals(WorkoutPhase.PAUSED, ctl.state.value.state)   // debounced, not applied yet
-        awaitUntil("settled resume applies") { ctl.state.value.state == WorkoutPhase.RUNNING }
+        awaitUntil("resume applies at once") { ctl.state.value.state == WorkoutPhase.RUNNING }
         assertFalse("a watch resume is not echoed back", watch.calls.contains("resume"))
         ctl.stop()
     }
 
-    /** App-button pause/resume are immediate — they never go through the watch debounce. */
+    /** A watch control asking for the state we are already in is a no-op (the only guard that remains). */
+    @Test
+    fun watchControlForTheCurrentStateDoesNothing() = runBlocking<Unit> {
+        val ctl = controller(tickMs = 10_000L)
+        ctl.start(1)
+        watch.emitEvent(WatchEvent.WorkoutControl(WorkoutControlAction.RESUME))   // already RUNNING
+        Thread.sleep(50)
+        assertEquals(WorkoutPhase.RUNNING, ctl.state.value.state)
+        assertFalse("no echo back to the watch", watch.calls.contains("resume"))
+        ctl.stop()
+    }
+
+    /** App-button pause/resume are immediate too. */
     @Test
     fun appPauseAndResumeAreImmediate() = runBlocking<Unit> {
         val ctl = controller(tickMs = 10_000L)
         ctl.start(1)
         ctl.pause()
-        assertEquals(WorkoutPhase.PAUSED, ctl.state.value.state)   // no wait for a debounce
+        assertEquals(WorkoutPhase.PAUSED, ctl.state.value.state)
         assertEquals("pause", watch.calls.last())
         ctl.resume()
         assertEquals(WorkoutPhase.RUNNING, ctl.state.value.state)
@@ -458,8 +472,8 @@ class WorkoutControllerTest {
 
     /**
      * 2026-09-12: a real wrist press a few seconds after stopping the previous workout was swallowed because the
-     * handshake window shared the 8 s pause/resume debounce. Past the (short) handshake window, a START is a press
-     * even while the pause/resume debounce would still be open.
+     * handshake window was 8 s long. It is now short and covers only the watch's `FD 11` reply to our `FD 00`,
+     * so a press just past it is honoured.
      */
     @Test
     fun watchStartShortlyAfterAStopIsARealPress() = runBlocking<Unit> {
@@ -468,7 +482,6 @@ class WorkoutControllerTest {
         now += 5_000L
         ctl.stop()
         now += HANDSHAKE_MS + 1
-        check(HANDSHAKE_MS + 1 < DEBOUNCE_MS) { "test needs the handshake window shorter than the debounce" }
         watch.emitEvent(WatchEvent.WorkoutControl(WorkoutControlAction.START))
         awaitUntil("a press between the two windows is honoured") { watchStartRequests.get() == 1 }
     }

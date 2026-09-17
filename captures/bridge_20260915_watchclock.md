@@ -53,10 +53,13 @@ pause/resume announcement lag.
 ## Consequences
 
 - The `<dur>` field of a watch-originated `FD 22`/`FD 33` carries **no information the phone did not just
-  supply**, so it cannot distinguish a genuine wrist press from the watch's junk flood. See PROTOCOL.md §FD row
-  for the measured overlap (genuine 0-26 s, junk 0-17 s — junk is a strict subset). Do not try this again.
-- Buzz's non-linearity is explained: the watch freezes its display locally on a wrist pause, but the app keeps
-  pushing `FD 44` for the 8 s its debounce ignores the press, so newer numbers overwrite the frozen display and
-  the time appears to stand still and then jump forward. Same root cause as the pause/resume announcement lag.
-- Anything that fixes the lag must get its authority from somewhere other than this field — `FD AA`
-  (`FD AA <state> <type>`) is the remaining candidate and is still unverified during a live workout.
+  supply**, so it cannot distinguish one `FD 22`/`FD 33` from another. See the PROTOCOL.md FD row for the measured
+  overlap (0–26 s against 0–17 s, one range a strict subset of the other). Do not try this again.
+- Buzz's non-linearity is explained: the watch freezes its display locally on a wrist pause, but the app kept
+  pushing `FD 44` through the 8 s settle timer that ignored the press, so newer numbers overwrote the frozen
+  display and the time appeared to stand still and then jump forward.
+- Both that and the 5–10 s announcement lag were fixed on 2026-09-17 by **removing the settle timer altogether**.
+  A follow-up run on 2026-09-15 (`bridge_20260915_183348.txt`) showed the watch never sends pause/resume
+  unprompted — 85 s untouched, including 40 s with no `FD 44`, produced zero — so every one is a real press and
+  there was nothing to debounce. `FD AA` (`FD AA <state> <type>`) stays unverified during a live workout and is
+  no longer needed. See docs/APP.md, "Watch pause/resume is immediate again".
