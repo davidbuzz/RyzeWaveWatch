@@ -271,7 +271,7 @@ private fun VitalsCard(
             Row(horizontalArrangement = Arrangement.spacedBy(24.dp)) {
                 val d1 = recovery?.hrr1
                 StatText("Recovery (HRR)", d1?.let { "${HeartRateRecovery.dropText(it)} at 1 min" } ?: "–")
-                if (d1 != null) StatText(HeartRateRecovery.band1min(d1), recovery?.hrr2?.let { "${HeartRateRecovery.dropText(it)} at 2 min" } ?: "")
+                if (d1 != null) StatText(HeartRateRecovery.band1min(d1), recovery?.hrr2?.let { "${HeartRateRecovery.dropText(it).removeSuffix(" bpm")} at 2 min" } ?: "")
             }
             if (recovery != null) {
                 Text(
