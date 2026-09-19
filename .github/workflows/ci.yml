@@ -21,7 +21,11 @@ jobs:
         with:
           distribution: temurin
           java-version: "17"
+      # The action's default package list includes the legacy `tools` package, which Google removed from the SDK
+      # repository in September 2026; asking for it fails the job before Gradle starts (red CI 15-19 Sept 2026).
       - uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
       - uses: gradle/actions/setup-gradle@v4
       # gradle.properties pins org.gradle.java.home to this laptop's JDK path; the -D system property overrides it.
       - run: ./gradlew -Dorg.gradle.java.home="$JAVA_HOME" --console=plain :app:assembleDebug :app:testDebugUnitTest
