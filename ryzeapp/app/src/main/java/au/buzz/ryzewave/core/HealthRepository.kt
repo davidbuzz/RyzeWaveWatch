@@ -61,6 +61,8 @@ interface HealthRepository {
     suspend fun spo2Since(time: Long): List<Spo2Sample>
     suspend fun stepsSince(time: Long): List<StepsHour>
     suspend fun sleepSince(time: Long): List<SleepStage>
+    /** Sleep stages starting in [from]..[to] (inclusive), for the day/night split of the resting heart rate. */
+    suspend fun sleepBetween(from: Long, to: Long): List<SleepStage> = emptyList()
     suspend fun workoutsSince(time: Long): List<Workout>
 
     // ---- Health Connect export ledger (what was written, by client record id, with a content fingerprint)

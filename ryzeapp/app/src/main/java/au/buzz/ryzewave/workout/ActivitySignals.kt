@@ -2,6 +2,7 @@ package au.buzz.ryzewave.workout
 
 import au.buzz.ryzewave.core.HrSample
 import au.buzz.ryzewave.core.SampleSource
+import au.buzz.ryzewave.core.SleepStage
 import kotlin.math.max
 
 /** The four activity indicators the stuck-in-exercise-mode detector looks at (docs/PLAN.md). */
@@ -217,6 +218,12 @@ class ActivitySignals(
  * The wearer's resting heart rate from the last day of periodic samples (the watch's automatic 10-minute
  * measurements and synced history — never the 1 Hz live / workout streams, which are the very spikes the HR
  * indicator looks for): the 10th percentile, clamped to a plausible band, or [FALLBACK] when there are too few.
+ *
+ * Since 2026-09-19 the day is split at the sleep record: [daytime] is the 10th percentile of the samples taken
+ * outside the night (the "daytime RHR" column of [FitnessBand]'s table) and [sleeping] is the median of the samples
+ * taken while actually asleep (the "sleeping HR" column). With no sleep record the whole day counts, which is [of].
+ * A periodic reading is stored twice (the watch's live push, then the same value again from the synced history),
+ * so samples are counted once per timestamp.
  */
 object RestingHrBaseline {
     const val LOOKBACK_MS = 24 * 3600_000L
@@ -224,15 +231,99 @@ object RestingHrBaseline {
     const val MIN_SAMPLES = 6
     const val MIN_BPM = 40
     const val MAX_BPM = 90
+    /** Sleep stages closer together than this are one night (a break the watch logs as a gap). */
+    const val SPAN_GAP_MS = 60 * 60_000L
     const val FALLBACK = StuckModeDetector.FALLBACK_RESTING_HR_BPM
 
     fun of(samples: List<HrSample>, fallback: Int = FALLBACK): Int {
-        val periodic = samples.filter { it.bpm > 0 && (it.source == SampleSource.AUTO || it.source == SampleSource.HISTORY) }
-            .map { it.bpm }
-            .sorted()
+        val periodic = periodic(samples)
         if (periodic.size < MIN_SAMPLES) return fallback
         val index = (PERCENTILE * (periodic.size - 1)).toInt().coerceIn(0, periodic.size - 1)
         return periodic[index].coerceIn(MIN_BPM, MAX_BPM)
+    }
+
+    /** True when there are at least [MIN_SAMPLES] distinct periodic readings. */
+    fun hasEnough(samples: List<HrSample>): Boolean = periodic(samples).size >= MIN_SAMPLES
+
+    /** The daytime resting rate: [of] over the samples outside the [night] spans; the whole day when that leaves too few. */
+    fun daytime(samples: List<HrSample>, night: List<LongRange>, fallback: Int = FALLBACK): Int {
+        val awake = samples.filter { s -> night.none { s.time in it } }
+        return if (hasEnough(awake)) of(awake, fallback) else of(samples, fallback)
+    }
+
+    /** The sleeping rate: the median of the periodic samples inside the [asleep] spans, or null with fewer than [MIN_SAMPLES]. */
+    fun sleeping(samples: List<HrSample>, asleep: List<LongRange>): Int? {
+        val inBed = periodic(samples.filter { s -> asleep.any { s.time in it } })
+        if (inBed.size < MIN_SAMPLES) return null
+        return inBed[inBed.size / 2]
+    }
+
+    /**
+     * The time covered by [stages] (each runs from its start for its minutes) as contiguous spans, bridging gaps
+     * up to [SPAN_GAP_MS]. With [includeAwake] false the awake stages are cut out, leaving the time actually asleep.
+     */
+    fun spans(stages: List<SleepStage>, includeAwake: Boolean): List<LongRange> {
+        val merged = ArrayList<LongRange>()
+        for (st in stages.sortedBy { it.start }) {
+            val end = st.start + st.minutes * 60_000L
+            val last = merged.lastOrNull()
+            if (last != null && st.start <= last.last + SPAN_GAP_MS) merged[merged.size - 1] = last.first..maxOf(last.last, end)
+            else merged += st.start..end
+        }
+        if (includeAwake) return merged
+        val awake = stages.filter { it.stage == SleepStage.AWAKE }.map { it.start..(it.start + it.minutes * 60_000L) }.sortedBy { it.first }
+        return merged.flatMap { span ->
+            val pieces = ArrayList<LongRange>()
+            var from = span.first
+            for (a in awake) {
+                if (a.last <= from || a.first >= span.last) continue
+                if (a.first > from) pieces += from..a.first
+                from = maxOf(from, a.last)
+            }
+            if (from < span.last) pieces += from..span.last
+            pieces
+        }
+    }
+
+    /** Sorted bpm of the periodic samples, one per timestamp. */
+    private fun periodic(samples: List<HrSample>): List<Int> =
+        samples.filter { it.bpm > 0 && (it.source == SampleSource.AUTO || it.source == SampleSource.HISTORY) }
+            .distinctBy { it.time }
+            .map { it.bpm }
+            .sorted()
+}
+
+/**
+ * Fitness level by resting heart rate, the table Buzz supplied on 2026-09-19. The daytime resting rate and the
+ * night-time sleeping rate are judged against different columns:
+ *
+ * | Level                    | Daytime RHR | Sleeping HR |
+ * |--------------------------|-------------|-------------|
+ * | Out of shape / sedentary | 75–100      | 60–80+      |
+ * | Average / healthy        | 60–75       | 50–60       |
+ * | Fit / active             | 50–60       | 45–50       |
+ * | Athletic / elite         | 40–50       | 35–45       |
+ *
+ * A value on a shared edge belongs to the band it starts (75 by day is sedentary, 60 is average, 50 is fit);
+ * above the top or below the bottom of the table takes the nearest band. A label, not a diagnosis.
+ */
+enum class FitnessBand(val label: String) {
+    SEDENTARY("sedentary"), AVERAGE("average"), FIT("fit"), ATHLETIC("athletic");
+
+    companion object {
+        fun ofDaytime(bpm: Int): FitnessBand = when {
+            bpm >= 75 -> SEDENTARY
+            bpm >= 60 -> AVERAGE
+            bpm >= 50 -> FIT
+            else -> ATHLETIC
+        }
+
+        fun ofSleeping(bpm: Int): FitnessBand = when {
+            bpm >= 60 -> SEDENTARY
+            bpm >= 50 -> AVERAGE
+            bpm >= 45 -> FIT
+            else -> ATHLETIC
+        }
     }
 }
 

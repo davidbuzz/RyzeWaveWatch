@@ -27,6 +27,11 @@ startup backfill) and resting HR (resting_hr per day, 10th percentile of periodi
 every sync) shown on the Vitals card; HRR in the Health Connect session notes, RHR as RestingHeartRateRecord under
 the new optional WRITE_RESTING_HEART_RATE permission (8 health permissions now; grant it after any pm disable/enable).
 Buzz's HRR definition: peak − rate one minute later (Cleveland Clinic bands: 22+ excellent, 13-21 normal, ≤12 delayed).
+RHR is split at the sleep record since 2026-09-19 evening: daytime resting rate (10th pct of awake periodic
+readings, exported to Health Connect) and sleeping rate (median while asleep, `sleepBpm`, schema 9), each rated
+sedentary / average / fit / athletic by `FitnessBand` against the two-column table Buzz supplied (day 75/60/50,
+night 60/50/45 edges). Periodic readings are stored twice (AUTO push + HISTORY sync, same time and value): count
+them once.
 The effort bout merges moving stretches separated by under 2 min of standstill (a traffic light is not the end of the
 run; the 2026-09-18 run printed "+3" before this). Changing the rule: bump `RECOVERY_RULE_VERSION` in GraphFactory
 and every stored figure is recomputed once at startup (the version lives in the sync-cursor table); changed

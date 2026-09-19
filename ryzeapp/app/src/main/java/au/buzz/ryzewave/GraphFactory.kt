@@ -98,11 +98,14 @@ object GraphFactory {
         suspend fun recordRestingHr() {
             try {
                 val now = System.currentTimeMillis()
-                val samples = repo.hrSince(now - RestingHrBaseline.LOOKBACK_MS).filter { it.time <= now }
-                val periodic = samples.filter { it.source == SampleSource.AUTO || it.source == SampleSource.HISTORY }
-                if (periodic.size < RestingHrBaseline.MIN_SAMPLES) return
-                val bpm = RestingHrBaseline.of(samples)
-                repo.upsertRestingHr(RestingHr(dayStart = Fmt.dayStart(now), bpm = bpm, computedAt = now))
+                val from = now - RestingHrBaseline.LOOKBACK_MS
+                val samples = repo.hrSince(from).filter { it.time <= now }
+                if (!RestingHrBaseline.hasEnough(samples)) return
+                // a stage that began up to two hours before the window still covers its first samples
+                val stages = repo.sleepBetween(from - 2 * 3600_000L, now)
+                val bpm = RestingHrBaseline.daytime(samples, RestingHrBaseline.spans(stages, includeAwake = true))
+                val sleepBpm = RestingHrBaseline.sleeping(samples, RestingHrBaseline.spans(stages, includeAwake = false))
+                repo.upsertRestingHr(RestingHr(dayStart = Fmt.dayStart(now), bpm = bpm, computedAt = now, sleepBpm = sleepBpm))
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {

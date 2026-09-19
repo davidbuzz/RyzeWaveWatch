@@ -123,13 +123,17 @@ data class WorkoutEntity(
     val hrr2: Int? = null,
 )
 
-/** Resting heart rate per calendar day; added in schema version 8 (see [Db.MIGRATION_7_8]). */
+/**
+ * Resting heart rate per calendar day; added in schema version 8 (see [Db.MIGRATION_7_8]). [sleepBpm], the rate
+ * while asleep, came with schema version 9 (see [Db.MIGRATION_8_9]).
+ */
 @Entity(tableName = "resting_hr")
 data class RestingHrEntity(
     @PrimaryKey val dayStart: Long,
     val bpm: Int,
     val computedAt: Long,
     val updatedAt: Long,
+    val sleepBpm: Int? = null,
 )
 
 @Entity(tableName = "track_point", primaryKeys = ["workoutId", "time"], indices = [Index(value = ["time"])])
@@ -211,7 +215,7 @@ fun WorkoutEntity.toModel(): Workout =
 fun Workout.toEntity(updatedAt: Long): WorkoutEntity =
     WorkoutEntity(id, start, end, sportType, distanceMeters, durationSeconds, avgHr, maxHr, calories, updatedAt, steps, phoneSteps, exerciseTypeOverride, hrrPeak, hrr1, hrr2)
 
-fun RestingHrEntity.toModel(): RestingHr = RestingHr(dayStart, bpm, computedAt)
+fun RestingHrEntity.toModel(): RestingHr = RestingHr(dayStart, bpm, computedAt, sleepBpm)
 
 fun TrackPointEntity.toModel(): TrackPoint =
     TrackPoint(workoutId, time, lat, lon, accuracyM, speedMps, altitudeM, accepted, cumulativeM, paused, steps)
@@ -460,7 +464,7 @@ interface HcExportDao {
         HcExportEntity::class,
         BreadcrumbEntity::class,
     ],
-    version = 8,
+    version = 9,
     exportSchema = false,
 )
 abstract class Db : RoomDatabase() {
@@ -541,6 +545,17 @@ abstract class Db : RoomDatabase() {
             }
         }
 
+        /** Schema version 9: the sleeping heart rate beside the daytime resting rate. */
+        val MIGRATION_8_9_SQL: List<String> = listOf(
+            "ALTER TABLE `resting_hr` ADD COLUMN `sleepBpm` INTEGER",
+        )
+
+        val MIGRATION_8_9: Migration = object : Migration(8, 9) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                for (sql in MIGRATION_8_9_SQL) db.execSQL(sql)
+            }
+        }
+
         val MIGRATION_6_7: Migration = object : Migration(6, 7) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 for (sql in MIGRATION_6_7_SQL) db.execSQL(sql)
@@ -577,7 +592,7 @@ abstract class Db : RoomDatabase() {
         fun get(context: Context): Db =
             instance ?: synchronized(this) {
                 instance ?: Room.databaseBuilder(context.applicationContext, Db::class.java, NAME)
-                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8)
+                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9)
                     .build()
                     .also { instance = it }
             }

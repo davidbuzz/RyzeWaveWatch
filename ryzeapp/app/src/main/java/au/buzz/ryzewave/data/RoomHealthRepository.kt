@@ -213,7 +213,7 @@ class RoomHealthRepository(
     override fun latestRestingHr(): Flow<RestingHr?> = db.restingHr().latest().map { it?.toModel() }
     override suspend fun restingHrSince(time: Long): List<RestingHr> = db.restingHr().changedSince(time).map { it.toModel() }
     override suspend fun upsertRestingHr(value: RestingHr) {
-        db.restingHr().upsert(RestingHrEntity(value.dayStart, value.bpm, value.computedAt, clock()))
+        db.restingHr().upsert(RestingHrEntity(value.dayStart, value.bpm, value.computedAt, clock(), value.sleepBpm))
     }
     override fun latestRecovery(): Flow<Workout?> = db.workouts().latestWithRecovery().map { it?.toModel() }
     override suspend fun workoutsWithoutRecovery(): List<Workout> = db.workouts().finishedWithoutRecovery().map { it.toModel() }
@@ -288,6 +288,9 @@ class RoomHealthRepository(
 
     override suspend fun sleepSince(time: Long): List<SleepStage> =
         db.sleep().changedSince(time).map(SleepStageEntity::toModel)
+
+    override suspend fun sleepBetween(from: Long, to: Long): List<SleepStage> =
+        db.sleep().rangeOnce(from, to).map(SleepStageEntity::toModel)
 
     override suspend fun workoutsSince(time: Long): List<Workout> =
         db.workouts().finishedChangedSince(time).map(WorkoutEntity::toModel)

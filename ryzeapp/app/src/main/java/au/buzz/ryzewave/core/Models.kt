@@ -90,9 +90,11 @@ data class Workout(
 /**
  * Resting heart rate for one calendar day: the 10th percentile of the watch's periodic (non-workout) samples over
  * the 24 hours before [computedAt], as [workout.RestingHrBaseline] computes it. One row per day, refreshed at
- * every sync; the last refresh of the day is the day's value.
+ * every sync; the last refresh of the day is the day's value. [bpm] is the daytime resting rate (samples outside
+ * the night's sleep record; the whole day when there is none); [sleepBpm] is the median rate while asleep, null
+ * without a sleep record (schema 9, 2026-09-19). Each is rated by [workout.FitnessBand] against its own column.
  */
-data class RestingHr(val dayStart: Long, val bpm: Int, val computedAt: Long)
+data class RestingHr(val dayStart: Long, val bpm: Int, val computedAt: Long, val sleepBpm: Int? = null)
 
 data class TrackPoint(
     val workoutId: Long,

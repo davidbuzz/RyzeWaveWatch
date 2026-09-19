@@ -1142,11 +1142,28 @@ with the Cleveland Clinic one-minute bands as a label.
 
 Two figures Buzz asked for, computed automatically and shown on the Home screen's Vitals card:
 
-- **Resting heart rate (RHR).** At every sync, `GraphFactory.recordRestingHr` takes the 10th percentile of the
-  watch's periodic (non-workout) samples over the trailing 24 h (`RestingHrBaseline`, clamped 40-90, needs at least
-  6 samples) and stores it for the calendar day (`resting_hr`, schema 8; one row per day, refreshed each sync).
-  Exported as a `RestingHeartRateRecord` stamped at the time it was computed (`rhr-<dayStart>`), under the new
-  optional `WRITE_RESTING_HEART_RATE` permission - like the route, a missing grant never blocks the export.
+- **Resting heart rate (RHR).** At every sync, `GraphFactory.recordRestingHr` splits the trailing 24 h of the
+  watch's periodic (non-workout) samples at the night's sleep record (`RestingHrBaseline`): the **daytime resting
+  rate** is the 10th percentile of the samples outside the night (clamped 40-90, needs at least 6 distinct readings;
+  with no sleep record the whole day counts, which was the original rule), and the **sleeping rate** is the median
+  of the samples taken while actually asleep (awake stages cut out; null without a sleep record). A periodic
+  reading is stored twice, as the watch's live push and again from the synced history, so readings are counted once
+  per timestamp. Both go on the day's row (`resting_hr`, schema 8; `sleepBpm` schema 9; refreshed each sync). The
+  daytime figure is exported as a `RestingHeartRateRecord` stamped at the time it was computed (`rhr-<dayStart>`),
+  under the optional `WRITE_RESTING_HEART_RATE` permission - like the route, a missing grant never blocks the
+  export. Health Connect has no record type for the sleeping rate.
+- **Fitness band.** Each figure is rated by `FitnessBand` against its own column of the table Buzz supplied on
+  2026-09-19 and shown as a label beside it on the Vitals card ("fitness: average"):
+
+  | Level                    | Daytime RHR | Sleeping HR |
+  |--------------------------|-------------|-------------|
+  | Out of shape / sedentary | 75–100 bpm  | 60–80+ bpm  |
+  | Average / healthy        | 60–75 bpm   | 50–60 bpm   |
+  | Fit / active             | 50–60 bpm   | 45–50 bpm   |
+  | Athletic / elite         | 40–50 bpm   | 35–45 bpm   |
+
+  A value on a shared edge belongs to the band it starts (75 by day is sedentary, 60 average, 50 fit); anything
+  above or below the table takes the nearest band. A label, not a diagnosis.
 - **Heart-rate recovery (HRR).** `HeartRateRecovery`: HRR = peak during the effort − rate one and two minutes after
   the last exercise bout (≥ 3 min at exercise pace; a fix gap of 15 s counts as stopped). Stored on the workout row
   (`hrrPeak/hrr1/hrr2`, schema 8) by `GraphFactory.recordRecovery` when a workout finishes, by "Repair heart

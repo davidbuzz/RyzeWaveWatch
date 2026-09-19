@@ -50,6 +50,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import au.buzz.ryzewave.core.ConnectionState
 import au.buzz.ryzewave.core.DailySummary
 import au.buzz.ryzewave.protocol.SportTypes
+import au.buzz.ryzewave.workout.FitnessBand
 import au.buzz.ryzewave.workout.HeartRateRecovery
 import au.buzz.ryzewave.core.Workout
 import au.buzz.ryzewave.core.RestingHr
@@ -266,7 +267,15 @@ private fun VitalsCard(
             }
             Row(horizontalArrangement = Arrangement.spacedBy(24.dp)) {
                 StatText("Resting HR", restingHr?.let { "${it.bpm} bpm" } ?: "–")
+                if (restingHr != null) StatText("fitness", FitnessBand.ofDaytime(restingHr.bpm).label)
                 if (restingHr != null) StatText("as at", "${Fmt.shortDate(restingHr.computedAt)} ${Fmt.time(restingHr.computedAt)}")
+            }
+            val sleepBpm = restingHr?.sleepBpm
+            if (sleepBpm != null) {
+                Row(horizontalArrangement = Arrangement.spacedBy(24.dp)) {
+                    StatText("Sleeping HR", "$sleepBpm bpm")
+                    StatText("fitness", FitnessBand.ofSleeping(sleepBpm).label)
+                }
             }
             Row(horizontalArrangement = Arrangement.spacedBy(24.dp)) {
                 val d1 = recovery?.hrr1
