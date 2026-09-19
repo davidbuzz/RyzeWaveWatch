@@ -22,5 +22,10 @@ over the replaced samples, not recompute the session from HR (that overstated 35
 
 **State:** the 2026-09-19 run on the Pixel is repaired (274 samples, avg 134->140, kcal 355->387, HC re-exported)
 via the app's button plus one safe DB swap for the calorie fix ([[db-surgery-on-phone]] procedure, worked cleanly).
-Pixel runs the build with the calorie-delta fix. Requested next by Buzz: HRR + resting HR as daily/after-exercise
-vitals on the home screen and in Health Connect (HRR into the session notes; RHR as RestingHeartRateRecord).
+Pixel runs the build with the calorie-delta fix. Built the same evening: HRR (hrrPeak/hrr1/hrr2 on the workout row, schema 8, computed at finish + repair + a
+startup backfill) and resting HR (resting_hr per day, 10th percentile of periodic samples over 24 h, refreshed at
+every sync) shown on the Vitals card; HRR in the Health Connect session notes, RHR as RestingHeartRateRecord under
+the new optional WRITE_RESTING_HEART_RATE permission (8 health permissions now; grant it after any pm disable/enable).
+Buzz's HRR definition: peak − rate one minute later (Cleveland Clinic bands: 22+ excellent, 13-21 normal, ≤12 delayed).
+Next on the roadmap: keep the live HR stream running 2 min after Stop so HRR exists when the watch is stopped at the
+last stride.

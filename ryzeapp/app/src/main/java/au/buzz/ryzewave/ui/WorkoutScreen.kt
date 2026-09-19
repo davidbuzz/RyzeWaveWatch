@@ -454,10 +454,10 @@ fun WorkoutDetailScreen(id: Long, onBack: () -> Unit, vm: WorkoutDetailViewModel
                         Spacer(Modifier.height(8.dp))
                         WorkoutChart(detail.hr, detail.pace, detail.kmMarkers, w.start, w.durationSeconds)
                         detail.recovery?.let { r ->
-                            val one = r.drop1min?.let { "$it bpm at 1 min (${HeartRateRecovery.band1min(it)})" } ?: "1 min: not measured"
-                            val two = r.drop2min?.let { "$it bpm at 2 min" } ?: "2 min: not measured"
+                            val one = r.drop1min?.let { "${HeartRateRecovery.dropText(it)} at 1 min (${HeartRateRecovery.band1min(it)})" } ?: "1 min: not measured"
+                            val two = r.drop2min?.let { "${HeartRateRecovery.dropText(it)} at 2 min" } ?: "2 min: not measured"
                             Text(
-                                "Recovery (HRR) from the peak of ${r.peakHr} bpm: down $one, $two",
+                                "Recovery (HRR) from the peak of ${r.peakHr} bpm: $one, $two",
                                 style = MaterialTheme.typography.bodySmall,
                             )
                         }

@@ -152,6 +152,28 @@ class HrEstimatorTest {
     }
 
     @Test
+    fun aShortDipDoesNotEndTheBoutButALongStandstillDoes() {
+        // 20 min running, a 60 s stop (traffic light), 4 more minutes running, then 4 min standing, then a 1-min walk.
+        // The effort ends when the second running block ends, not at the dip and not at the walk.
+        val pts = ArrayList<TrackPoint>(); val hr = ArrayList<HrSample>()
+        var t = 0L
+        fun seg(sec: Int, speed: Float, bpmAt: (Int) -> Int) { repeat(sec) { i -> pts += TrackPoint(1L, t, 0.0, 0.0, 5f, speed, 50.0, true, null, false, null); hr += HrSample(t, bpmAt(i), SampleSource.WORKOUT); t += 1000 } }
+        seg(1200, 2.5f) { 150 }
+        seg(60, 0.0f) { 145 }
+        seg(240, 2.5f) { 155 }
+        val secondBlockEnd = t - 1000
+        seg(240, 0.0f) { i -> (150 - i / 2).coerceAtLeast(95) }     // recovery: down to ~95
+        seg(60, 1.3f) { 100 }                                        // walk to the door
+        val r = HeartRateRecovery.of(pts, hr)!!
+        // the smoothed speed takes ~18 s to fall through the moving threshold after the last stride
+        assertTrue("effort end ${r.effortEnd} is the end of the second running block", r.effortEnd in secondBlockEnd..(secondBlockEnd + 20_000L))
+        assertEquals(155, r.peakHr)
+        // the synthetic recovery falls half a beat per second: about 40 at +60 s, more at +120 s
+        assertTrue("drop at 1 min ${r.drop1min}", r.drop1min!! in 35..50)
+        assertTrue("drop at 2 min ${r.drop2min}", r.drop2min!! > r.drop1min!!)
+    }
+
+    @Test
     fun recoveryIsNullWithoutSamplesAfterTheEffort() {
         val f = load("hr_dropout_run_20260919")
         val r = HeartRateRecovery.of(f.points, f.samples)!!

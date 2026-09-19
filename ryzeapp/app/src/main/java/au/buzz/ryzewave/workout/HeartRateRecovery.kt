@@ -36,34 +36,42 @@ object HeartRateRecovery {
     private const val SPEED_TAU_S = HrEstimator.SPEED_TAU_S
     private const val END_WINDOW_MS = 15_000L
     private const val SUSTAINED_MS = 180_000L
+    /** A dip in movement shorter than this is part of the same bout; a standstill this long ends it. */
+    private const val MERGE_GAP_MS = 120_000L
     private const val PROBE_HALF_MS = 10_000L
 
     fun of(points: List<TrackPoint>, samples: List<HrSample>): Recovery? {
         val fixes = points.filter { !it.paused && it.accepted }.sortedBy { it.time }
         if (fixes.size < 10) return null
-        // The end of the last exercise *bout*: a stretch at exercise pace lasting at least [SUSTAINED_MS]. A brisk
-        // walk to the door a few minutes after the run (2026-09-19: 1.4 m/s for about a minute at 35 min) is not the
-        // effort the heart is recovering from, and neither is a noisy fix while standing about; the last real
-        // segment of a run is minutes long.
+        // The end of the last exercise *bout*. Moving stretches separated by a dip shorter than [MERGE_GAP_MS] are
+        // one bout (a traffic light, a short walk break: 2026-09-18's run had one and the rate kept rising after
+        // the dip), while a standstill of [MERGE_GAP_MS] or more ends it - so the brisk one-minute walk to the door
+        // three and a half minutes after 2026-09-19's run is not the effort, and neither is a noisy fix while
+        // standing about. A bout must last [SUSTAINED_MS] in total to count.
         var sm = 0.0
         var last = fixes.first().time
-        var movingSince = 0L
+        var boutStart = 0L
+        var boutEnd = 0L
+        var lastMovingAt = 0L
         var effortEnd = 0L
         for (f in fixes) {
             val gapS = (f.time - last) / 1000.0
-            // No fixes for a while means the phone was sitting still (Android stops reporting when stationary):
-            // the wearer had stopped, whatever the last fix said.
-            if (gapS * 1000.0 > HrEstimator.NO_FIX_MS) { sm = 0.0; movingSince = 0L }
+            // No fixes for a while means the phone was sitting still (Android stops reporting when stationary).
+            if (gapS * 1000.0 > HrEstimator.NO_FIX_MS) sm = 0.0
             val dt = gapS.coerceIn(0.0, HrEstimator.MAX_FIX_GAP_S)
             sm = if (f === fixes.first()) f.speedMps.toDouble() else sm + (1 - exp(-dt / SPEED_TAU_S)) * (f.speedMps - sm)
             last = f.time
             if (sm >= MOVING_MPS) {
-                if (movingSince == 0L) movingSince = f.time
-                if (f.time - movingSince >= SUSTAINED_MS) effortEnd = f.time
-            } else {
-                movingSince = 0L
+                if (boutStart == 0L || f.time - lastMovingAt >= MERGE_GAP_MS) {
+                    // a new bout: close the previous one first
+                    if (boutStart != 0L && boutEnd - boutStart >= SUSTAINED_MS) effortEnd = boutEnd
+                    boutStart = f.time
+                }
+                boutEnd = f.time
+                lastMovingAt = f.time
             }
         }
+        if (boutStart != 0L && boutEnd - boutStart >= SUSTAINED_MS) effortEnd = boutEnd
         if (effortEnd == 0L) return null
         val hr = samples.filter { it.bpm > 0 }.sortedBy { it.time }
         val atEnd = median(hr.filter { it.time in (effortEnd - END_WINDOW_MS)..effortEnd }.map { it.bpm }) ?: return null
@@ -84,6 +92,9 @@ object HeartRateRecovery {
         drop >= 13 -> "normal"
         else -> "delayed"
     }
+
+    /** "-38 bpm" for a fall; a rise (no recovery, or the effort had not really ended) reads "+3 bpm", never "--3". */
+    fun dropText(drop: Int): String = if (drop >= 0) "-$drop bpm" else "+${-drop} bpm"
 
     private fun median(xs: List<Int>): Int? {
         if (xs.isEmpty()) return null

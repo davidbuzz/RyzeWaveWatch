@@ -55,6 +55,9 @@ import kotlinx.coroutines.launch
 object GraphFactory {
     /** How far past a workout's end the heart-rate stream is read for recovery: the two-minute probe plus slack. */
     private const val RECOVERY_MARGIN_MS = 3 * 60_000L
+    /** Bump when HeartRateRecovery's rule changes, so every stored figure is recomputed once. */
+    private const val RECOVERY_RULE_KIND = "recovery_rule"
+    private const val RECOVERY_RULE_VERSION = 2L
     private const val TAG = "GraphFactory"
 
     /** Process-lifetime scope for the BLE link, the reconnect loop and the post-sync export hook. */
@@ -71,13 +74,17 @@ object GraphFactory {
          * Heart-rate recovery for a finished workout ([HeartRateRecovery]: HRR = peak − rate one/two minutes after
          * the last bout), written onto its row. Returns true when a figure was stored.
          */
-        suspend fun recordRecovery(workoutId: Long): Boolean {
+        suspend fun recordRecovery(workoutId: Long, force: Boolean = false): Boolean {
             val w = repo.workout(workoutId).first() ?: return false
             val end = w.end ?: return false
             val pts = repo.trackPointsOnce(workoutId)
             val hr = repo.hrBetween(w.start, end + RECOVERY_MARGIN_MS).first()
-            val r = HeartRateRecovery.of(pts, hr) ?: return false
-            if (r.drop1min == null && r.drop2min == null) return false
+            val r = HeartRateRecovery.of(pts, hr)
+            if (r == null || (r.drop1min == null && r.drop2min == null)) {
+                // under the new rule this workout has no recovery figure: clear a stale one
+                if (force && (w.hrr1 != null || w.hrr2 != null)) repo.updateWorkout(w.copy(hrrPeak = null, hrr1 = null, hrr2 = null))
+                return false
+            }
             if (w.hrr1 == r.drop1min && w.hrr2 == r.drop2min && w.hrrPeak == r.peakHr) return true
             repo.updateWorkout(w.copy(hrrPeak = r.peakHr, hrr1 = r.drop1min, hrr2 = r.drop2min))
             Log.i(TAG, "workout $workoutId recovery: peak ${r.peakHr}, -${r.drop1min} at 1 min, -${r.drop2min} at 2 min")
@@ -183,13 +190,17 @@ object GraphFactory {
                 }
         }
 
-        // One-off after the upgrade: give every finished workout its recovery figure.
+        // Backfill: every finished workout gets its recovery figure once, and again whenever the rule changes
+        // (RECOVERY_RULE_VERSION, kept in the sync-cursor table so old figures are not left stale).
         scope.launch {
             try {
-                val todo = repo.workoutsWithoutRecovery()
+                val stored = repo.lastSyncTime(RECOVERY_RULE_KIND)
+                val todo = if (stored == RECOVERY_RULE_VERSION) repo.workoutsWithoutRecovery()
+                else repo.workouts().first().filter { it.end != null }
                 var done = 0
-                for (w in todo) if (recordRecovery(w.id)) done++
-                if (todo.isNotEmpty()) Log.i(TAG, "heart-rate recovery backfilled for $done of ${todo.size} workouts")
+                for (w in todo) if (recordRecovery(w.id, force = stored != RECOVERY_RULE_VERSION)) done++
+                if (todo.isNotEmpty()) Log.i(TAG, "heart-rate recovery computed for $done of ${todo.size} workouts (rule $RECOVERY_RULE_VERSION)")
+                repo.setLastSyncTime(RECOVERY_RULE_KIND, RECOVERY_RULE_VERSION)
             } catch (e: Exception) {
                 Log.w(TAG, "recovery backfill failed", e)
             }
