@@ -245,6 +245,17 @@ class RyzeWave:
     async def find_watch(self):
         await self.write(P.enc_find_watch())
 
+    # ---- screen list ("Add widget" cards) ----------------------------------
+    async def screens(self) -> list[P.Screen]:
+        """The watch's supported screens, each flagged enabled/disabled (opcode F9)."""
+        return P.dec_interface(await self.request(P.enc_interface_query(), P.CMD_INTERFACE))
+
+    async def set_screen(self, index: int, on: bool) -> list[P.Screen]:
+        """Switch screen [index] on/off, then re-read the list so the caller sees the result."""
+        cmd = P.enc_interface_show(index) if on else P.enc_interface_hide(index)
+        await self.request(cmd, P.CMD_INTERFACE)
+        return await self.screens()
+
     # ---- history fetches ----------------------------------------------------
     async def fetch_steps(self) -> list[P.StepsRecord]:
         pkts = await self.collect(P.enc_fetch_steps(), P.CMD_STEPS, lambda d: len(d) == 3 and d[1] == P.FETCH_END)

@@ -273,6 +273,81 @@ def enc_sport_update(sport_type: int, duration_s: int, calories: int = 0, distan
     return bytes(out)
 
 
+# --- watch screen list ("Add widget" / the swipeable cards), opcode F9 -------
+# The watch owns two 48-bit bitmaps, read/written over the command channel:
+#  - "supported": which screen indices the firmware can render at all (fixed capability).
+#  - "enabled":   which of those the user currently has switched on.
+# Query is `F9 AA`; the reply carries both bitmaps. `F9 01 <bitmap>` switches a screen on,
+# `F9 02 <bitmap>` switches it off. Indices 0-31 live in the first word pair of the reply,
+# 32-47 in the second (this mirrors WriteCommandToBLE.displayOrHideBraceletInterface and
+# BandInterfaceSetActivity in the vendor app). Enabling a screen only works when its
+# "supported" bit is set; the firmware has no page to show otherwise.
+CMD_INTERFACE = 0xF9
+
+# Index -> name, from the vendor app's R.array.bracelet_interface_text (48 entries).
+# Indices 43-47 are unused placeholders in this build.
+SCREEN_NAMES = [
+    "bp", "heart_rate", "blood_oxygen", "calories", "distance", "weather", "sms", "features",
+    "step_count", "skipping", "swim", "riding", "pingpong", "badminton", "tennis", "run",
+    "gps", "device_information", "find_phone", "donot_disturb", "shut_down", "restore_settings",
+    "ecg", "blood_sugar", "hiking", "basketball", "football", "baseball", "volleyball", "cricket",
+    "rugby", "dancing", "mountaineering", "spinning_bike", "yoga", "sit_ups", "treadmill",
+    "gymnastics", "boating", "jumping_jack", "stopwatch", "body_fat", "hockey",
+    "unused43", "unused44", "unused45", "unused46", "unused47",
+]
+
+
+def screen_name(index: int) -> str:
+    return SCREEN_NAMES[index] if 0 <= index < len(SCREEN_NAMES) else f"screen_{index}"
+
+
+def enc_interface_query() -> bytes:
+    """F9 AA — ask the watch which screens it supports and which are enabled."""
+    return bytes([CMD_INTERFACE, QUERY])
+
+
+def _interface_bitmap(index: int) -> bytearray:
+    """The 18-byte payload region: the target screen's bit sits at byte (index//8)*2+1 within it."""
+    body = bytearray(18)
+    body[(index // 8) * 2 + 1] = 1 << (index % 8)
+    return body
+
+
+def enc_interface_show(index: int) -> bytes:
+    """F9 01 … — switch screen [index] on (only takes effect if the firmware supports it)."""
+    return bytes([CMD_INTERFACE, 0x01]) + bytes(_interface_bitmap(index))
+
+
+def enc_interface_hide(index: int) -> bytes:
+    """F9 02 … — switch screen [index] off. Payload is all-ones with the target bit cleared."""
+    body = bytearray([0xFF]) * 18
+    body[(index // 8) * 2 + 1] &= ~(1 << (index % 8)) & 0xFF
+    return bytes([CMD_INTERFACE, 0x02]) + bytes(body)
+
+
+@dataclass
+class Screen:
+    index: int
+    name: str
+    enabled: bool
+
+
+def dec_interface(data: bytes) -> list["Screen"]:
+    """Decode an `F9 AA` reply into the list of supported screens, each flagged enabled or not.
+    Layout (from BandInterfaceSetActivity): supported bytes at 2,4,6,8 (0-31) and 10,12 (32-47);
+    enabled bytes at 3,5,7,9 and 11,13. A screen is listed only when its supported bit is set."""
+    if len(data) < 14 or data[0] != CMD_INTERFACE:
+        raise ValueError("not an F9 interface reply")
+    b = data
+    supported = (b[2] | (b[4] << 8) | (b[6] << 16) | (b[8] << 24)) | ((b[10] | (b[12] << 8)) << 32)
+    enabled = (b[3] | (b[5] << 8) | (b[7] << 16) | (b[9] << 24)) | ((b[11] | (b[13] << 8)) << 32)
+    out: list[Screen] = []
+    for i in range(48):
+        if supported & (1 << i):
+            out.append(Screen(i, screen_name(i), bool(enabled & (1 << i))))
+    return out
+
+
 # --- decoders --------------------------------------------------------------
 @dataclass
 class StepsRecord:
@@ -429,4 +504,5 @@ OPNAME = {
     CMD_PASSWORD: "PASSWORD", CMD_RT_HR: "RT_HR", CMD_HR24: "HR24", CMD_HR_SINGLE: "HR", CMD_SPORT: "SPORT",
     CMD_SLEEP_INFO: "SLEEP_INFO", CMD_SLEEP_STAGES: "SLEEP_STAGES", CMD_SPO2: "SPO2", CMD_GOALS: "GOALS",
     CMD_ACTION: "ACTION", CMD_CAMERA: "CAMERA", CMD_CALL_STATUS: "CALL", CMD_NOTIFICATION: "NOTIFY",
+    CMD_INTERFACE: "INTERFACE",
 }
