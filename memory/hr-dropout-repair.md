@@ -27,5 +27,9 @@ startup backfill) and resting HR (resting_hr per day, 10th percentile of periodi
 every sync) shown on the Vitals card; HRR in the Health Connect session notes, RHR as RestingHeartRateRecord under
 the new optional WRITE_RESTING_HEART_RATE permission (8 health permissions now; grant it after any pm disable/enable).
 Buzz's HRR definition: peak − rate one minute later (Cleveland Clinic bands: 22+ excellent, 13-21 normal, ≤12 delayed).
+The effort bout merges moving stretches separated by under 2 min of standstill (a traffic light is not the end of the
+run; the 2026-09-18 run printed "+3" before this). Changing the rule: bump `RECOVERY_RULE_VERSION` in GraphFactory
+and every stored figure is recomputed once at startup (the version lives in the sync-cursor table); changed
+sessions then re-export to Health Connect by themselves because the notes fingerprint changes.
 Next on the roadmap: keep the live HR stream running 2 min after Stop so HRR exists when the watch is stopped at the
 last stride.
