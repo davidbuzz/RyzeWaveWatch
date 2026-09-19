@@ -92,15 +92,16 @@ for p in BLUETOOTH_CONNECT BLUETOOTH_SCAN ACCESS_FINE_LOCATION ACCESS_COARSE_LOC
          ACCESS_BACKGROUND_LOCATION POST_NOTIFICATIONS ACTIVITY_RECOGNITION; do
   adb shell pm grant $PKG android.permission.$p
 done
-for p in STEPS HEART_RATE OXYGEN_SATURATION DISTANCE SLEEP EXERCISE EXERCISE_ROUTE; do
+for p in STEPS HEART_RATE OXYGEN_SATURATION DISTANCE SLEEP EXERCISE EXERCISE_ROUTE RESTING_HEART_RATE; do
   adb shell pm grant $PKG android.permission.health.WRITE_$p
 done
 ```
 
 The `android.permission.health.*` ones are platform permissions on Android 14+, so `pm grant` works for Health
 Connect (verified on Android 15 and 16). The app only ever writes, so there is no `READ_` permission to grant:
-those seven `WRITE_` are exactly what the manifest declares. `WRITE_EXERCISE_ROUTE` carries the workout's GPS
-track.
+those eight `WRITE_` are exactly what the manifest declares. `WRITE_EXERCISE_ROUTE` carries the workout's GPS
+track and `WRITE_RESTING_HEART_RATE` the daily resting rate; both are optional, so a missing grant never blocks
+the rest of the export.
 
 `tools/app_smoke.sh` does build, install, the grants, launch, wait, logcat and a screenshot in one go, into
 `captures/app_smoke_<timestamp>/`. It grants everything above except `ACCESS_BACKGROUND_LOCATION`, which the

@@ -13,6 +13,10 @@ import au.buzz.ryzewave.data.Db
 import au.buzz.ryzewave.data.RoomHealthRepository
 import au.buzz.ryzewave.findphone.AndroidFindPhoneAlerter
 import au.buzz.ryzewave.findphone.FindPhoneRinger
+import au.buzz.ryzewave.workout.HeartRateRecovery
+import au.buzz.ryzewave.core.RestingHr
+import au.buzz.ryzewave.ui.Fmt
+import kotlinx.coroutines.CancellationException
 import au.buzz.ryzewave.health.HealthConnectExporter
 import au.buzz.ryzewave.notify.NotificationForwarder
 import au.buzz.ryzewave.core.SampleSource
@@ -49,6 +53,8 @@ import kotlinx.coroutines.launch
  * Must not touch `App.graph` (it is being assigned from the return value of [create]).
  */
 object GraphFactory {
+    /** How far past a workout's end the heart-rate stream is read for recovery: the two-minute probe plus slack. */
+    private const val RECOVERY_MARGIN_MS = 3 * 60_000L
     private const val TAG = "GraphFactory"
 
     /** Process-lifetime scope for the BLE link, the reconnect loop and the post-sync export hook. */
@@ -60,6 +66,42 @@ object GraphFactory {
         val repo = RoomHealthRepository(Db.get(app), stride, settings)
         val watch = createWatchApi(app, repo, settings, scope)
         val health = HealthConnectExporter(app, repo, settings, stride)
+
+        /**
+         * Heart-rate recovery for a finished workout ([HeartRateRecovery]: HRR = peak − rate one/two minutes after
+         * the last bout), written onto its row. Returns true when a figure was stored.
+         */
+        suspend fun recordRecovery(workoutId: Long): Boolean {
+            val w = repo.workout(workoutId).first() ?: return false
+            val end = w.end ?: return false
+            val pts = repo.trackPointsOnce(workoutId)
+            val hr = repo.hrBetween(w.start, end + RECOVERY_MARGIN_MS).first()
+            val r = HeartRateRecovery.of(pts, hr) ?: return false
+            if (r.drop1min == null && r.drop2min == null) return false
+            if (w.hrr1 == r.drop1min && w.hrr2 == r.drop2min && w.hrrPeak == r.peakHr) return true
+            repo.updateWorkout(w.copy(hrrPeak = r.peakHr, hrr1 = r.drop1min, hrr2 = r.drop2min))
+            Log.i(TAG, "workout $workoutId recovery: peak ${r.peakHr}, -${r.drop1min} at 1 min, -${r.drop2min} at 2 min")
+            return true
+        }
+
+        /**
+         * Resting heart rate for today: the 10th percentile of the periodic samples over the last 24 hours
+         * ([RestingHrBaseline]), stored per calendar day and refreshed at every sync.
+         */
+        suspend fun recordRestingHr() {
+            try {
+                val now = System.currentTimeMillis()
+                val samples = repo.hrSince(now - RestingHrBaseline.LOOKBACK_MS).filter { it.time <= now }
+                val periodic = samples.filter { it.source == SampleSource.AUTO || it.source == SampleSource.HISTORY }
+                if (periodic.size < RestingHrBaseline.MIN_SAMPLES) return
+                val bpm = RestingHrBaseline.of(samples)
+                repo.upsertRestingHr(RestingHr(dayStart = Fmt.dayStart(now), bpm = bpm, computedAt = now))
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Log.w(TAG, "resting heart rate not recorded", e)
+            }
+        }
 
         /** Health Connect: export what is new (steps / HR / SpO2 / sleep / workouts) when the user has enabled it. */
         suspend fun exportNew(reason: String) {
@@ -117,7 +159,12 @@ object GraphFactory {
             settings = settings,
             scope = WorkoutSession.scope,
             onError = { message, cause -> Log.w(TAG, message, cause) },
-            onFinished = { workout -> scope.launch { exportNew("workout ${workout.id}") } },
+            onFinished = { workout ->
+                scope.launch {
+                    recordRecovery(workout.id)
+                    exportNew("workout ${workout.id}")
+                }
+            },
             onWatchStartRequested = ::onWatchStart,
         )
         WorkoutSession.install(controller)
@@ -131,8 +178,21 @@ object GraphFactory {
                 .distinctUntilChanged()
                 .collect {
                     if (watch.status.value.state == ConnectionState.SYNCING) return@collect
+                    recordRestingHr()
                     exportNew("sync")
                 }
+        }
+
+        // One-off after the upgrade: give every finished workout its recovery figure.
+        scope.launch {
+            try {
+                val todo = repo.workoutsWithoutRecovery()
+                var done = 0
+                for (w in todo) if (recordRecovery(w.id)) done++
+                if (todo.isNotEmpty()) Log.i(TAG, "heart-rate recovery backfilled for $done of ${todo.size} workouts")
+            } catch (e: Exception) {
+                Log.w(TAG, "recovery backfill failed", e)
+            }
         }
 
         // Health Connect: the daily DistanceRecords are steps × stride, so a change of the *effective* stride

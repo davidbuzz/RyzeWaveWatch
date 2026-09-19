@@ -10,7 +10,9 @@ What it does today: connects and syncs steps, heart rate, SpO2 and sleep; starts
 either the phone or the watch, with spoken cues; streams live heart rate while you run; records the GPS track on
 the phone and reports distance and pace from it, falling back to a step-and-stride estimate when GPS is lost;
 recognises all 70 of the watch's sport types; forwards phone notifications to the watch; rings the phone from the
-watch; and exports everything to Health Connect.
+watch; estimates your heart rate from the effort and says so when the watch's optical sensor has lost your wrist;
+measures your heart-rate recovery after every workout and your resting heart rate every day; and exports
+everything to Health Connect.
 
 | The watch | Live workout | GPS track and summary | Heart rate and SpO2 | Dashboard |
 |---|---|---|---|---|

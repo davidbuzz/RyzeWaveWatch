@@ -49,6 +49,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import au.buzz.ryzewave.core.ConnectionState
 import au.buzz.ryzewave.core.DailySummary
+import au.buzz.ryzewave.protocol.SportTypes
+import au.buzz.ryzewave.workout.HeartRateRecovery
+import au.buzz.ryzewave.core.Workout
+import au.buzz.ryzewave.core.RestingHr
 import au.buzz.ryzewave.core.HrSample
 import au.buzz.ryzewave.core.SleepStage
 import au.buzz.ryzewave.core.WatchStatus
@@ -62,6 +66,8 @@ fun DashboardScreen(vm: DashboardViewModel = viewModel()) {
     val profile by vm.profile.collectAsStateWithLifecycle()
     val busy by vm.busy.collectAsStateWithLifecycle()
     val liveHr by vm.liveHr.collectAsStateWithLifecycle()
+    val restingHr by vm.restingHr.collectAsStateWithLifecycle()
+    val recovery by vm.recovery.collectAsStateWithLifecycle()
     val measuring by vm.measuring.collectAsStateWithLifecycle()
     val message by vm.message.collectAsStateWithLifecycle()
     val snackbar = remember { SnackbarHostState() }
@@ -99,7 +105,8 @@ fun DashboardScreen(vm: DashboardViewModel = viewModel()) {
             ConnectionCard(status, busy, now, onConnect, vm::disconnect, vm::sync)
             StepsCard(today, profile.stepGoal)
             VitalsCard(
-                today = today, liveHr = liveHr, measuring = measuring, busy = busy, now = now,
+                today = today, liveHr = liveHr, restingHr = restingHr, recovery = recovery,
+                measuring = measuring, busy = busy, now = now,
                 connected = status.isConnected(), onMeasureHr = vm::measureHr, onSpo2 = vm::spo2Test,
             )
             SleepCard(sleep)
@@ -225,6 +232,8 @@ fun GoalRing(steps: Int, goal: Int, modifier: Modifier = Modifier) {
 private fun VitalsCard(
     today: DailySummary?,
     liveHr: HrSample?,
+    restingHr: RestingHr?,
+    recovery: Workout?,
     measuring: Boolean,
     busy: Boolean,
     now: Long,
@@ -254,6 +263,22 @@ private fun VitalsCard(
                 val spo2 = today?.lastSpo2
                 StatText("Blood oxygen", spo2?.let { "${it.percent} %" } ?: "–")
                 if (spo2 != null) StatText("at", Fmt.time(spo2.time))
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(24.dp)) {
+                StatText("Resting HR", restingHr?.let { "${it.bpm} bpm" } ?: "–")
+                if (restingHr != null) StatText("as at", "${Fmt.shortDate(restingHr.computedAt)} ${Fmt.time(restingHr.computedAt)}")
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(24.dp)) {
+                val d1 = recovery?.hrr1
+                StatText("Recovery (HRR)", d1?.let { "-$it bpm at 1 min" } ?: "–")
+                if (d1 != null) StatText(HeartRateRecovery.band1min(d1), recovery?.hrr2?.let { "-$it at 2 min" } ?: "")
+            }
+            if (recovery != null) {
+                Text(
+                    "From ${Fmt.shortDate(recovery.start)}'s ${SportTypes.name(recovery.sportType)}: peak ${recovery.hrrPeak ?: recovery.maxHr ?: "?"} bpm",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
             }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 OutlinedButton(onClick = onMeasureHr, enabled = connected && !measuring) {

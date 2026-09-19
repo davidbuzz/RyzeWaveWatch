@@ -16,6 +16,7 @@ import androidx.room.Upsert
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import au.buzz.ryzewave.core.HrSample
+import au.buzz.ryzewave.core.RestingHr
 import au.buzz.ryzewave.core.SampleSource
 import au.buzz.ryzewave.core.SleepStage
 import au.buzz.ryzewave.core.Spo2Sample
@@ -116,6 +117,19 @@ data class WorkoutEntity(
     val phoneSteps: Int? = null,
     /** User-chosen Health Connect exercise type override; added in schema version 4. Null = use the heuristic. */
     val exerciseTypeOverride: Int? = null,
+    /** Heart-rate recovery (peak, 1-min drop, 2-min drop); added in schema version 8 (see [Db.MIGRATION_7_8]). */
+    val hrrPeak: Int? = null,
+    val hrr1: Int? = null,
+    val hrr2: Int? = null,
+)
+
+/** Resting heart rate per calendar day; added in schema version 8 (see [Db.MIGRATION_7_8]). */
+@Entity(tableName = "resting_hr")
+data class RestingHrEntity(
+    @PrimaryKey val dayStart: Long,
+    val bpm: Int,
+    val computedAt: Long,
+    val updatedAt: Long,
 )
 
 @Entity(tableName = "track_point", primaryKeys = ["workoutId", "time"], indices = [Index(value = ["time"])])
@@ -192,10 +206,12 @@ fun SleepStageEntity.toModel(): SleepStage = SleepStage(start, stage, minutes)
 fun SleepStage.toEntity(updatedAt: Long): SleepStageEntity = SleepStageEntity(start, stage, minutes, updatedAt)
 
 fun WorkoutEntity.toModel(): Workout =
-    Workout(id, start, endTime, sportType, distanceMeters, durationSeconds, avgHr, maxHr, calories, steps, phoneSteps, exerciseTypeOverride)
+    Workout(id, start, endTime, sportType, distanceMeters, durationSeconds, avgHr, maxHr, calories, steps, phoneSteps, exerciseTypeOverride, hrrPeak, hrr1, hrr2)
 
 fun Workout.toEntity(updatedAt: Long): WorkoutEntity =
-    WorkoutEntity(id, start, end, sportType, distanceMeters, durationSeconds, avgHr, maxHr, calories, updatedAt, steps, phoneSteps, exerciseTypeOverride)
+    WorkoutEntity(id, start, end, sportType, distanceMeters, durationSeconds, avgHr, maxHr, calories, updatedAt, steps, phoneSteps, exerciseTypeOverride, hrrPeak, hrr1, hrr2)
+
+fun RestingHrEntity.toModel(): RestingHr = RestingHr(dayStart, bpm, computedAt)
 
 fun TrackPointEntity.toModel(): TrackPoint =
     TrackPoint(workoutId, time, lat, lon, accuracyM, speedMps, altitudeM, accepted, cumulativeM, paused, steps)
@@ -336,6 +352,14 @@ interface WorkoutDao {
     @Query("SELECT * FROM workout WHERE updatedAt >= :time AND endTime IS NOT NULL ORDER BY start")
     suspend fun finishedChangedSince(time: Long): List<WorkoutEntity>
 
+    /** The most recent finished workout that has a heart-rate recovery figure. */
+    @Query("SELECT * FROM workout WHERE hrr1 IS NOT NULL AND endTime IS NOT NULL ORDER BY start DESC LIMIT 1")
+    fun latestWithRecovery(): Flow<WorkoutEntity?>
+
+    /** Finished workouts with no recovery figure yet (for the one-off backfill). */
+    @Query("SELECT * FROM workout WHERE hrr1 IS NULL AND endTime IS NOT NULL ORDER BY start")
+    suspend fun finishedWithoutRecovery(): List<WorkoutEntity>
+
     /** Rows with no end whose last write is older than [before]: crashed or lost-race sessions to repair. */
     @Query("SELECT * FROM workout WHERE endTime IS NULL AND updatedAt < :before ORDER BY start")
     suspend fun unfinishedBefore(before: Long): List<WorkoutEntity>
@@ -385,6 +409,18 @@ interface BreadcrumbDao {
 }
 
 @Dao
+interface RestingHrDao {
+    @Upsert
+    suspend fun upsert(row: RestingHrEntity)
+
+    @Query("SELECT * FROM resting_hr ORDER BY dayStart DESC LIMIT 1")
+    fun latest(): Flow<RestingHrEntity?>
+
+    @Query("SELECT * FROM resting_hr WHERE updatedAt >= :time ORDER BY dayStart")
+    suspend fun changedSince(time: Long): List<RestingHrEntity>
+}
+
+@Dao
 interface SyncCursorDao {
     @Upsert
     suspend fun upsert(row: SyncCursorEntity)
@@ -415,6 +451,7 @@ interface HcExportDao {
     entities = [
         StepsHourEntity::class,
         HrSampleEntity::class,
+        RestingHrEntity::class,
         Spo2SampleEntity::class,
         SleepStageEntity::class,
         WorkoutEntity::class,
@@ -423,12 +460,13 @@ interface HcExportDao {
         HcExportEntity::class,
         BreadcrumbEntity::class,
     ],
-    version = 7,
+    version = 8,
     exportSchema = false,
 )
 abstract class Db : RoomDatabase() {
     abstract fun steps(): StepsDao
     abstract fun hr(): HrDao
+    abstract fun restingHr(): RestingHrDao
     abstract fun spo2(): Spo2Dao
     abstract fun sleep(): SleepDao
     abstract fun workouts(): WorkoutDao
@@ -488,6 +526,21 @@ abstract class Db : RoomDatabase() {
             "ALTER TABLE `hr_sample` ADD COLUMN `measured` INTEGER",
         )
 
+        /** Schema version 8: heart-rate recovery on the workout row, and the resting heart rate per day. */
+        val MIGRATION_7_8_SQL: List<String> = listOf(
+            "ALTER TABLE `workout` ADD COLUMN `hrrPeak` INTEGER",
+            "ALTER TABLE `workout` ADD COLUMN `hrr1` INTEGER",
+            "ALTER TABLE `workout` ADD COLUMN `hrr2` INTEGER",
+            "CREATE TABLE IF NOT EXISTS `resting_hr` (`dayStart` INTEGER NOT NULL, `bpm` INTEGER NOT NULL, " +
+                "`computedAt` INTEGER NOT NULL, `updatedAt` INTEGER NOT NULL, PRIMARY KEY(`dayStart`))",
+        )
+
+        val MIGRATION_7_8: Migration = object : Migration(7, 8) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                for (sql in MIGRATION_7_8_SQL) db.execSQL(sql)
+            }
+        }
+
         val MIGRATION_6_7: Migration = object : Migration(6, 7) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 for (sql in MIGRATION_6_7_SQL) db.execSQL(sql)
@@ -524,7 +577,7 @@ abstract class Db : RoomDatabase() {
         fun get(context: Context): Db =
             instance ?: synchronized(this) {
                 instance ?: Room.databaseBuilder(context.applicationContext, Db::class.java, NAME)
-                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7)
+                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8)
                     .build()
                     .also { instance = it }
             }

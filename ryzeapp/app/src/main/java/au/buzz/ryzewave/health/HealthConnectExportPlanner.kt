@@ -1,6 +1,7 @@
 package au.buzz.ryzewave.health
 
 import androidx.health.connect.client.records.DistanceRecord
+import androidx.health.connect.client.records.RestingHeartRateRecord
 import androidx.health.connect.client.records.ExerciseSessionRecord
 import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.OxygenSaturationRecord
@@ -27,11 +28,12 @@ data class ExportCounts(
     val spo2: Int = 0,
     val distance: Int = 0,
     val sleep: Int = 0,
+    val restingHr: Int = 0,
     val workouts: Int = 0,
     /** GPS locations attached to the exercise sessions as routes (inside the workout records, not extra records). */
     val routePoints: Int = 0,
 ) {
-    val total: Int get() = steps + heartRate + spo2 + distance + sleep + workouts
+    val total: Int get() = steps + heartRate + spo2 + distance + sleep + workouts + restingHr
     val isEmpty: Boolean get() = total == 0
 }
 
@@ -115,7 +117,7 @@ class HealthConnectExportPlanner(
      * session as an `ExerciseRoute` (needs `WRITE_EXERCISE_ROUTE`; the exporter passes false when that permission
      * is not granted).
      */
-    suspend fun plan(cursor: Long, withRoutes: Boolean = true): Plan {
+    suspend fun plan(cursor: Long, withRoutes: Boolean = true, withRestingHr: Boolean = true): Plan {
         val now = clock()                                  // taken before the queries: the next cursor
         val zone = zone()
         val from = if (cursor <= 0L) 0L else max(0L, cursor - lookbackMs)
@@ -150,6 +152,10 @@ class HealthConnectExportPlanner(
         val dayDistance = HealthConnectMapping.dailyDistanceRecords(hours, profile, strideSettings, stride, now, zone)
         val workoutDistance = HealthConnectMapping.workoutDistanceRecords(workouts, now, zone)
         val sleepRecords = HealthConnectMapping.sleepSessionRecords(sleep, now, zone)
+        // Resting heart rate: one record per day, refreshed at every sync; only when the permission is granted.
+        val restingRecords = if (withRestingHr) {
+            HealthConnectMapping.restingHrRecords(repo.restingHrSince(if (from == 0L) 0L else from - lookbackMs), now, zone)
+        } else emptyList()
 
         // Sessions: compare the route-less content and the route state with the companion entries first; only a
         // workout that fails that test gets its track read and its full record built (see the class comment).
@@ -195,6 +201,7 @@ class HealthConnectExportPlanner(
         candidates += dayDistance
         candidates += workoutDistance
         candidates += sleepRecords
+        candidates += restingRecords
         candidates += exerciseRecords
 
         // Ledger: drop every candidate whose content is what Health Connect already holds under its id.
@@ -231,6 +238,7 @@ class HealthConnectExportPlanner(
             spo2 = records.count { it is OxygenSaturationRecord },
             distance = records.count { it is DistanceRecord },
             sleep = records.count { it is SleepSessionRecord },
+            restingHr = records.count { it is RestingHeartRateRecord },
             workouts = records.count { it is ExerciseSessionRecord },
             routePoints = routes.values.sum(),
         )

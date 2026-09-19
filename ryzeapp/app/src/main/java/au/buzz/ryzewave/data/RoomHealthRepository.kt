@@ -6,6 +6,7 @@ import au.buzz.ryzewave.core.Breadcrumb
 import au.buzz.ryzewave.core.DailySummary
 import au.buzz.ryzewave.core.HealthRepository
 import au.buzz.ryzewave.core.HrSample
+import au.buzz.ryzewave.core.RestingHr
 import au.buzz.ryzewave.core.SettingsStore
 import au.buzz.ryzewave.core.SleepStage
 import au.buzz.ryzewave.core.Spo2Sample
@@ -208,6 +209,14 @@ class RoomHealthRepository(
             )
         }.distinctUntilChanged()
     }
+
+    override fun latestRestingHr(): Flow<RestingHr?> = db.restingHr().latest().map { it?.toModel() }
+    override suspend fun restingHrSince(time: Long): List<RestingHr> = db.restingHr().changedSince(time).map { it.toModel() }
+    override suspend fun upsertRestingHr(value: RestingHr) {
+        db.restingHr().upsert(RestingHrEntity(value.dayStart, value.bpm, value.computedAt, clock()))
+    }
+    override fun latestRecovery(): Flow<Workout?> = db.workouts().latestWithRecovery().map { it?.toModel() }
+    override suspend fun workoutsWithoutRecovery(): List<Workout> = db.workouts().finishedWithoutRecovery().map { it.toModel() }
 
     override fun stepsForDay(dayStart: Long): Flow<List<StepsHour>> =
         db.steps().between(dayStart, Days.dayEnd(dayStart, zone()))

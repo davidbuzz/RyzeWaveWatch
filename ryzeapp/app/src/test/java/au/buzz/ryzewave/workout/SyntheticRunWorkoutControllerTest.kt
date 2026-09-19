@@ -86,8 +86,10 @@ class SyntheticRunWorkoutControllerTest {
         feed(ctl, fixes)
         // let the clock reach exactly 20:00 and a final tick run
         now = SyntheticRun.T0 + 1200_000L
-        val before = watch.updates.size
-        awaitUntil("final tick") { watch.updates.size > before }
+        // Wait for the push that carries 20:00 itself: a tick already in flight when the clock moved can land a
+        // 19:59 push first, which used to satisfy "any new push" and fail the duration check below (a race, not
+        // a controller fault - seen 2026-09-19 once the tick gained a little more work).
+        awaitUntil("final tick at 1200 s") { watch.updates.any { encode(it).duration == 1200 } }
         val final = ctl.stop()
         assertNotNull(final)
         final!!
@@ -158,8 +160,10 @@ class SyntheticRunWorkoutControllerTest {
         assertTrue(gapPushes.filter { it.duration <= 15 + 600 }.any { it.paceSecPerKm > 0 })
         feed(ctl, fixes.filter { it.time >= SyntheticRun.T0 + 630_000L })
         now = SyntheticRun.T0 + 1200_000L
-        val before = watch.updates.size
-        awaitUntil("final tick") { watch.updates.size > before }
+        // Wait for the push that carries 20:00 itself: a tick already in flight when the clock moved can land a
+        // 19:59 push first, which used to satisfy "any new push" and fail the duration check below (a race, not
+        // a controller fault - seen 2026-09-19 once the tick gained a little more work).
+        awaitUntil("final tick at 1200 s") { watch.updates.any { encode(it).duration == 1200 } }
         val final = ctl.stop()!!
         println("SYNTHETIC_CTL_GAP final: distance=%.1f accepted=${tracker.acceptedCount} spikes=${tracker.rejectedSpikeCount} row=$final".format(final.distanceMeters))
         assertEquals(0, tracker.rejectedSpikeCount)
@@ -182,8 +186,10 @@ class SyntheticRunWorkoutControllerTest {
         ctl.start(1)
         feed(ctl, SyntheticRun.fixes(accuracyM = 25f, dopplerSpeedMps = 3.0f), tickEvery = 50)
         now = SyntheticRun.T0 + 1200_000L
-        val before = watch.updates.size
-        awaitUntil("final tick") { watch.updates.size > before }
+        // Wait for the push that carries 20:00 itself: a tick already in flight when the clock moved can land a
+        // 19:59 push first, which used to satisfy "any new push" and fail the duration check below (a race, not
+        // a controller fault - seen 2026-09-19 once the tick gained a little more work).
+        awaitUntil("final tick at 1200 s") { watch.updates.any { encode(it).duration == 1200 } }
         val final = ctl.stop()!!
         val last = encode(watch.updates.last())
         println("SYNTHETIC_CTL_25M last push=$last row=$final state.trackPoints=${ctl.state.value.trackPointCount} accepted=${ctl.state.value.acceptedPointCount}")
@@ -205,8 +211,10 @@ class SyntheticRunWorkoutControllerTest {
         ctl.start(1)
         feed(ctl, SyntheticRun.fixes(accuracyM = 80f, dopplerSpeedMps = 3.0f), tickEvery = 50)
         now = SyntheticRun.T0 + 1200_000L
-        val before = watch.updates.size
-        awaitUntil("final tick") { watch.updates.size > before }
+        // Wait for the push that carries 20:00 itself: a tick already in flight when the clock moved can land a
+        // 19:59 push first, which used to satisfy "any new push" and fail the duration check below (a race, not
+        // a controller fault - seen 2026-09-19 once the tick gained a little more work).
+        awaitUntil("final tick at 1200 s") { watch.updates.any { encode(it).duration == 1200 } }
         val final = ctl.stop()!!
         val last = encode(watch.updates.last())
         println("SYNTHETIC_CTL_80M last push=$last row=$final accepted=${ctl.state.value.acceptedPointCount}")

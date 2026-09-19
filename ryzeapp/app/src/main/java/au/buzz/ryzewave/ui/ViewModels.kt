@@ -33,6 +33,7 @@ import au.buzz.ryzewave.workout.HeartRateRecovery
 import au.buzz.ryzewave.workout.HrEstimator
 import au.buzz.ryzewave.workout.RestingHrBaseline
 import au.buzz.ryzewave.workout.WorkoutController
+import au.buzz.ryzewave.core.RestingHr
 import au.buzz.ryzewave.core.SampleSource
 import au.buzz.ryzewave.workout.StrideCalibration
 import kotlin.math.roundToInt
@@ -112,6 +113,10 @@ class DashboardViewModel(private val graph: Graph = App.graph) : RyzeViewModel()
         dayStart.flatMapLatest { graph.repo.dailySummary(it) }.stateIn(viewModelScope, started(), null)
     val sleep: StateFlow<List<SleepStage>> =
         dayStart.flatMapLatest { graph.repo.sleepForNight(it) }.stateIn(viewModelScope, started(), emptyList())
+
+    /** Latest resting heart rate (one per day) and the latest workout with a recovery figure, for the Vitals card. */
+    val restingHr: StateFlow<RestingHr?> = graph.repo.latestRestingHr().stateIn(viewModelScope, started(), null)
+    val recovery: StateFlow<Workout?> = graph.repo.latestRecovery().stateIn(viewModelScope, started(), null)
 
     private val _liveHr = MutableStateFlow<HrSample?>(null)
     /** Last live HR sample while a measurement / workout streams; null otherwise. */
@@ -404,7 +409,13 @@ class WorkoutDetailViewModel(private val graph: Graph = App.graph) : RyzeViewMod
         val kcal = w.calories + delta
         val avg = corrected.map { it.bpm }.average().toInt()
         val mx = corrected.maxOf { it.bpm }
-        graph.repo.updateWorkout(w.copy(avgHr = avg, maxHr = mx, calories = kcal.roundToInt()))
+        val rec = HeartRateRecovery.of(pts, corrected)
+        graph.repo.updateWorkout(
+            w.copy(
+                avgHr = avg, maxHr = mx, calories = kcal.roundToInt(),
+                hrrPeak = rec?.peakHr ?: w.hrrPeak, hrr1 = rec?.drop1min ?: w.hrr1, hrr2 = rec?.drop2min ?: w.hrr2,
+            )
+        )
         val lo = changed.minOf { it.time }; val hi = changed.maxOf { it.time }
         val summary = "Repaired ${changed.size} readings (${Fmt.time(lo)}-${Fmt.time(hi)}), watch ${changed.map { it.measured!! }.average().toInt()} -> about ${changed.map { it.bpm }.average().toInt()} bpm; " +
             "average now $avg, max $mx, ${kcal.roundToInt()} kcal (${if (delta >= 0) "+" else ""}${delta.roundToInt()})"

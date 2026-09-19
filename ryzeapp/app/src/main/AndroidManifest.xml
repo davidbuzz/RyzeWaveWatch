@@ -30,6 +30,8 @@
     <uses-permission android:name="android.permission.health.WRITE_EXERCISE" />
     <!-- the GPS track of a workout, attached to its ExerciseSessionRecord as an ExerciseRoute -->
     <uses-permission android:name="android.permission.health.WRITE_EXERCISE_ROUTE" />
+    <!-- resting heart rate per day; optional like the route: exported when granted, never a reason to block -->
+    <uses-permission android:name="android.permission.health.WRITE_RESTING_HEART_RATE" />
     <!-- The app only writes to Health Connect; no READ_* permissions are requested. Keep this list in sync with
          HealthConnectExporter.RECORD_TYPES + ROUTE_PERMISSION. -->
 

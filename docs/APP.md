@@ -1137,3 +1137,24 @@ are the recovery data. Replayed over the nine runs it flags only the 2026-09-19 
 recomputes average/max/calories and re-exports. `workout/HeartRateRecovery` reports HRR = peak − rate one/two
 minutes after the last exercise bout (a bout is ≥ 3 min at exercise pace; a fix gap of 15 s counts as stopped),
 with the Cleveland Clinic one-minute bands as a label.
+
+## Daily vitals: resting heart rate and heart-rate recovery (2026-09-19)
+
+Two figures Buzz asked for, computed automatically and shown on the Home screen's Vitals card:
+
+- **Resting heart rate (RHR).** At every sync, `GraphFactory.recordRestingHr` takes the 10th percentile of the
+  watch's periodic (non-workout) samples over the trailing 24 h (`RestingHrBaseline`, clamped 40-90, needs at least
+  6 samples) and stores it for the calendar day (`resting_hr`, schema 8; one row per day, refreshed each sync).
+  Exported as a `RestingHeartRateRecord` stamped at the time it was computed (`rhr-<dayStart>`), under the new
+  optional `WRITE_RESTING_HEART_RATE` permission - like the route, a missing grant never blocks the export.
+- **Heart-rate recovery (HRR).** `HeartRateRecovery`: HRR = peak during the effort − rate one and two minutes after
+  the last exercise bout (≥ 3 min at exercise pace; a fix gap of 15 s counts as stopped). Stored on the workout row
+  (`hrrPeak/hrr1/hrr2`, schema 8) by `GraphFactory.recordRecovery` when a workout finishes, by "Repair heart
+  rate", and once by a startup backfill for older workouts. Health Connect has no record type for it, so it goes
+  into the session notes ("HRR 38/52 bpm from peak 173"), which re-sends each affected session once. The Vitals
+  card shows the latest, with the Cleveland Clinic one-minute band as a label (22+ excellent, 13-21 normal, ≤ 12
+  delayed) - a label, not a diagnosis.
+
+HRR needs the heart-rate stream to keep coming for two minutes after the last stride; when the watch is stopped
+sooner the two-minute figure (or both) is null and the card says so. Keeping the live stream running for two
+minutes after Stop is the obvious next step and is on the roadmap.

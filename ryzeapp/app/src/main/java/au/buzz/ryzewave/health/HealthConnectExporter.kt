@@ -11,6 +11,7 @@ import androidx.health.connect.client.records.DistanceRecord
 import androidx.health.connect.client.records.ExerciseSessionRecord
 import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.OxygenSaturationRecord
+import androidx.health.connect.client.records.RestingHeartRateRecord
 import androidx.health.connect.client.records.Record
 import androidx.health.connect.client.records.SleepSessionRecord
 import androidx.health.connect.client.records.StepsRecord
@@ -249,6 +250,7 @@ class HealthConnectExporter internal constructor(
             return ExportResult(ExportResult.Status.NO_PERMISSION, message = "Missing Health Connect permissions: ${missing.joinToString()}")
         }
         val withRoutes = ROUTE_PERMISSION in granted
+        val withRestingHr = RESTING_HR_PERMISSION in granted
 
         if (force) {
             try {
@@ -263,7 +265,7 @@ class HealthConnectExporter internal constructor(
         }
 
         val plan = try {
-            planner.plan(cursor, withRoutes)
+            planner.plan(cursor, withRoutes, withRestingHr)
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
@@ -431,7 +433,9 @@ class HealthConnectExporter internal constructor(
         val REQUIRED_PERMISSIONS: Set<String> = RECORD_TYPES.map { HealthPermission.getWritePermission(it) }.toSet()
 
         /** Everything the UI requests; must match the `android.permission.health.WRITE_*` entries in AndroidManifest.xml. */
-        val WRITE_PERMISSIONS: Set<String> = REQUIRED_PERMISSIONS + ROUTE_PERMISSION
+        /** Resting heart rate is a newer record type: requested, exported when granted, never a reason to block. */
+        val RESTING_HR_PERMISSION: String = HealthPermission.getWritePermission(RestingHeartRateRecord::class)
+        val WRITE_PERMISSIONS: Set<String> = REQUIRED_PERMISSIONS + ROUTE_PERMISSION + RESTING_HR_PERMISSION
 
         /** Requested but not required: [WRITE_PERMISSIONS] minus [REQUIRED_PERMISSIONS] (the exercise route). */
         val OPTIONAL_PERMISSIONS: Set<String> = WRITE_PERMISSIONS - REQUIRED_PERMISSIONS

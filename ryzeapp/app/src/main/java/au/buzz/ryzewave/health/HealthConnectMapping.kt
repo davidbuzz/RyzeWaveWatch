@@ -6,6 +6,8 @@ import androidx.health.connect.client.records.ExerciseRouteResult
 import androidx.health.connect.client.records.ExerciseSessionRecord
 import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.OxygenSaturationRecord
+import au.buzz.ryzewave.core.RestingHr
+import androidx.health.connect.client.records.RestingHeartRateRecord
 import androidx.health.connect.client.records.Record
 import androidx.health.connect.client.records.SleepSessionRecord
 import androidx.health.connect.client.records.StepsRecord
@@ -244,7 +246,32 @@ object HealthConnectMapping {
         workout.maxHr?.let { append(", max HR ").append(it) }
         append(", ").append(workout.calories).append(" kcal")
         append(", ").append(SportTypes.name(workout.sportType)).append(" (sport type ").append(workout.sportType).append(')')
+        // Heart-rate recovery: Health Connect has no record type for it, so it rides in the session notes.
+        workout.hrr1?.let { d1 ->
+            append(", HRR ").append(d1)
+            workout.hrr2?.let { d2 -> append('/').append(d2) }
+            append(" bpm from peak ").append(workout.hrrPeak ?: workout.maxHr ?: 0)
+        }
     }
+
+    /** Client id of the resting-heart-rate record for the day starting at [dayStart]. */
+    fun restingHrId(dayStart: Long): String = "rhr-$dayStart"
+
+    /**
+     * One [RestingHeartRateRecord] per day, stamped at the moment the value was computed (the end of the 24-hour
+     * window it summarises). Days computed in the future relative to [now] are skipped defensively.
+     */
+    fun restingHrRecords(values: List<RestingHr>, now: Long, zone: ZoneId): List<RestingHeartRateRecord> =
+        values.filter { it.computedAt <= now && it.bpm > 0 }
+            .distinctBy { it.dayStart }
+            .map { v ->
+                RestingHeartRateRecord(
+                    time = Instant.ofEpochMilli(v.computedAt),
+                    zoneOffset = offsetAt(v.computedAt, zone),
+                    beatsPerMinute = v.bpm.toLong(),
+                    metadata = metadata(restingHrId(v.dayStart), now),
+                )
+            }
 
     // ---- calendar helpers (local wall clock in [zone])
 
@@ -557,6 +584,8 @@ object HealthConnectMapping {
         }
         is OxygenSaturationRecord ->
             "spo2|${record.time.toEpochMilli()}|${num(record.percentage.value)}"
+        is RestingHeartRateRecord ->
+            "rhr|${record.time.toEpochMilli()}|${record.beatsPerMinute}"
         is DistanceRecord ->
             "dist|${record.startTime.toEpochMilli()}|${end(record.endTime, now)}|${num(record.distance.inMeters)}"
         is SleepSessionRecord -> buildString {

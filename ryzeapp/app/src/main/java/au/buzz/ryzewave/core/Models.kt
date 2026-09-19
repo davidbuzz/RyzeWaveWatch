@@ -77,7 +77,22 @@ data class Workout(
      * When set it overrides the speed/sport-id heuristic in the export; null = use the heuristic.
      */
     val exerciseTypeOverride: Int? = null,
+    /**
+     * Heart-rate recovery for this workout ([workout.HeartRateRecovery]): the peak during the effort and the drop
+     * one and two minutes after the last exercise bout (HRR = peak − rate later). Null until computed, or when the
+     * heart-rate stream ended before the recovery window; schema version 8.
+     */
+    val hrrPeak: Int? = null,
+    val hrr1: Int? = null,
+    val hrr2: Int? = null,
 )
+
+/**
+ * Resting heart rate for one calendar day: the 10th percentile of the watch's periodic (non-workout) samples over
+ * the 24 hours before [computedAt], as [workout.RestingHrBaseline] computes it. One row per day, refreshed at
+ * every sync; the last refresh of the day is the day's value.
+ */
+data class RestingHr(val dayStart: Long, val bpm: Int, val computedAt: Long)
 
 data class TrackPoint(
     val workoutId: Long,

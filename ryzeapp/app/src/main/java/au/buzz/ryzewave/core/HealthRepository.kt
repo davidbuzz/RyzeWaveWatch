@@ -38,6 +38,16 @@ interface HealthRepository {
     suspend fun trackPointsOnce(workoutId: Long): List<TrackPoint> = trackPoints(workoutId).first()
     suspend fun dailySummaries(days: Int): List<DailySummary>
 
+    /** Resting heart rate per day ([RestingHr]); the latest row, rows changed since a time, and the writer. */
+    fun latestRestingHr(): Flow<RestingHr?> = flowOf(null)
+    suspend fun restingHrSince(time: Long): List<RestingHr> = emptyList()
+    suspend fun upsertRestingHr(value: RestingHr) {}
+
+    /** The most recent finished workout carrying a heart-rate recovery figure. */
+    fun latestRecovery(): Flow<Workout?> = flowOf(null)
+    /** Finished workouts with no recovery figure yet (one-off backfill after the upgrade). */
+    suspend fun workoutsWithoutRecovery(): List<Workout> = emptyList()
+
     // ---- always-on GPS breadcrumb (additive; opt-in feature, see workout/BreadcrumbGate)
     suspend fun insertBreadcrumbs(points: List<Breadcrumb>) {}
     suspend fun breadcrumbsBetween(from: Long, to: Long): List<Breadcrumb> = emptyList()
