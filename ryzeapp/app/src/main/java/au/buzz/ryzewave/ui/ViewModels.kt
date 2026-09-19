@@ -29,6 +29,11 @@ import au.buzz.ryzewave.health.ExportResult
 import au.buzz.ryzewave.health.HealthConnectMapping
 import au.buzz.ryzewave.notify.WatchNotificationListener
 import au.buzz.ryzewave.workout.SportMotionCheck
+import au.buzz.ryzewave.workout.HeartRateRecovery
+import au.buzz.ryzewave.workout.HrEstimator
+import au.buzz.ryzewave.workout.RestingHrBaseline
+import au.buzz.ryzewave.workout.WorkoutController
+import au.buzz.ryzewave.core.SampleSource
 import au.buzz.ryzewave.workout.StrideCalibration
 import au.buzz.ryzewave.workout.CalibrationSteps
 import au.buzz.ryzewave.workout.DefaultStrideModel
@@ -321,6 +326,11 @@ data class WorkoutDetail(
     val gpsDistanceMeters: Double = 0.0,
     /** Every stored GPS fix of the workout (accepted and rejected), oldest first, for the track plot. */
     val points: List<TrackPoint> = emptyList(),
+    /** Heart-rate recovery after the last stride; null without enough samples ([HeartRateRecovery]). */
+    val recovery: HeartRateRecovery.Recovery? = null,
+    /** How many of the workout's heart-rate samples the estimator has replaced (repaired) and how many it flags. */
+    val hrRepaired: Int = 0,
+    val hrFlagged: Int = 0,
     /** Does the GPS agree with the declared sport? Null until the workout has finished. */
     val motion: SportMotionCheck.Result? = null,
 )
@@ -349,8 +359,60 @@ class WorkoutDetailViewModel(private val graph: Graph = App.graph) : RyzeViewMod
             gpsDistanceMeters = cum.lastOrNull()?.value ?: 0.0,
             points = pts,
             motion = w?.let { ww -> ww.end?.let { SportMotionCheck.check(ww.sportType, pts, ww.durationSeconds * 1000L, ww.distanceMeters) } },
+            recovery = if (pts.isNotEmpty() && samples.isNotEmpty()) HeartRateRecovery.of(pts, samples) else null,
+            hrRepaired = samples.count { it.repaired },
+            hrFlagged = samples.count { it.flagged },
         )
     }.stateIn(viewModelScope, started(), WorkoutDetail())
+
+    /**
+     * Replay the physiological estimator over this workout and replace the readings it rejects as wrist dropouts
+     * with its estimate, keeping the watch's value beside them. Then the row's average, maximum and calories are
+     * recomputed from the corrected series and the workout is re-exported. The warm-up and recovery ramps are
+     * never candidates (see [HrEstimator]).
+     */
+    fun repairHeartRate() = task("Repair heart rate") {
+        val w = workout.value ?: return@task "No workout loaded"
+        val end = w.end ?: return@task "Workout not finished"
+        val pts = graph.repo.trackPoints(w.id).first()
+        val samples = graph.repo.hrBetween(w.start, end + HR_MARGIN_MS).first().filter { it.source == SampleSource.WORKOUT }
+        if (pts.isEmpty() || samples.isEmpty()) return@task "Nothing to work with: ${pts.size} fixes, ${samples.size} heart-rate samples"
+        val resting = RestingHrBaseline.of(graph.repo.hrSince(w.start - RestingHrBaseline.LOOKBACK_MS).filter { it.time < w.start })
+        val replayed = HrEstimator.replay(pts, samples, resting)
+        val changed = HrEstimator.repair(replayed)
+        if (changed.isEmpty()) {
+            val already = samples.count { it.repaired }
+            return@task if (already > 0) "Already repaired ($already samples); nothing new looked wrong" else "Nothing looked wrong: the watch's readings fit the effort"
+        }
+        graph.repo.upsertHr(changed)
+        // recompute the row from the corrected series
+        val corrected = replayed.map { r -> changed.firstOrNull { it.time == r.time } ?: r }.filter { it.time in w.start..end }
+        val profile = graph.settings.profile.first()
+        var kcal = 0.0
+        for (i in 1 until corrected.size) {
+            val dtMin = (corrected[i].time - corrected[i - 1].time) / 60_000.0
+            if (dtMin <= 0.0 || dtMin > 0.5) continue
+            kcal += maxOf(
+                WorkoutController.hrCaloriesPerMinute(corrected[i].bpm, profile.weightKg.toDouble(), profile.age, profile.male),
+                WorkoutController.STANDING_MET * profile.weightKg / 60.0,
+            ) * dtMin
+        }
+        val avg = corrected.map { it.bpm }.average().toInt()
+        val mx = corrected.maxOf { it.bpm }
+        graph.repo.updateWorkout(w.copy(avgHr = avg, maxHr = mx, calories = kcal.toInt()))
+        val lo = changed.minOf { it.time }; val hi = changed.maxOf { it.time }
+        val summary = "Repaired ${changed.size} readings (${Fmt.time(lo)}-${Fmt.time(hi)}), watch ${changed.map { it.measured!! }.average().toInt()} -> about ${changed.map { it.bpm }.average().toInt()} bpm; " +
+            "average now $avg, max $mx, ${kcal.toInt()} kcal"
+        if (!graph.settings.healthConnectEnabled.first()) return@task summary
+        try {
+            graph.health.exportNew()
+            "$summary, re-exported to Health Connect"
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            "$summary; Health Connect re-export failed: ${e.message ?: e.javaClass.simpleName}"
+        }
+    }
 
     fun load(workoutId: Long) {
         id.value = workoutId

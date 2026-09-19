@@ -371,11 +371,16 @@ class WorkoutService : Service() {
         if (sessionJob?.isActive == true) return
         sessionJob = scope.launch {
             var lastPhase: WorkoutPhase? = null
+            var lastHrWarning = 0
             controller.state.collect { st ->
                 if (st.state != lastPhase) {
                     lastPhase = st.state
                     announcer.onPhase(st.state, st.stopReason)?.let { speak(it) }
                     phoneSteps.setPaused(st.state == WorkoutPhase.PAUSED)
+                }
+                if (st.hrWarningSeq != lastHrWarning) {
+                    lastHrWarning = st.hrWarningSeq
+                    st.hrWarning?.let { speak(it) }
                 }
             }
         }

@@ -73,6 +73,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import au.buzz.ryzewave.core.Workout
 import au.buzz.ryzewave.health.HealthConnectMapping
 import au.buzz.ryzewave.protocol.SportTypes
+import au.buzz.ryzewave.workout.HeartRateRecovery
 import au.buzz.ryzewave.workout.SportMotionCheck
 
 @Composable
@@ -452,6 +453,22 @@ fun WorkoutDetailScreen(id: Long, onBack: () -> Unit, vm: WorkoutDetailViewModel
                         Text("Heart rate & pace", style = MaterialTheme.typography.titleMedium)
                         Spacer(Modifier.height(8.dp))
                         WorkoutChart(detail.hr, detail.pace, detail.kmMarkers, w.start, w.durationSeconds)
+                        detail.recovery?.let { r ->
+                            val one = r.drop1min?.let { "$it bpm at 1 min (${HeartRateRecovery.band1min(it)})" } ?: "1 min: not measured"
+                            val two = r.drop2min?.let { "$it bpm at 2 min" } ?: "2 min: not measured"
+                            Text(
+                                "Recovery (HRR) from the peak of ${r.peakHr} bpm: down $one, $two",
+                                style = MaterialTheme.typography.bodySmall,
+                            )
+                        }
+                        if (detail.hrRepaired > 0) {
+                            Text(
+                                "${detail.hrRepaired} readings replaced by the estimate (the watch lost the wrist)",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                        TextButton(onClick = vm::repairHeartRate, enabled = !busy && detail.hr.isNotEmpty()) { Text("Repair heart rate") }
                     }
                 }
                 ExerciseTypeCard(w, enabled = !busy, onSelect = vm::setExerciseType)

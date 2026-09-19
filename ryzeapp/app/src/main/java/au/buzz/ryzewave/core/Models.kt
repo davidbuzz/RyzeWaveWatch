@@ -7,7 +7,23 @@ enum class SampleSource { HISTORY, LIVE, WORKOUT, AUTO }
 /** One hour of steps as reported by the watch (`B2` record). [hourStart] is the start of the hour. */
 data class StepsHour(val hourStart: Long, val total: Int, val walk: Int, val run: Int)
 
-data class HrSample(val time: Long, val bpm: Int, val source: SampleSource = SampleSource.HISTORY)
+/**
+ * One heart-rate sample. [bpm] is the app's best belief. For a workout sample the estimator
+ * ([workout.HrEstimator]) also records [estimate], what physiology predicted at that moment, and [flagged], whether
+ * the watch's reading was rejected as implausible. A repaired sample ([measured] non-null) has had [bpm] replaced by
+ * the estimate; [measured] keeps the raw watch value so nothing is lost and the repair can be undone.
+ */
+data class HrSample(
+    val time: Long,
+    val bpm: Int,
+    val source: SampleSource = SampleSource.HISTORY,
+    val estimate: Int? = null,
+    val flagged: Boolean = false,
+    val measured: Int? = null,
+) {
+    /** True when [bpm] is the estimator's value rather than the watch's. */
+    val repaired: Boolean get() = measured != null
+}
 
 data class Spo2Sample(val time: Long, val percent: Int, val source: SampleSource = SampleSource.HISTORY)
 

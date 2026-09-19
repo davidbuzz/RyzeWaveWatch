@@ -70,6 +70,12 @@ data class HrSampleEntity(
     val source: String,
     val bpm: Int,
     val updatedAt: Long,
+    /** The estimator's prediction at this moment; added in schema version 7 (see [Db.MIGRATION_6_7]). */
+    val estimate: Int? = null,
+    /** True when the watch's reading was rejected as implausible; schema version 7, default 0. */
+    @ColumnInfo(defaultValue = "0") val flagged: Boolean = false,
+    /** The raw watch value once [bpm] has been replaced by the estimate; schema version 7. */
+    val measured: Int? = null,
 )
 
 @Entity(
@@ -175,8 +181,9 @@ internal fun sourceOf(name: String): SampleSource =
 fun StepsHourEntity.toModel(): StepsHour = StepsHour(hourStart, total, walk, run)
 fun StepsHour.toEntity(updatedAt: Long): StepsHourEntity = StepsHourEntity(hourStart, total, walk, run, updatedAt)
 
-fun HrSampleEntity.toModel(): HrSample = HrSample(time, bpm, sourceOf(source))
-fun HrSample.toEntity(updatedAt: Long): HrSampleEntity = HrSampleEntity(time, source.name, bpm, updatedAt)
+fun HrSampleEntity.toModel(): HrSample = HrSample(time, bpm, sourceOf(source), estimate, flagged, measured)
+fun HrSample.toEntity(updatedAt: Long): HrSampleEntity =
+    HrSampleEntity(time, source.name, bpm, updatedAt, estimate, flagged, measured)
 
 fun Spo2SampleEntity.toModel(): Spo2Sample = Spo2Sample(time, percent, sourceOf(source))
 fun Spo2Sample.toEntity(updatedAt: Long): Spo2SampleEntity = Spo2SampleEntity(time, source.name, percent, updatedAt)
@@ -416,7 +423,7 @@ interface HcExportDao {
         HcExportEntity::class,
         BreadcrumbEntity::class,
     ],
-    version = 6,
+    version = 7,
     exportSchema = false,
 )
 abstract class Db : RoomDatabase() {
@@ -474,6 +481,19 @@ abstract class Db : RoomDatabase() {
             "ALTER TABLE `track_point` ADD COLUMN `steps` INTEGER",
         )
 
+        /** Schema version 7: the heart-rate estimator's verdict per sample, and the raw value of a repaired one. */
+        val MIGRATION_6_7_SQL: List<String> = listOf(
+            "ALTER TABLE `hr_sample` ADD COLUMN `estimate` INTEGER",
+            "ALTER TABLE `hr_sample` ADD COLUMN `flagged` INTEGER NOT NULL DEFAULT 0",
+            "ALTER TABLE `hr_sample` ADD COLUMN `measured` INTEGER",
+        )
+
+        val MIGRATION_6_7: Migration = object : Migration(6, 7) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                for (sql in MIGRATION_6_7_SQL) db.execSQL(sql)
+            }
+        }
+
         val MIGRATION_5_6: Migration = object : Migration(5, 6) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 for (sql in MIGRATION_5_6_SQL) db.execSQL(sql)
@@ -504,7 +524,7 @@ abstract class Db : RoomDatabase() {
         fun get(context: Context): Db =
             instance ?: synchronized(this) {
                 instance ?: Room.databaseBuilder(context.applicationContext, Db::class.java, NAME)
-                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)
+                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7)
                     .build()
                     .also { instance = it }
             }

@@ -27,9 +27,17 @@ data class WorkoutState(
     val speedMps: Double = 0.0,
     /** MET-based kcal estimate (speed × weight). */
     val calories: Int = 0,
+    /** Best belief of the current heart rate: the watch's reading, or the estimate while the watch is judged wrong. */
     val lastHr: Int? = null,
     val avgHr: Int? = null,
     val maxHr: Int? = null,
+    /** What physiology predicts right now ([WorkoutController]'s [HrEstimator]); null before the first sample. */
+    val hrEstimate: Int? = null,
+    /** True while the watch's readings are being rejected as implausible (a wrist dropout). */
+    val hrSuspect: Boolean = false,
+    /** Something to say about the heart-rate reading; [hrWarningSeq] is bumped each time it is set. */
+    val hrWarning: String? = null,
+    val hrWarningSeq: Int = 0,
     /** All HR samples received since start (source WORKOUT), for the live chart. */
     val hrSamples: List<HrSample> = emptyList(),
     /** Accuracy of the most recent fix in metres; null until the first fix. */

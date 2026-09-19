@@ -30,6 +30,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
+import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.roundToInt
 
@@ -87,6 +88,11 @@ class WorkoutController(
     private val lock = Any()
     private val pendingPoints = ArrayList<TrackPoint>()
     private val pendingHr = ArrayList<HrSample>()
+
+    /** Physiological heart-rate estimator; rebuilt at every start with that day's resting rate. */
+    private var hrEstimator = HrEstimator(restingBpm = RestingHrBaseline.FALLBACK)
+    private var hrWarnedWrong = false
+    private var lastHrWarnAt = 0L
     private var hrSum = 0L
     private var hrCount = 0
     private var hrMax = 0
@@ -217,6 +223,17 @@ class WorkoutController(
         }
         walkStrideM = strideModel.walkStrideM(profile, stride)
         runStrideM = strideModel.runStrideM(profile, stride)
+        val resting = try {
+            RestingHrBaseline.of(repo.hrSince(now - RestingHrBaseline.LOOKBACK_MS).filter { it.time < now })
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            onError("resting heart rate unavailable, using the fallback", e)
+            RestingHrBaseline.FALLBACK
+        }
+        hrEstimator = HrEstimator(restingBpm = resting)
+        hrWarnedWrong = false
+        lastHrWarnAt = 0L
 
         synchronized(lock) {
             tracker.reset()
@@ -397,6 +414,7 @@ class WorkoutController(
         val speed: Double
         synchronized(lock) {
             accepted = tracker.addFix(time, lat, lon, accuracyM, speedMps)
+            if (accepted) hrEstimator.onFix(time, speedMps.toDouble(), altitudeM)
             distance = tracker.distanceMeters
             pendingPoints += TrackPoint(
                 workoutId = workoutId, time = time, lat = lat, lon = lon, accuracyM = accuracyM,
@@ -480,24 +498,52 @@ class WorkoutController(
     private fun onHr(sample: HrSample) {
         if (_state.value.state == WorkoutPhase.STOPPED) return
         if (sample.bpm <= 0) return
-        val tagged = HrSample(time = sample.time, bpm = sample.bpm, source = SampleSource.WORKOUT)
-        lastHrTime = clock()
+        val now = clock()
+        // What physiology says the heart is doing, and whether the watch's number is believable. A flag only counts
+        // as a wrist dropout while warmed up and moving: the warm-up climb and the recovery fall are never touched.
+        val v = synchronized(lock) { hrEstimator.onHr(sample.time, sample.bpm) }
+        val dropout = v.flagged && v.warmedUp && v.moving
+        val believed = if (dropout) v.estimate else sample.bpm
+        val tagged = HrSample(
+            time = sample.time, bpm = believed, source = SampleSource.WORKOUT,
+            estimate = v.estimate, flagged = dropout, measured = if (dropout) sample.bpm else null,
+        )
+        lastHrTime = now
         val avg: Int
         val maxHr: Int
         synchronized(lock) {
             pendingHr += tagged
-            hrSum += sample.bpm
+            hrSum += believed
             hrCount++
-            hrMax = max(hrMax, sample.bpm)
+            hrMax = max(hrMax, believed)
             avg = (hrSum / hrCount).toInt()
             maxHr = hrMax
         }
+        // Say so, out loud, when the watch is wrong by more than a few percent; once a minute at most, and once
+        // more when the readings come back.
+        var warning: String? = null
+        if (dropout && abs(v.wrongByPercent) >= HrEstimator.WRONG_PERCENT) {
+            if (now - lastHrWarnAt >= HR_WARN_INTERVAL_MS) {
+                warning = "heart rate reading looks wrong, watch says ${sample.bpm}, expect about ${v.estimate}"
+                lastHrWarnAt = now
+                hrWarnedWrong = true
+            }
+        } else if (hrWarnedWrong && v.accepted) {
+            warning = "heart rate reading is back"
+            hrWarnedWrong = false
+            lastHrWarnAt = 0L
+        }
         _state.update {
-            it.copy(lastHr = sample.bpm, avgHr = avg, maxHr = maxHr, hrSamples = appendCapped(it.hrSamples, tagged))
+            it.copy(
+                lastHr = believed, avgHr = avg, maxHr = maxHr, hrSamples = appendCapped(it.hrSamples, tagged),
+                hrEstimate = v.estimate, hrSuspect = dropout,
+                hrWarning = warning ?: it.hrWarning, hrWarningSeq = if (warning != null) it.hrWarningSeq + 1 else it.hrWarningSeq,
+            )
         }
     }
 
     private suspend fun tick(): Unit = control.withLock {
+        synchronized(lock) { hrEstimator.onNoFix(clock()) }
         val phase = _state.value.state
         val now = clock()
         if (phase == WorkoutPhase.RUNNING) {
@@ -672,6 +718,8 @@ class WorkoutController(
         const val UPDATE_TIMEOUT_MS = 3_000L
         const val STALE_FIX_MS = 15_000L
 
+        /** Minimum gap between spoken heart-rate warnings. */
+        const val HR_WARN_INTERVAL_MS = 60_000L
         const val STOP_HANDSHAKE_MS = 2_000L
         const val PERSIST_EVERY_S = 5
         const val MAX_TICK_GAP_MS = 60_000L

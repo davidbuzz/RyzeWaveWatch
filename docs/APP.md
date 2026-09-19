@@ -1120,3 +1120,20 @@ watch's screen. `WatchApi.queryWorkout()` sends it; `startWorkout()` now asks ri
 "watch confirms sport N open" or "watch reports state=S type=T", best effort and never fatal. `tools/all_sports_test.sh`
 reads that line back from logcat into a `watch_says` column and fails a sport when the watch disagrees with what
 was chosen, so the end-to-end test proves the watch entered the sport, not only that the app saved the id.
+
+## Heart-rate estimator, watch-dropout repair, recovery (2026-09-19)
+
+The optical sensor lost the wrist for 5.5 minutes of a 36-minute run and read 95-113 at an unchanged pace, between
+stretches of 140-160; nothing in the packet marks a bad reading. `workout/HrEstimator` is an extended Kalman filter
+over `[hr, offset]` whose target comes from the wearer's own nine runs (`HR = 134 + 7·speed + 19.3·climb`, ramping to
+the resting rate below walking pace) with an innovation gate and the wearer's exercising floor (125 bpm, in force
+only once warmed up and only while moving). Rejected for 15 s = flagged; while flagged the app believes the
+estimate, stores the watch value in `hr_sample.measured` (schema 7, plus `estimate`/`flagged`), uses the estimate
+for average/max/calories, and says "heart rate reading looks wrong, watch says N, expect about M" (at most once a
+minute, plus "heart rate reading is back"). The warm-up climb and the post-effort fall are never candidates: they
+are the recovery data. Replayed over the nine runs it flags only the 2026-09-19 dropout.
+
+"Repair heart rate" on the workout detail replays the estimator over a stored workout, replaces the flagged samples,
+recomputes average/max/calories and re-exports. `workout/HeartRateRecovery` reports HRR = peak − rate one/two
+minutes after the last exercise bout (a bout is ≥ 3 min at exercise pace; a fix gap of 15 s counts as stopped),
+with the Cleveland Clinic one-minute bands as a label.
