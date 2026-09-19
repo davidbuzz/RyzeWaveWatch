@@ -17,3 +17,4 @@
 - [Release-signed build on Pixel](release-signed-on-pixel.md) — the Pixel runs the release-signed APK; assembleRelease + adb install -r, never uninstall (wipes ryzewave.db)
 - [Explain every edit](explain-every-edit.md) — narrate each file edit in plain language: which file, what changes, why
 - [DB surgery on the phone](db-surgery-on-phone.md) — pm disable-user before swapping ryzewave.db; force-stop alone corrupts it and Room wipes the DB
+- [HR dropout repair](hr-dropout-repair.md) — watch optical HR drops out mid-run; EKF estimator flags/replaces it, speaks a warning, HRR measured; calorie repair is a delta
