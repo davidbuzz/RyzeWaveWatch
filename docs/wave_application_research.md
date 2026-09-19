@@ -23,7 +23,7 @@ the narrative: what we needed, why, and what nearly went wrong.
 | Product | Ryze Wave (Ryze Above, Australia), models RZ-WADA/B/C, 1.43" AMOLED 466×466, 300 mAh, IP68 |
 | Bluetooth name / address | `Ryze Wave(ID-91E5)` / `78:02:B7:37:91:E5` — a public address shared by both radios [captured] |
 | Address vendor (OUI) | ShenZhen Ultra Easy Technology, the ODM [captured] |
-| System-on-chip | Realtek RTL8763-family. Inferred from the Realtek DFU/OTA library and a Realtek AES helper bundled in the vendor app, and from Realtek's OTA service UUIDs on the watch [vendor SDK, captured] |
+| System-on-chip | **Realtek RTL8763EW** [captured]. Confirmed 2026-09-19 from the USB mass-storage descriptor (`Realtek RTL8763EW Disk`); earlier inferred as "RTL8763-family" from the bundled Realtek DFU/OTA library, the Realtek AES helper, and the OTA service UUIDs. See `docs/PROTOCOL.md` §10. |
 | Firmware string | `RH280RGAV008949` (reply to the version command) [captured] |
 | Vendor app | "Ryze Fit", Android package `com.yc.ryzefit` (v1.3.8), a white-label of the UTE / Shenzhen Youhong "yc pedometer" SDK. Other white-labels of the same SDK: GloryFit, DayDay Band, and many AliExpress watches [vendor SDK] |
 

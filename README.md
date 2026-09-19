@@ -87,7 +87,7 @@ did it, and what is still unknown. None of it is needed just to build and run th
 | Watch BT name / MAC | `Ryze Wave(ID-91E5)` / `78:02:B7:37:91:E5` (OUI: ShenZhen Ultra Easy Technology) |
 | Vendor app | Ryze Fit, Android package `com.yc.ryzefit` (v1.3.8), iOS id 6474378070 |
 | Underlying SDK | UTE / Shenzhen Youhong "yc pedometer" SDK (`com.yc.pedometer.sdk`) — same family as GloryFit, DayDay Band, etc. |
-| SoC | Realtek RTL8763-family (app bundles `com.realsil.sdk.dfu` + `libRtkAesJni.so`) |
+| SoC | Realtek RTL8763EW (confirmed from the USB descriptor; app bundles `com.realsil.sdk.dfu` + `libRtkAesJni.so`) |
 | Radio | Bluetooth 5.2 dual-mode |
 | Classic BT (BR/EDR) | HFP / A2DP / AVRCP / PBAP / SPP — audio, calling, answer/hang-up. Standard profiles, nothing to reverse. |
 | BLE GATT | Custom services **0x55FF** (cmd: `33F1` write / `33F2` notify), **0x56FF** (data: `34F1` / `34F2`), **0x57FF** ("Alipay"/payments: `35F1` / `35F2`). All health data, notifications and settings go here. |

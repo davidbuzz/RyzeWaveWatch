@@ -16,7 +16,7 @@ Two radios, two jobs:
 | `000056FF` | `000034F1` | write | "data" channel (contacts, canned SMS, sleep stages, timezone, sports lists…) |
 | `000056FF` | `000034F2` | notify | data channel responses |
 | `000057FF` | `000035F1` / `000035F2` | write / notify | Alipay / payments (ignore) |
-| `0000FEF5`, `0000D0FF-3C17-…`, `00006287-3C17-…` | — | — | Dialog SUOTA / Realtek OTA & DFU. **Do not touch.** |
+| `0000FEF5`, `0000D0FF-3C17-…`, `00006287-3C17-…` | — | — | Dialog SUOTA / Realtek OTA & DFU. **Do not touch.** See §10. |
 | `0000FFF0` / `FFF6` | — | — | blood-pressure calibration sub-protocol (probably absent on this watch) |
 
 GATT reads with meaning [SDK]:
@@ -315,6 +315,70 @@ More BlueZ notes [V]:
 The watch never sends distance for daily steps (the `B2` records carry only step counts), so every daily distance
 figure in the app is this stride formula on the phone. During workouts the phone's GPS track drives distance/pace and
 is pushed to the watch with `FD 44` (see §5), which is where a bad track filter shows up on the watch face too.
+
+## 10. OTA, firmware and the USB port (2026-09-19/20)
+
+What was learned while looking for a way to obtain and study the firmware. Provenance as elsewhere: [V] confirmed on
+this watch, [SDK] from the decompiled vendor app and the Realtek DFU library it bundles, [APK] from files inside the
+vendor APK, [web] from public sources. The §1 rule stands: nothing is written to the OTA/DFU UUIDs, or flashed to the
+watch by any route, without Buzz's explicit go-ahead — a wrong image bricks it.
+
+**SoC is Realtek RTL8763EW** [V]. Over USB the watch enumerates as a mass-storage device whose SCSI model string is
+`Realtek RTL8763EW Disk`. This corrects the earlier "RTL8763-family" inference and the vendor app's stale `8762C` log
+tags (those are a copied-in code path; see the sibling image below).
+
+**There is no cloud OTA for this model** [V]. The vendor checks `POST apsouth.uteasy.com/ci-yc/index.php/api/client/getBtVersionUpdate`
+with `content={"appkey":…,"btname":"RH280RGA","versionname":"V008949","mac":…,"language":"en"}`. The server replies
+`{"flag":-1,"msg":"post ok , no new version."}` for every version down to `V000001`, so it holds no image for this
+btname. Firmware is gated per brand by `appkey`; ours only serves `RH280RGA`, which has nothing newer than the
+shipped `RH280RGAV008949`. Sibling btnames queried under our appkey also return no image.
+
+**The runtime update path is BLE, dual-bank, silent** [SDK]. `CustomUpdate`/`FirmwareActivity` drive Realtek's
+`GattDfuAdapter.startOtaProcedure()` with `setOtaWorkMode(16)` (= `OtaMode.OTA_MODE_SILENT_FUNCTION`) and an AES
+`setSecretKey(...)`. A new image is written to the inactive bank while the app runs, then `CMD_OTA_ACTIVE_RESET`
+flips the active-bank flag in the OTA Header and reboots; the Boot Patch boots the now-active bank. The AES key is
+OTA *transport* encryption, not image encryption (see below). Image sections the SDK understands (bit -> name):
+Boot Patch, Secure Boot Loader, ROM/Sys/Stack Patch, Upper Stack, App + App Config, DSP images, OTA Header,
+Ext Images, User Data. The image pack header's `signature` field is a 16-bit format magic (`0x4D47` "GM", checked as
+`19783`), not a cryptographic signature.
+
+**The USB port is the music drive, not a firmware channel** [V]. Enumerates as VID:PID `8888:1234`
+`Ryze Wave(ID-91E5)`, a single USB Mass Storage interface (SCSI, bulk-only), one 480 MiB FAT16 partition holding
+Realtek's music index scaffolding (`rtk_music.bin`, `audio/header.bin`, `audio/name.bin`) and erased (0xFF) free
+space. `lsusb -v` shows exactly one interface; across ~20 connect cycles no other VID/PID or DFU/CDC/vendor interface
+ever appeared, before or alongside the drive. Enumeration "flapping" is marginal cradle contact (descriptor reads
+return `len=0`, kernel: "Maybe the USB cable is bad?"), not a transient bootloader. The watch runs from its battery,
+so a cable connect reconnects the already-running app; the ROM never runs on connect. A ROM/download interface only
+appears when the SoC cold-boots into it, which on this family needs a boot-strap pin held at reset (an internal pad),
+not one of the four external pads (VBUS/GND/D+/D-). Realtek's documented factory flash is the MP tool over UART on
+internal pins (S06/S07), consistent with pre-seal or bed-of-nails programming.
+
+**A real sibling firmware ships inside the APK** [APK]. `res/raw/rh266fp.bin` (521,896 bytes) is the firmware image
+for the RH266FP model, version `RH266FPV000682`; `res/raw/rh266fp_ui.bin` (644,672 bytes) is its watch-face/UI pack.
+The app copies these out and flashes them to force-update any RH266FP watch it meets (`CustomUpdate.saveToSDCard`
+reads `R.raw.rh266fp` / `R.raw.rh266fp_ui`). Analysis of `rh266fp.bin`:
+- Target chip **RTL8762C** (header string), not our RTL8763EW — so it is format/protocol study material only, and is
+  **not flashable to our watch**.
+- **Not encrypted**: whole-file entropy 7.06, no high-entropy blocks, and it is full of readable code, log format
+  strings and symbol names (`app_main_task`, `dfu_service_handle_packet_req`, `gap_send_msg_to_app`, ANCS handlers).
+  Built `Mon Aug 24 2020`; CST816 touch controller; a stock Realtek "Bee" BLE SDK app.
+- **Integrity is a checksum, not a signature**: only `app_bin checksum 0/1/2 = 0x%x` appears; no RSA/ECDSA/secure-boot
+  image verification. A checksum is trivially recomputable, so at the image level this class of device is moddable.
+  Whether the SoC enforces secure boot in fuses is not visible from the image, but shipping a plaintext,
+  checksum-only image is a strong hint that it does not.
+
+**Net for the roadmap.** Our own firmware is not obtainable non-invasively: no cloud OTA, USB is music-only, and the
+BLE OTA link is write-only (you cannot read the running image back out). The remaining routes to *our* bytes are a
+captured vendor OTA (none is on offer) or a hardware readout via the sealed-in debug pads (out of scope while the case
+must stay waterproof). The sibling `rh266fp.bin` is a real, plaintext image for studying the pack format, the DFU
+state machine and the app structure. Independent RE of a sibling GloryFit watch (tcsenpai/ht36) reached the same
+walls: no cloud OTA, firmware only via a debug port behind the case, never write the OTA characteristic.
+
+**White-label lineage** [web]. The hardware/platform is YouChuangyi Health Technology (Shenzhen) — the `com.yc`
+owner, the UTE / GloryFit ecosystem. "Ryze Fit" is a reskin of GloryFit (`com.yc.gloryfit`). The same board and BLE
+protocol ship as Oukitel BT103, DM58, UAUE T60, HT36, Imilab KW66 and others; Gadgetbridge's GloryFit driver targets
+the family.
+
 
 ## 11. What the watch will and will not tell you about its screen (2026-09-06)
 
