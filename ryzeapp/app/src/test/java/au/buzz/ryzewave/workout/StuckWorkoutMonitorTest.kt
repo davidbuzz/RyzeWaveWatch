@@ -63,6 +63,17 @@ class StuckWorkoutMonitorTest {
 
     private suspend fun realtime(steps: Int) = watch.emitEvent(WatchEvent.WorkoutRealtime(sportType = 1, steps = steps, calories = 0, distanceMeters = 0.0))
 
+    /**
+     * A realtime push, applied before the caller moves the fake clock on. The monitor stamps a push with the clock
+     * when it processes it, and the event bus is buffered, so without this wait a slow runner (GitHub, 2026-09-19)
+     * processes all six pushes after the loop and stamps them with one time: the window never fills, no warning.
+     */
+    private suspend fun push(m: StuckWorkoutMonitor, steps: Int) {
+        val seen = m.realtimeSeen.get()
+        realtime(steps)
+        awaitUntil("push ${seen + 1} applied") { m.realtimeSeen.get() > seen }
+    }
+
     @Test
     fun aWatchStartedWorkoutWithFlatStepsIsWarnedThenAutoStopped() = runBlocking<Unit> {
         val m = monitor()
@@ -71,7 +82,7 @@ class StuckWorkoutMonitorTest {
         // the misleading plain "workout started" of 2026-09-10 is gone: the monitor never announces a start
         assertFalse(spoken.contains(StateAnnouncer.STARTED))
         // flat session steps + a resting HR for longer than the window
-        for (i in 1..6) { realtime(40); watch.hr.emit(HrSample(now, 58, SampleSource.WORKOUT)); now += WINDOW / 4 }
+        for (i in 1..6) { push(m, 40); watch.hr.emit(HrSample(now, 58, SampleSource.WORKOUT)); now += WINDOW / 4 }
         awaitUntil("warned") { warns.get() == 1 }
         assertTrue(spoken.contains(StuckWorkoutMonitor.WARN_SPEECH))
         assertFalse("not stopped before the grace", watch.calls.contains("stop"))
@@ -86,13 +97,13 @@ class StuckWorkoutMonitorTest {
         watch.emitEvent(WatchEvent.WorkoutControl(WorkoutControlAction.START))
         awaitUntil("watching") { m.active }
         var steps = 40
-        for (i in 1..6) { steps += 25; realtime(steps); now += WINDOW / 4 }
+        for (i in 1..6) { steps += 25; push(m, steps); now += WINDOW / 4 }
         Thread.sleep(150)
         assertEquals("rising steps must never warn", 0, warns.get())
         // then flat for a window → warned; then rising again → withdrawn, no stop
-        for (i in 1..6) { realtime(steps); now += WINDOW / 4 }
+        for (i in 1..6) { push(m, steps); now += WINDOW / 4 }
         awaitUntil("warned") { warns.get() == 1 }
-        for (i in 1..3) { steps += 30; realtime(steps); now += WINDOW / 4 }
+        for (i in 1..3) { steps += 30; push(m, steps); now += WINDOW / 4 }
         awaitUntil("withdrawn") { clears.get() >= 1 }
         Thread.sleep(GRACE * 2)
         assertFalse("withdrawn warning must not auto-stop", watch.calls.contains("stop"))
@@ -100,9 +111,9 @@ class StuckWorkoutMonitorTest {
 
     @Test
     fun anAppStartedWorkoutIsWarnedButNotAutoStoppedByDefault() = runBlocking<Unit> {
-        monitor(autoStopApp = false)
+        val m = monitor(autoStopApp = false)
         controller.start(sportType = 1)
-        for (i in 1..6) { realtime(0); now += WINDOW / 4 }
+        for (i in 1..6) { push(m, 0); now += WINDOW / 4 }
         awaitUntil("warned") { warns.get() == 1 }
         Thread.sleep(GRACE * 3)
         assertEquals(WorkoutPhase.RUNNING, controller.state.value.state)
@@ -111,9 +122,9 @@ class StuckWorkoutMonitorTest {
 
     @Test
     fun anAppStartedWorkoutIsAutoStoppedWhenTheSettingIsOn() = runBlocking<Unit> {
-        monitor(autoStopApp = true)
+        val m = monitor(autoStopApp = true)
         controller.start(sportType = 1)
-        for (i in 1..6) { realtime(0); now += WINDOW / 4 }
+        for (i in 1..6) { push(m, 0); now += WINDOW / 4 }
         awaitUntil("warned") { warns.get() == 1 }
         waitFor("auto-stopped through the controller", timeoutMs = 5_000L) { controller.state.value.state == WorkoutPhase.STOPPED }
         assertEquals(StopReason.NO_ACTIVITY, controller.state.value.stopReason)
@@ -124,7 +135,7 @@ class StuckWorkoutMonitorTest {
         val m = monitor()
         watch.emitEvent(WatchEvent.WorkoutControl(WorkoutControlAction.START))
         awaitUntil("watching") { m.active }
-        for (i in 1..6) { realtime(40); now += WINDOW / 4; kotlinx.coroutines.delay(30) }
+        for (i in 1..6) { push(m, 40); now += WINDOW / 4 }
         waitFor("warned", timeoutMs = 5_000L) { warns.get() == 1 }
         m.stopNow()
         awaitUntil("stopped") { watch.calls.contains("stop") }

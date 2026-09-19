@@ -156,6 +156,13 @@ class StuckWorkoutMonitor(
     }
 
     /** From the notification's Stop action: the user acknowledged, stop the workout now. */
+    /**
+     * Realtime pushes applied to a session so far. Tests wait on it before moving their fake clock: the push is
+     * stamped with the clock when it is *processed*, and a slow CI runner otherwise batches several pushes onto
+     * one timestamp (the 2026-09-19 GitHub failure).
+     */
+    val realtimeSeen = java.util.concurrent.atomic.AtomicInteger()
+
     fun stopNow() {
         scope.launch { stopSession("user (notification)", speakNoActivity = false) }
     }
@@ -184,6 +191,7 @@ class StuckWorkoutMonitor(
             is WatchEvent.WorkoutRealtime -> {
                 val s = session ?: return
                 s.signals.onWatchSteps(clock(), e.steps)
+                realtimeSeen.incrementAndGet()
                 if (s.origin == Origin.WATCH && s.sportType == null && e.sportType > 0) {
                     s.sportType = e.sportType
                     log("watch workout sport from the realtime push: ${SportSignature.describe(e.sportType)}")
