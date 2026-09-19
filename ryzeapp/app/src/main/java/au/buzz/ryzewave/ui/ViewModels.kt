@@ -35,6 +35,7 @@ import au.buzz.ryzewave.workout.RestingHrBaseline
 import au.buzz.ryzewave.workout.WorkoutController
 import au.buzz.ryzewave.core.SampleSource
 import au.buzz.ryzewave.workout.StrideCalibration
+import kotlin.math.roundToInt
 import au.buzz.ryzewave.workout.CalibrationSteps
 import au.buzz.ryzewave.workout.DefaultStrideModel
 import kotlinx.coroutines.CancellationException
@@ -385,24 +386,28 @@ class WorkoutDetailViewModel(private val graph: Graph = App.graph) : RyzeViewMod
             return@task if (already > 0) "Already repaired ($already samples); nothing new looked wrong" else "Nothing looked wrong: the watch's readings fit the effort"
         }
         graph.repo.upsertHr(changed)
-        // recompute the row from the corrected series
+        // Recompute the row from the corrected series. Average and maximum come straight from it. Calories do
+        // NOT: the live figure is a hybrid of distance and heart rate that only the controller computes, so the
+        // repair adds the heart-rate formula's delta over the replaced samples to the stored figure rather than
+        // recomputing the whole session from heart rate (which overstated a 36-minute run by half).
         val corrected = replayed.map { r -> changed.firstOrNull { it.time == r.time } ?: r }.filter { it.time in w.start..end }
         val profile = graph.settings.profile.first()
-        var kcal = 0.0
-        for (i in 1 until corrected.size) {
-            val dtMin = (corrected[i].time - corrected[i - 1].time) / 60_000.0
+        val wKg = profile.weightKg.toDouble()
+        fun perMin(bpm: Int) = maxOf(WorkoutController.hrCaloriesPerMinute(bpm, wKg, profile.age, profile.male), WorkoutController.STANDING_MET * wKg / 60.0)
+        var delta = 0.0
+        val byTime = changed.sortedBy { it.time }
+        for (i in 1 until byTime.size) {
+            val dtMin = (byTime[i].time - byTime[i - 1].time) / 60_000.0
             if (dtMin <= 0.0 || dtMin > 0.5) continue
-            kcal += maxOf(
-                WorkoutController.hrCaloriesPerMinute(corrected[i].bpm, profile.weightKg.toDouble(), profile.age, profile.male),
-                WorkoutController.STANDING_MET * profile.weightKg / 60.0,
-            ) * dtMin
+            delta += (perMin(byTime[i].bpm) - perMin(byTime[i].measured!!)) * dtMin
         }
+        val kcal = w.calories + delta
         val avg = corrected.map { it.bpm }.average().toInt()
         val mx = corrected.maxOf { it.bpm }
-        graph.repo.updateWorkout(w.copy(avgHr = avg, maxHr = mx, calories = kcal.toInt()))
+        graph.repo.updateWorkout(w.copy(avgHr = avg, maxHr = mx, calories = kcal.roundToInt()))
         val lo = changed.minOf { it.time }; val hi = changed.maxOf { it.time }
         val summary = "Repaired ${changed.size} readings (${Fmt.time(lo)}-${Fmt.time(hi)}), watch ${changed.map { it.measured!! }.average().toInt()} -> about ${changed.map { it.bpm }.average().toInt()} bpm; " +
-            "average now $avg, max $mx, ${kcal.toInt()} kcal"
+            "average now $avg, max $mx, ${kcal.roundToInt()} kcal (${if (delta >= 0) "+" else ""}${delta.roundToInt()})"
         if (!graph.settings.healthConnectEnabled.first()) return@task summary
         try {
             graph.health.exportNew()
