@@ -57,6 +57,20 @@ class DailySummaryTest {
         assertEquals(800.0 + 2780.0, s.distanceMeters, 1e-9)
     }
 
+    /** Workout steps are added to the daily total to match the watch face, without touching walk/run or distance
+     * (Buzz's 2026-09-21 run: ambient 3106 + workout 3948 = 7054, the watch's total). */
+    @Test
+    fun workoutStepsAddToTheDailyTotalButNotToDistance() {
+        val s = buildDailySummary(0L, StepTotals(3106, 3106, 0), null, null, null,
+            UserProfile(), StrideSettings(), model, workoutMeters = 3098.0, workoutSteps = 3948)
+        assertEquals(3106 + 3948, s.steps)          // matches the watch
+        assertEquals(3948, s.workoutSteps)
+        assertEquals(3106, s.walkSteps)             // walk/run stay ambient (they drive the stride distance)
+        assertEquals(0, s.runSteps)
+        // distance is ambient stride + workout GPS metres, never the workout steps through the stride model
+        assertEquals(model.stepsToMeters(3106, 0, UserProfile(), StrideSettings()) + 3098.0, s.distanceMeters, 1e-9)
+    }
+
     @Test
     fun emptyDayIsZeroAndNull() {
         val s = buildDailySummary(123L, null, null, null, null, UserProfile(), StrideSettings(), model)

@@ -183,18 +183,22 @@ class RoomHealthRepository(
             profile to strideSettings
         }
         // The watch's hourly steps table does NOT include workout-session steps (verified 2026-09-07: a 39-min
-        // run's ~4300 steps were absent from the 17:00/18:00 rows), so adding the workouts' GPS metres on top of
-        // steps × stride does not double-count. Matches the Health Connect export, where the daily stride-based
-        // DistanceRecord and the per-workout GPS DistanceRecord are separate, additive records.
-        val distanceInputs = combine(strideInputs, db.workouts().gpsMeters(dayStart, dayEnd)) { inputs, gps ->
-            inputs to gps
-        }
+        // run's ~4300 steps were absent from the 17:00/18:00 rows). So the daily *step count* adds each workout's
+        // own step total, to match the watch face (Buzz, 2026-09-21: the watch showed 7102, the app 3154, the gap
+        // was exactly the day's workout steps). The daily *distance* adds the workouts' GPS metres on top of
+        // ambient steps x stride. Neither double-counts, because the hourly table holds neither. The Health
+        // Connect export is a separate per-hour path and is unaffected by this total.
+        val extraInputs = combine(
+            strideInputs,
+            db.workouts().gpsMeters(dayStart, dayEnd),
+            db.workouts().stepsInDay(dayStart, dayEnd),
+        ) { inputs, gps, wsteps -> Triple(inputs, gps, wsteps) }
         return combine(
             db.steps().totals(dayStart, dayEnd),
             db.hr().stats(dayStart, dayEnd),
             db.hr().last(dayStart, dayEnd),
             db.spo2().last(dayStart, dayEnd),
-            distanceInputs,
+            extraInputs,
         ) { totals, stats, lastHr, lastSpo2, extra ->
             buildDailySummary(
                 dayStart = dayStart,
@@ -206,6 +210,7 @@ class RoomHealthRepository(
                 strideSettings = extra.first.second,
                 stride = stride,
                 workoutMeters = extra.second,
+                workoutSteps = extra.third,
             )
         }.distinctUntilChanged()
     }
@@ -348,13 +353,14 @@ internal fun buildDailySummary(
     strideSettings: StrideSettings,
     stride: StrideModel,
     workoutMeters: Double = 0.0,
+    workoutSteps: Int = 0,
 ): DailySummary {
-    val steps = totals?.total ?: 0
     val walk = totals?.walk ?: 0
     val run = totals?.run ?: 0
     return DailySummary(
         dayStart = dayStart,
-        steps = steps,
+        // Match the watch face: ambient hourly steps + the workout steps it counted but kept out of that table.
+        steps = (totals?.total ?: 0) + workoutSteps,
         walkSteps = walk,
         runSteps = run,
         distanceMeters = stride.stepsToMeters(walk, run, profile, strideSettings) + workoutMeters,
@@ -363,5 +369,6 @@ internal fun buildDailySummary(
         minHr = stats?.minBpm,
         maxHr = stats?.maxBpm,
         avgHr = stats?.avgBpm?.roundToInt(),
+        workoutSteps = workoutSteps,
     )
 }

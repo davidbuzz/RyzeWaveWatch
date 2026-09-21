@@ -380,6 +380,14 @@ interface WorkoutDao {
             "WHERE endTime IS NOT NULL AND start >= :fromTime AND start < :toTime"
     )
     suspend fun gpsMetersOnce(fromTime: Long, toTime: Long): Double
+
+    /** Watch-counted steps of the finished workouts that started in [fromTime, toTime); these are absent from
+     * the hourly steps table, so the daily total adds them to match the watch face. */
+    @Query(
+        "SELECT COALESCE(SUM(steps), 0) FROM workout " +
+            "WHERE endTime IS NOT NULL AND start >= :fromTime AND start < :toTime"
+    )
+    fun stepsInDay(fromTime: Long, toTime: Long): Flow<Int>
 }
 
 @Dao

@@ -201,6 +201,8 @@ private fun StepsCard(today: DailySummary?, goal: Int) {
                 StatText("Goal", "${Fmt.int(goal)} steps")
                 StatText("Distance", Fmt.km(today?.distanceMeters ?: 0.0))
                 StatText("Walk / run", "${Fmt.int(today?.walkSteps ?: 0)} / ${Fmt.int(today?.runSteps ?: 0)}")
+                val workoutSteps = today?.workoutSteps ?: 0
+                if (workoutSteps > 0) StatText("Workout", "${Fmt.int(workoutSteps)} steps")
             }
         }
     }

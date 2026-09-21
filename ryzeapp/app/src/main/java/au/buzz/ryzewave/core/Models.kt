@@ -46,13 +46,18 @@ data class SleepStage(val start: Long, val stage: Int, val minutes: Int) {
 
 data class DailySummary(
     val dayStart: Long,
+    /** Total steps for the day, matching the watch face: the ambient hourly steps plus [workoutSteps]. */
     val steps: Int,
+    /** Ambient (non-workout) walk steps, used for the stride distance; the watch's hourly table excludes workouts. */
     val walkSteps: Int,
+    /** Ambient (non-workout) run steps. */
     val runSteps: Int,
     val distanceMeters: Double,      // from the stride model, see DistanceModel
     val lastHr: HrSample?,
     val lastSpo2: Spo2Sample?,
     val minHr: Int?, val maxHr: Int?, val avgHr: Int?,
+    /** Steps the watch counted during workouts today, absent from its hourly table but present on the watch face. */
+    val workoutSteps: Int = 0,
 )
 
 data class Workout(
