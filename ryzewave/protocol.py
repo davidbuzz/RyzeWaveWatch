@@ -149,8 +149,9 @@ def enc_user_info(height_cm: int, weight_kg: int, step_goal: int, age: int, male
     return bytes([CMD_USER_INFO,
                   height_cm >> 8, height_cm & 0xFF, weight_kg >> 8, weight_kg & 0xFF,
                   0x05, 0x00, 0x00, step_goal >> 8, step_goal & 0xFF,
-                  0x01 if raise_wrist else 0x00, hr_high & 0xFF, 0x00, age & 0xFF,
-                  0x01 if male else 0x02, 0x00, 0x02 if celsius else 0x01, 0x01, hr_low & 0xFF])
+                  # byte 11 = high-HR alarm threshold, 0xFF disables it; byte 18 = low-HR alarm, 0 disables it
+                  0x01 if raise_wrist else 0x00, (hr_high & 0xFF) if hr_high > 0 else 0xFF, 0x00, age & 0xFF,
+                  0x01 if male else 0x02, 0x00, 0x02 if celsius else 0x01, 0x01, max(hr_low, 0) & 0xFF])
 
 
 def enc_password_query() -> bytes: return bytes([CMD_PASSWORD, 0x01])

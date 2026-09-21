@@ -31,7 +31,7 @@ class ProtocolPyReplayTest {
     @Test
     fun test_user_info() {
         val b = Protocol.encUserInfo(heightCm = 170, weightKg = 70, stepGoal = 8000, age = 56, male = false)
-        assertEquals("a900aa00460500001f4001000038020002010" + "0", b.hex())
+        assertEquals("a900aa00460500001f4001ff00380200020100", b.hex())   // byte 11 = ff = high alarm off
         assertEquals(19, b.size)
     }
 

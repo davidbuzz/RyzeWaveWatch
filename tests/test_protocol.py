@@ -14,7 +14,9 @@ def test_time():
 
 def test_user_info():
     b = P.enc_user_info(height_cm=170, weight_kg=70, step_goal=8000, age=56, male=False)
-    assert b.hex() == "a900aa00460500001f4001000038020002010" + "0"
+    assert b.hex() == "a900aa00460500001f4001ff00380200020100"   # byte 11 = ff = high alarm off
+    # alarms on: high 160 (0xa0) at byte 11, low 45 (0x2d) at byte 18
+    assert P.enc_user_info(170, 70, 8000, 56, False, hr_high=160, hr_low=45).hex() == "a900aa00460500001f4001a000380200020" + "12d"
 
 def test_steps_record():
     r = P.dec_steps_record(bytes.fromhex("b207e907021700712d31000043313b00002e"))

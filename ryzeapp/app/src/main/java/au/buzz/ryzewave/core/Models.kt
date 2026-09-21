@@ -138,6 +138,11 @@ data class UserProfile(
 )
 
 data class SamplingSettings(
+    /** Watch 24-hour high-HR alarm threshold in bpm; 0 = off. The watch buzzes when HR rises above this. */
+    val hrHighAlarmBpm: Int = 0,
+    /** Watch 24-hour low-HR alarm threshold in bpm; 0 = off. Off by default: sleeping HR dips naturally, and a
+     * low alarm at 70 woke Buzz at 2:45am when his sleeping HR was 69 (2026-09-21). */
+    val hrLowAlarmBpm: Int = 0,
     val continuousHr: Boolean = true,      // F7 01 / F7 02 (10-minute bins)
     val spo2AutoEnabled: Boolean = true,   // 34 03
     val spo2IntervalMin: Int = 10,

@@ -391,6 +391,41 @@ private fun SamplingSection(sampling: SamplingSettings, onChange: (SamplingSetti
             }
         }
         SwitchRow("Raise wrist to wake", sampling.raiseWristWake) { onChange(sampling.copy(raiseWristWake = it)) }
+
+        Text("Heart rate alerts", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        SwitchRow("High heart rate alert", sampling.hrHighAlarmBpm > 0) {
+            onChange(sampling.copy(hrHighAlarmBpm = if (it) 160 else 0))
+        }
+        if (sampling.hrHighAlarmBpm > 0) {
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                UiDefaults.HR_HIGH_ALARMS.forEach { bpm ->
+                    FilterChip(
+                        selected = sampling.hrHighAlarmBpm == bpm,
+                        onClick = { onChange(sampling.copy(hrHighAlarmBpm = bpm)) },
+                        label = { Text("$bpm bpm") },
+                    )
+                }
+            }
+        }
+        SwitchRow("Low heart rate alert", sampling.hrLowAlarmBpm > 0) {
+            onChange(sampling.copy(hrLowAlarmBpm = if (it) 45 else 0))
+        }
+        if (sampling.hrLowAlarmBpm > 0) {
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                UiDefaults.HR_LOW_ALARMS.forEach { bpm ->
+                    FilterChip(
+                        selected = sampling.hrLowAlarmBpm == bpm,
+                        onClick = { onChange(sampling.copy(hrLowAlarmBpm = bpm)) },
+                        label = { Text("$bpm bpm") },
+                    )
+                }
+            }
+        }
+        Text(
+            "Both off by default. A low alert fires when your heart rate drops below the value, which happens " +
+                "naturally in deep sleep, so keep it well under your sleeping rate or leave it off.",
+            style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
         Text("Changes are sent to the watch immediately when connected, otherwise on the next connect.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }

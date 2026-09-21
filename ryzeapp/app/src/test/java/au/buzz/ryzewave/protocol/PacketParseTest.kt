@@ -226,7 +226,11 @@ class PacketParseTest {
         assertEquals("f7fa", Protocol.hex(Protocol.encFetchHr24Since(since, withTs = false, zone = bris)))
         val profile = UserProfile(heightCm = 175, weightKg = 75, age = 40, male = true, stepGoal = 8000)
         assertEquals("a900af004b0500001f4001a500280100020146", Protocol.hex(Protocol.encUserInfo(profile, hrHigh = 165, hrLow = 70)))
-        assertEquals("a900af004b0500001f4001000028010002010" + "0", Protocol.hex(Protocol.encUserInfo(profile)))
+        // both HR alarms off (default): byte 11 = ff (high off), byte 18 = 00 (low off)
+        assertEquals("a900af004b0500001f4001ff00280100020100", Protocol.hex(Protocol.encUserInfo(profile)))
+        // high alarm on at 160 (0xa0), low off; then low on at 45 (0x2d), high off
+        assertEquals("a900af004b0500001f4001a000280100020100", Protocol.hex(Protocol.encUserInfo(profile, hrHigh = 160)))
+        assertEquals("a900af004b0500001f4001ff0028010002012d", Protocol.hex(Protocol.encUserInfo(profile, hrLow = 45)))
         assertEquals(19, Protocol.encUserInfo(UserProfile()).size)
     }
 

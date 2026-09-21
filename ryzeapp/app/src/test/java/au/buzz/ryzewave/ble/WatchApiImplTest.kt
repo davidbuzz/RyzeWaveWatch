@@ -281,7 +281,7 @@ class WatchApiImplTest {
         assertEquals(5, tx.size)
         assertTrue(tx[0].startsWith("a307ea"))
         assertEquals(Protocol.hex(Protocol.encUserInfo(175, 75, 8000, 40, true)), tx[1])
-        assertEquals("a900af004b0500001f40010000280100020100", tx[1])
+        assertEquals("a900af004b0500001f4001ff00280100020100", tx[1])   // byte 11 = ff = HR alarms off by default
         assertEquals("f701", tx[2])
         assertEquals("340301000a", tx[3])
         assertEquals("3404010001173b", tx[4])

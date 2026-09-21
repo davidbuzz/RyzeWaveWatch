@@ -209,7 +209,13 @@ class WatchApiImpl(
         requireReady()
         val interval = sampling.spo2IntervalMin.coerceIn(1, 0xFFFF)
         ack(Protocol.encSetTime(LocalDateTime.now(zone)), Matchers.opcodeIs(Protocol.CMD_TIME), "A3 set time")
-        ack(Protocol.encUserInfo(profile, raiseWrist = sampling.raiseWristWake), Matchers.opcodeIs(Protocol.CMD_USER_INFO), "A9 user info")
+        ack(
+            Protocol.encUserInfo(
+                profile, raiseWrist = sampling.raiseWristWake,
+                hrHigh = sampling.hrHighAlarmBpm, hrLow = sampling.hrLowAlarmBpm,
+            ),
+            Matchers.opcodeIs(Protocol.CMD_USER_INFO), "A9 user info",
+        )
         ack(
             Protocol.encHrContinuous(sampling.continuousHr),
             Matchers.opcodeAndSub(Protocol.CMD_HR24, if (sampling.continuousHr) 0x01 else 0x02),

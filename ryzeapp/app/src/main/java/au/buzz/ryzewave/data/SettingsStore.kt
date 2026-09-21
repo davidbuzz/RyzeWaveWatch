@@ -150,6 +150,8 @@ object SettingsKeys {
     val SPO2_AUTO = booleanPreferencesKey("spo2_auto")
     val SPO2_INTERVAL_MIN = intPreferencesKey("spo2_interval_min")
     val RAISE_WRIST_WAKE = booleanPreferencesKey("raise_wrist_wake")
+    val HR_HIGH_ALARM_BPM = intPreferencesKey("hr_high_alarm_bpm")
+    val HR_LOW_ALARM_BPM = intPreferencesKey("hr_low_alarm_bpm")
 
     val WALK_STRIDE_M = doublePreferencesKey("walk_stride_m")
     val RUN_STRIDE_M = doublePreferencesKey("run_stride_m")
@@ -201,6 +203,8 @@ object SettingsKeys {
             spo2AutoEnabled = p[SPO2_AUTO] ?: d.spo2AutoEnabled,
             spo2IntervalMin = p[SPO2_INTERVAL_MIN] ?: d.spo2IntervalMin,
             raiseWristWake = p[RAISE_WRIST_WAKE] ?: d.raiseWristWake,
+            hrHighAlarmBpm = p[HR_HIGH_ALARM_BPM] ?: d.hrHighAlarmBpm,
+            hrLowAlarmBpm = p[HR_LOW_ALARM_BPM] ?: d.hrLowAlarmBpm,
         )
     }
 
@@ -209,6 +213,8 @@ object SettingsKeys {
         m[SPO2_AUTO] = s.spo2AutoEnabled
         m[SPO2_INTERVAL_MIN] = s.spo2IntervalMin
         m[RAISE_WRIST_WAKE] = s.raiseWristWake
+        m[HR_HIGH_ALARM_BPM] = s.hrHighAlarmBpm
+        m[HR_LOW_ALARM_BPM] = s.hrLowAlarmBpm
     }
 
     /** Absent keys mean "derive from height" (null), see core.DistanceModel. */

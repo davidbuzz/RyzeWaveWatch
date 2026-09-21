@@ -186,8 +186,9 @@ object Protocol {
         CMD_USER_INFO,
         heightCm shr 8, heightCm, weightKg shr 8, weightKg,
         0x05, 0x00, 0x00, stepGoal shr 8, stepGoal,
-        if (raiseWrist) 0x01 else 0x00, hrHigh, 0x00, age,
-        if (male) 0x01 else 0x02, 0x00, if (celsius) 0x02 else 0x01, 0x01, hrLow,
+        // byte 11 = high-HR alarm threshold, 0xFF disables it; byte 18 = low-HR alarm threshold, 0 disables it.
+        if (raiseWrist) 0x01 else 0x00, if (hrHigh > 0) hrHigh else 0xFF, 0x00, age,
+        if (male) 0x01 else 0x02, 0x00, if (celsius) 0x02 else 0x01, 0x01, hrLow.coerceAtLeast(0),
     )
 
     fun encPasswordQuery(): ByteArray = bytesOf(CMD_PASSWORD, 0x01)
