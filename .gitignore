@@ -29,3 +29,4 @@ captures/**/*.db
 captures/**/*.db-*
 android/debug.keystore
 dist/
+captures/bridge_*.txt
