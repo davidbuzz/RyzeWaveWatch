@@ -263,6 +263,11 @@ object Protocol {
     /** `AB 00 00 00 01 02 07 01`: make the watch vibrate ("find watch"). */
     fun encFindWatch(): ByteArray = bytesOf(CMD_VIBRATE, 0, 0, 0, 1, 0x02, 0x07, 0x01)
 
+    /** `AB 00 00 00 01 <count> 00 00`: a short silent buzz to alert on a notification (no ring, unlike find-watch).
+     * Mirrors the vendor's sendQQWeChatVibrationCommand, which pairs one of these with every C5 notification. */
+    fun encNotifyVibrate(count: Int = 1): ByteArray =
+        bytesOf(CMD_VIBRATE, 0, 0, 0, 1, count.coerceIn(1, 255), 0, 0)
+
     /** `38 02 <01|00>` on the DATA channel: classic Bluetooth (HFP/A2DP) on / off. Echoed as ack. */
     fun encBt3Enable(on: Boolean): ByteArray = bytesOf(CMD_BT3, 0x02, if (on) 0x01 else 0x00)
 

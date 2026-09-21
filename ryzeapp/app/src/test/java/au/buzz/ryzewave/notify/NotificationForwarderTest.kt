@@ -60,10 +60,11 @@ class NotificationForwarderTest {
         assertTrue(forwarder.offer(post()))
         assertTrue(eventually { forwarder.sentCount == 1 })
         val tx = link.txHex()
-        // "Test title: Hello from adb" = 26 chars = 52 bytes = 4 chunks (16+16+16+4) + end
-        assertEquals(5, tx.size)
+        // "Test title: Hello from adb" = 26 chars = 52 bytes = 4 chunks (16+16+16+4) + end + a buzz
+        assertEquals(6, tx.size)
         assertEquals("c5000434" + "00540065007300740020007400690074", tx[0])
-        assertEquals("c5fd", tx.last())
+        assertEquals("c5fd", tx[4])                              // notification end, then the alert buzz
+        assertEquals("ab00000001010000", tx.last())             // short vibrate so the wrist alerts
         assertEquals("c503" + "00640062", tx[3])                 // last chunk carries the final "db"
 
         // same key + text again within 10 s: dropped; a new text goes through
@@ -100,11 +101,12 @@ class NotificationForwarderTest {
         assertTrue(forwarder.sendTest())
         val tx = link.txHex()
         assertEquals("c500042c" + "00420075007a007a0027007300200052", tx[0])   // "Buzz's Ryze Wave: test" = 22 chars = 0x2c bytes
-        assertEquals("c5fd", tx.last())
-        assertEquals(4, tx.size)
+        assertEquals("c5fd", tx[tx.size - 2])                    // end, then the alert buzz
+        assertEquals("ab00000001010000", tx.last())
+        assertEquals(5, tx.size)
         link.disconnect()
         assertFalse(forwarder.sendTest())                       // skipped when not connected
-        assertEquals(4, link.txHex().size)
+        assertEquals(5, link.txHex().size)
     }
 
     @Test

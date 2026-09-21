@@ -532,6 +532,10 @@ class WatchApiImpl(
                 link.request(chunk, Matchers.isNotifyAck(idx), NOTIFY_ACK_TIMEOUT_MS)
             }
             link.request(Protocol.encNotificationEnd(), Matchers::isNotifyEnd, NOTIFY_ACK_TIMEOUT_MS)
+            // Buzz through the wrist so the wearer notices now, not next time they glance at the watch. The vendor
+            // pairs this AB buzz with every notification; the C5 text alone does not vibrate. Best-effort: a failed
+            // buzz never fails the delivered notification.
+            runCatching { link.write(Protocol.encNotifyVibrate()) }
         }
         log("notification sent: type $type, ${chunks.size} chunks", null)
         return true
