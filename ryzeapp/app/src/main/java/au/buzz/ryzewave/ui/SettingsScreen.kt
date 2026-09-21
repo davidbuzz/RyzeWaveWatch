@@ -402,9 +402,13 @@ private fun SamplingSection(sampling: SamplingSettings, onChange: (SamplingSetti
                     FilterChip(
                         selected = sampling.hrHighAlarmBpm == bpm,
                         onClick = { onChange(sampling.copy(hrHighAlarmBpm = bpm)) },
-                        label = { Text("$bpm bpm") },
+                        label = { Text("$bpm") },
                     )
                 }
+                Text(
+                    "bpm", Modifier.align(Alignment.CenterVertically),
+                    style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
             }
         }
         SwitchRow("Low heart rate alert", sampling.hrLowAlarmBpm > 0) {
@@ -416,9 +420,13 @@ private fun SamplingSection(sampling: SamplingSettings, onChange: (SamplingSetti
                     FilterChip(
                         selected = sampling.hrLowAlarmBpm == bpm,
                         onClick = { onChange(sampling.copy(hrLowAlarmBpm = bpm)) },
-                        label = { Text("$bpm bpm") },
+                        label = { Text("$bpm") },
                     )
                 }
+                Text(
+                    "bpm", Modifier.align(Alignment.CenterVertically),
+                    style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
             }
         }
         Text(
