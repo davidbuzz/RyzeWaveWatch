@@ -14,7 +14,7 @@ object UiDefaults {
     const val WATCH_NAME_PREFIX = "Ryze Wave"
     const val DEFAULT_SPORT_TYPE = 1
     val SPO2_INTERVALS = listOf(5, 10, 20, 30, 60)
-    val HR_HIGH_ALARMS = listOf(120, 140, 160, 180)   // watch buzzes when HR rises above the chosen value
+    val HR_HIGH_ALARMS = listOf(140, 150, 160, 170, 180)   // watch buzzes when HR rises above the chosen value
     val HR_LOW_ALARMS = listOf(40, 45, 50, 55)         // watch buzzes when HR falls below it (kept well under sleeping HR)
     val HISTORY_RANGES = listOf(7, 30)
 }
